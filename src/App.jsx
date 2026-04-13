@@ -291,6 +291,30 @@ function wrapCanvasText(context, text, maxWidth) {
   return lines;
 }
 
+function drawImageCover(context, image, x, y, width, height, focusX = 0.5, focusY = 0.5) {
+  const sourceWidth = image.naturalWidth || image.width;
+  const sourceHeight = image.naturalHeight || image.height;
+
+  if (!sourceWidth || !sourceHeight) return;
+
+  const scale = Math.max(width / sourceWidth, height / sourceHeight);
+  const scaledWidth = sourceWidth * scale;
+  const scaledHeight = sourceHeight * scale;
+  const overflowX = Math.max(0, scaledWidth - width);
+  const overflowY = Math.max(0, scaledHeight - height);
+  const drawX = x - overflowX * focusX;
+  const drawY = y - overflowY * focusY;
+
+  context.save();
+  context.beginPath();
+  context.rect(x, y, width, height);
+  context.clip();
+  context.imageSmoothingEnabled = true;
+  context.imageSmoothingQuality = 'high';
+  context.drawImage(image, drawX, drawY, scaledWidth, scaledHeight);
+  context.restore();
+}
+
 function drawWrappedCanvasText(context, text, x, y, maxWidth, lineHeight) {
   const paragraphs = String(text || '')
     .split('\n')
@@ -1201,6 +1225,8 @@ Telefon: ${companyContact.phone}`;
         throw new Error('Canvas není k dispozici.');
       }
 
+      context.imageSmoothingEnabled = true;
+      context.imageSmoothingQuality = 'high';
       context.fillStyle = '#f7f6f1';
       context.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -1221,7 +1247,7 @@ Telefon: ${companyContact.phone}`;
 
         const heroY = 184;
         const heroHeight = 670;
-        context.drawImage(heroImage, 70, heroY, canvas.width - 140, heroHeight);
+        drawImageCover(context, heroImage, 70, heroY, canvas.width - 140, heroHeight, 0.5, 0.42);
         context.strokeStyle = '#cad3bb';
         context.lineWidth = 3;
         context.strokeRect(70, heroY, canvas.width - 140, heroHeight);
@@ -1273,7 +1299,7 @@ Telefon: ${companyContact.phone}`;
         context.fillRect(0, 0, canvas.width, canvas.height);
         context.fillStyle = '#79aa0a';
         context.fillRect(0, 0, canvas.width, 118);
-        context.drawImage(heroImage, 0, 118, 620, canvas.height - 118);
+        drawImageCover(context, heroImage, 0, 118, 620, canvas.height - 118, 0.45, 0.5);
         context.drawImage(logoImage, 70, 26, logoWidth, logoHeight);
 
         context.fillStyle = '#f8fafc';
@@ -1315,7 +1341,7 @@ Telefon: ${companyContact.phone}`;
         context.font = '500 24px "Segoe UI", Arial, sans-serif';
         context.fillText('Chytrá pěna Bohemia s.r.o.', canvas.width - 110, 188);
 
-        context.drawImage(heroImage, 70, 300, canvas.width - 140, 520);
+        drawImageCover(context, heroImage, 70, 300, canvas.width - 140, 520, 0.5, 0.4);
         context.strokeStyle = '#c8d5b2';
         context.lineWidth = 3;
         context.strokeRect(70, 300, canvas.width - 140, 520);
