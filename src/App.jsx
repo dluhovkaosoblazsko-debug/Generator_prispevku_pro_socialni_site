@@ -5,7 +5,6 @@ import {
   Sparkles,
   Check,
   RefreshCw,
-  Building2,
   Image as ImageIcon,
   MessageCircle,
   Lightbulb,
@@ -1116,28 +1115,33 @@ Hashtagy: ${includeHashtags ? 'ano' : 'ne'}`;
   };
 
   return (
-    <div className="min-h-screen bg-[#faf8f5] text-slate-900">
-      <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3">
-            <div className="rounded-2xl bg-lime-500 p-2.5 shadow-sm">
-              <Building2 className="h-5 w-5 text-white" />
+    <div className="min-h-screen bg-[#f6f6f1] text-slate-900">
+      <header className="sticky top-0 z-20 border-b border-[#d7dec9] bg-white/92 backdrop-blur">
+        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-4">
+            <div className="rounded-2xl border border-[#d7dec9] bg-white px-3 py-2 shadow-sm">
+              <img
+                src={logoImageUrl}
+                alt="Chytrá pěna"
+                className="h-9 w-auto sm:h-11"
+              />
             </div>
-            <div>
-              <h1 className="text-lg font-extrabold tracking-tight sm:text-xl">Generátor příspěvků pro sociální sítě</h1>
-              <p className="hidden text-xs text-slate-500 sm:block">Chytrá pěna Bohemia</p>
+            <div className="hidden sm:block">
+              <h1 className="text-sm font-semibold tracking-wide text-slate-700">Generátor příspěvků pro sociální sítě</h1>
+              <p className="text-xs text-slate-500">Chytrá pěna Bohemia</p>
             </div>
           </div>
 
-          <div className="hidden items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm text-slate-600 md:flex">
-        
+          <div className="hidden items-center gap-2 rounded-full border border-[#d7dec9] bg-[#f7f8f2] px-3 py-1.5 text-sm text-slate-600 md:flex">
+            <BadgeCheck className="h-4 w-4 text-lime-600" />
+            Obsahový režim
           </div>
         </div>
       </header>
 
       <main className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
         <div className="mb-5">
-          <div className="rounded-3xl border border-lime-100 bg-gradient-to-r from-lime-500 to-green-500 p-4 text-white shadow-sm">
+          <div className="rounded-3xl border border-lime-100 bg-gradient-to-r from-lime-500 to-[#6fa800] p-4 text-white shadow-sm">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="flex items-start gap-3">
                 <div className="rounded-2xl bg-white/15 p-2">
