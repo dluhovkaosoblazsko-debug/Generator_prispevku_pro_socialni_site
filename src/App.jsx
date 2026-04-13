@@ -17,7 +17,6 @@ import {
   ClipboardPaste,
   RotateCcw,
   ChevronRight,
-  BadgeCheck,
   Download,
   History,
   Upload,
@@ -216,6 +215,27 @@ function serializeGeneratedContent({ main, visual, hashtags }) {
   return sections.join('\n\n').trim();
 }
 
+function looksLikeEnglishVisual(text) {
+  const normalized = String(text || '').toLowerCase();
+  if (!normalized) return false;
+
+  const englishSignals = [
+    'showing ',
+    'on one side',
+    'cozy',
+    'warm',
+    'happy residents',
+    'focus on',
+    'drafty',
+    'energy-efficient',
+    'split image',
+    'home interior',
+    'savings',
+  ];
+
+  return englishSignals.some((signal) => normalized.includes(signal));
+}
+
 function evaluateGeneratedContent({ main, visual, hashtags }, options) {
   const issues = [];
   const normalizedMain = (main || '').trim();
@@ -399,8 +419,16 @@ export default function App() {
   const [templateEditorOpen, setTemplateEditorOpen] = useState(false);
   const [companyGalleryOpen, setCompanyGalleryOpen] = useState(false);
   const fileInputRef = useRef(null);
+  const mainTextAreaRef = useRef(null);
 
   const parsed = useMemo(() => parseGeneratedContent(generatedContent), [generatedContent]);
+
+  useEffect(() => {
+    if (!mainTextAreaRef.current) return;
+
+    mainTextAreaRef.current.style.height = '0px';
+    mainTextAreaRef.current.style.height = `${mainTextAreaRef.current.scrollHeight}px`;
+  }, [parsed.main]);
 
   useEffect(() => {
     try {
@@ -831,6 +859,28 @@ Telefon: ${companyContact.phone}`.trim();
     return null;
   };
 
+  const translateVisualPromptToCzech = async (visualPrompt) => {
+    if (!visualPrompt.trim()) return '';
+
+    const systemPrompt = `Jsi jazykový editor. Tvůj jediný úkol je převést zadaný návrh vizuálu do přirozené a stručné češtiny.
+
+Pravidla:
+- Zachovej význam, scénu i kompozici.
+- Nevymýšlej nové prvky.
+- Vrať pouze samotný český text bez uvozovek, bez markdownu a bez vysvětlení.
+- Výsledek musí být vhodný jako zadání pro generátor obrázku.`;
+
+    const prompt = `Převeď do češtiny tento návrh vizuálu:
+
+${visualPrompt}`;
+
+    const translated = await generateWithGemini(prompt, systemPrompt, {
+      temperature: 0.2,
+    });
+
+    return translated?.trim() || visualPrompt;
+  };
+
   const handleGenerateImage = async () => {
     const visualPrompt = parsed.visual || contentPrompt;
 
@@ -982,6 +1032,7 @@ Použij přesně tuto strukturu:
 Pravidla pro JSON:
 - "mainText" je vždy povinný neprázdný string.
 - Pokud není vyžadován návrh vizuálu, vrať "visualPrompt": "".
+- Pokud je vyžadován návrh vizuálu, "visualPrompt" musí být vždy napsaný česky.
 - Pokud nejsou vyžadovány hashtagy, vrať "hashtags": [].
 - Pokud jsou hashtagy vyžadovány, vrať přesně 5 relevantních hashtagů.
 - Nevkládej do JSON žádné další klíče.
@@ -1008,6 +1059,10 @@ Hashtagy: ${includeHashtags ? 'ano' : 'ne'}`;
           visual: '',
           hashtags: '',
         };
+
+      if (includeVisual && looksLikeEnglishVisual(structuredPayload.visual)) {
+        structuredPayload.visual = await translateVisualPromptToCzech(structuredPayload.visual);
+      }
 
       const serializedContent = serializeGeneratedContent(structuredPayload);
       setGeneratedContent(serializedContent);
@@ -1126,26 +1181,22 @@ Hashtagy: ${includeHashtags ? 'ano' : 'ne'}`;
 
   return (
     <div className="min-h-screen bg-[#f6f6f1] text-slate-900">
-      <header className="sticky top-0 z-20 border-b border-[#d7dec9] bg-white/92 backdrop-blur">
-        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+      <header className="sticky top-0 z-20 border-b border-[#6f9f08] bg-gradient-to-r from-[#83b60c] to-[#72a206] shadow-sm">
+        <div className="mx-auto flex h-24 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-4">
-            <div className="rounded-2xl border border-[#d7dec9] bg-white px-3 py-2 shadow-sm">
+            <div className="rounded-2xl border border-white/70 bg-white px-4 py-3 shadow-sm">
               <img
                 src={logoImageUrl}
                 alt="Chytrá pěna"
-                className="h-9 w-auto sm:h-11"
+                className="h-12 w-auto sm:h-14"
               />
             </div>
             <div className="hidden sm:block">
-              <h1 className="text-sm font-semibold tracking-wide text-slate-700">Generátor příspěvků pro sociální sítě</h1>
-              <p className="text-xs text-slate-500">Chytrá pěna Bohemia</p>
+              <h1 className="text-sm font-semibold tracking-wide text-white">Generátor příspěvků pro sociální sítě</h1>
+              <p className="text-xs text-lime-50/85">Chytrá pěna Bohemia</p>
             </div>
           </div>
 
-          <div className="hidden items-center gap-2 rounded-full border border-[#d7dec9] bg-[#f7f8f2] px-3 py-1.5 text-sm text-slate-600 md:flex">
-            <BadgeCheck className="h-4 w-4 text-lime-600" />
-            Obsahový režim
-          </div>
         </div>
       </header>
 
@@ -1623,9 +1674,10 @@ Hashtagy: ${includeHashtags ? 'ano' : 'ne'}`;
                     actions={<MiniCopyButton text={parsed.main} onCopy={copyToClipboard} label="Kopírovat text" />}
                   >
                     <textarea
+                      ref={mainTextAreaRef}
                       value={parsed.main}
                       onChange={(e) => handleMainTextChange(e.target.value)}
-                      className="min-h-[240px] w-full resize-y rounded-xl border border-slate-800 bg-slate-950 p-3 text-sm leading-7 text-slate-200 outline-none transition focus:border-lime-400 focus:ring-4 focus:ring-lime-500/10"
+                      className="min-h-[240px] w-full overflow-hidden rounded-xl border border-slate-800 bg-slate-950 p-3 text-sm leading-7 text-slate-200 outline-none transition focus:border-lime-400 focus:ring-4 focus:ring-lime-500/10"
                     />
 
                     <div className="mt-4 rounded-xl border border-slate-800 bg-slate-950/70 p-3">
