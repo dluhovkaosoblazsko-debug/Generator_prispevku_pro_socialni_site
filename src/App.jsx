@@ -269,6 +269,12 @@ function formatCompanyProfile(company) {
     .join(' · ');
 }
 
+function formatRecommendedContact(company) {
+  const recommended = company?.recommendedContact;
+  if (!recommended?.label) return '';
+  return recommended.label;
+}
+
 function wrapCanvasText(context, text, maxWidth) {
   const words = String(text || '').split(/\s+/).filter(Boolean);
   const lines = [];
@@ -1589,7 +1595,17 @@ Zakonči text konkrétní výzvou k akci: ${cta}
 Návrh vizuálu: ${includeVisual ? 'ano' : 'ne'}
 Hashtagy: ${includeHashtags ? 'ano' : 'ne'}`;
 
-    const result = await generateWithGemini(prompt, systemPrompt, {
+    const resolvedContactLabel =
+      resolvedCompanyProfile?.recommendedContact?.label || 'vedení společnosti';
+
+    const promptWithCompanyContacting = resolvedCompanyProfile?.name
+      ? `${prompt}
+
+Doporučená osoba / funkce k oslovení: ${resolvedContactLabel}
+Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto roli.`
+      : prompt;
+
+    const result = await generateWithGemini(promptWithCompanyContacting, systemPrompt, {
       expectJson: true,
       temperature: 0.45,
     });
@@ -1736,11 +1752,11 @@ Hashtagy: ${includeHashtags ? 'ano' : 'ne'}`;
   };
 
   return (
-    <div className="min-h-screen bg-[#f6f6f1] text-slate-900">
-      <header className="sticky top-0 z-20 border-b border-[#6f9f08] bg-gradient-to-r from-[#83b60c] to-[#72a206] shadow-sm">
-        <div className="mx-auto grid h-28 max-w-7xl grid-cols-[auto_1fr_auto] items-center gap-4 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#f3f1e8] text-slate-900">
+      <header className="sticky top-0 z-20 border-b border-[#628b06] bg-gradient-to-r from-[#739f08] via-[#7cab0a] to-[#6b9608] shadow-[0_10px_28px_rgba(77,101,19,0.18)]">
+        <div className="mx-auto grid h-28 max-w-7xl grid-cols-[auto_1fr_auto] items-center gap-6 px-4 sm:px-6 lg:px-8">
           <div className="flex items-center">
-            <div className="rounded-2xl border border-white/70 bg-white px-4 py-3 shadow-sm">
+            <div className="rounded-2xl border border-white/80 bg-white px-4 py-3 shadow-[0_10px_24px_rgba(15,23,42,0.12)]">
               <img
                 src={logoImageUrl}
                 alt="Chytrá pěna"
@@ -1750,25 +1766,25 @@ Hashtagy: ${includeHashtags ? 'ano' : 'ne'}`;
           </div>
 
           <div className="text-center">
-            <h1 className="text-xl font-bold tracking-tight text-white sm:text-2xl">Generátor příspěvků pro sociální sítě</h1>
-            <p className="mt-1 text-sm text-lime-50/90">Chytrá pěna Bohemia s.r.o.</p>
+            <h1 className="text-xl font-extrabold tracking-tight text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.15)] sm:text-2xl">Generátor příspěvků pro sociální sítě</h1>
+            <p className="mt-1 text-sm font-medium text-lime-50/95">Chytrá pěna Bohemia s.r.o.</p>
           </div>
 
           <div />
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-5 xl:grid-cols-[480px_minmax(0,1fr)]">
+      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[480px_minmax(0,1fr)]">
           <section className="space-y-5">
-            <div className="rounded-3xl border border-[#bcc6b0] bg-[#fbfbf8] p-5 shadow-sm">
-              <div className="mb-5 flex items-center gap-2">
+            <div className="rounded-[28px] border border-[#b9c5aa] bg-[#fbfaf5] p-5 shadow-[0_18px_38px_rgba(15,23,42,0.07)]">
+              <div className="mb-5 flex items-center gap-2 border-b border-[#d9e1cb] pb-4">
                 <Lightbulb className="h-5 w-5 text-lime-500" />
                 <h2 className="text-lg font-bold">Zadání příspěvku</h2>
               </div>
 
               <div className="space-y-4">
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <div className="rounded-[22px] border border-[#d7ded0] bg-white/85 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="flex items-center gap-2">
                       <Target className="h-4 w-4 text-lime-500" />
@@ -1883,16 +1899,24 @@ Hashtagy: ${includeHashtags ? 'ano' : 'ne'}`;
                     </button>
                   </div>
                   {companyModeActive && (
+                    <>
                     <p className="mt-2 text-xs leading-5 text-slate-500">
                       Cílení na firmu je aktivní: <span className="font-semibold text-slate-700">{formatCompanyProfile(companyProfile)}</span>
                     </p>
+                    <p className="text-xs leading-5 text-slate-500">
+                      DoporuÄŤenĂˇ osoba / funkce k oslovenĂ­:{' '}
+                      <span className="font-semibold text-slate-700">
+                        {formatRecommendedContact(companyProfile) || 'vedenĂ­ spoleÄŤnosti'}
+                      </span>
+                    </p>
+                    </>
                   )}
                 </div>
               </div>
             </div>
 
-            <div className="rounded-3xl border border-[#bcc6b0] bg-[#fbfbf8] p-5 shadow-sm">
-              <div className="mb-4 flex items-center gap-2">
+            <div className="rounded-[28px] border border-[#b9c5aa] bg-[#fbfaf5] p-5 shadow-[0_18px_38px_rgba(15,23,42,0.07)]">
+              <div className="mb-4 flex items-center gap-2 border-b border-[#d9e1cb] pb-4">
                 <Settings2 className="h-5 w-5 text-lime-500" />
                 <h2 className="text-lg font-bold">Nastavení výstupu</h2>
               </div>
@@ -1940,7 +1964,7 @@ Hashtagy: ${includeHashtags ? 'ano' : 'ne'}`;
                 </div>
               </div>
 
-              <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <div className="mt-4 rounded-[22px] border border-[#d7ded0] bg-white/85 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]">
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <p className="text-sm font-semibold text-slate-900">Režim obrázku</p>
@@ -2083,7 +2107,7 @@ Hashtagy: ${includeHashtags ? 'ano' : 'ne'}`;
                   </div>
                 )}
 
-                <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-4">
+                <div className="mt-4 rounded-[22px] border border-[#d7ded0] bg-white p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]">
                   <div>
                     <p className="text-sm font-semibold text-slate-900">Pozice loga</p>
                     <p className="mt-1 text-xs text-slate-500">
@@ -2121,7 +2145,7 @@ Hashtagy: ${includeHashtags ? 'ano' : 'ne'}`;
               <button
                 disabled={isDisabled}
                 onClick={handleGenerateContent}
-                className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-lime-500 px-5 py-3.5 font-bold text-white shadow-sm transition hover:bg-lime-600 disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#7aa90a] to-[#6d9808] px-5 py-3.5 font-bold text-white shadow-[0_14px_30px_rgba(122,169,10,0.28)] transition hover:from-[#6f9d08] hover:to-[#648b07] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {loading ? <RefreshCw className="h-5 w-5 animate-spin" /> : <Sparkles className="h-5 w-5" />}
                 Vygenerovat příspěvek
@@ -2129,7 +2153,7 @@ Hashtagy: ${includeHashtags ? 'ano' : 'ne'}`;
 
               <button
                 onClick={handleReset}
-                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3.5 font-semibold text-slate-700 transition hover:bg-slate-50"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[#d2d9c8] bg-[#fbfaf6] px-5 py-3.5 font-semibold text-slate-700 transition hover:bg-white"
               >
                 <RotateCcw className="h-4 w-4" />
                 Reset
@@ -2137,20 +2161,20 @@ Hashtagy: ${includeHashtags ? 'ano' : 'ne'}`;
             </div>
 
             {error && (
-              <div className="flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+              <div className="flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50/90 p-4 text-sm text-red-700 shadow-[0_10px_24px_rgba(239,68,68,0.08)]">
                 <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
                 <span>{error}</span>
               </div>
             )}
 
-            <div className="rounded-3xl border border-[#bcc6b0] bg-[#fbfbf8] p-5 shadow-sm">
+            <div className="rounded-[28px] border border-[#b9c5aa] bg-[#fbfaf5] p-5 shadow-[0_18px_38px_rgba(15,23,42,0.07)]">
               <div className="mb-4 flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
                   <History className="h-5 w-5 text-lime-500" />
                   <h2 className="text-lg font-bold">Historie návrhů</h2>
                 </div>
                 {historyItems.length > 0 && (
-                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500">
+                  <span className="rounded-full border border-[#d7ded0] bg-[#f7f7f2] px-3 py-1 text-xs font-semibold text-slate-500">
                     {Math.min(historyItems.length, 12)} položek
                   </span>
                 )}
@@ -2163,7 +2187,7 @@ Hashtagy: ${includeHashtags ? 'ano' : 'ne'}`;
                       key={item.id}
                       type="button"
                       onClick={() => handleRestoreHistoryItem(item)}
-                      className="w-full rounded-2xl border border-slate-200 bg-slate-50 p-4 text-left transition hover:border-lime-200 hover:bg-lime-50"
+                      className="w-full rounded-2xl border border-[#d7ded0] bg-white/85 p-4 text-left shadow-[0_8px_18px_rgba(15,23,42,0.04)] transition hover:border-lime-300 hover:bg-[#fcfdf8]"
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
@@ -2183,32 +2207,32 @@ Hashtagy: ${includeHashtags ? 'ano' : 'ne'}`;
                   ))}
                 </div>
               ) : (
-                <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">
+                <div className="rounded-2xl border border-dashed border-[#d7ded0] bg-[#fbfaf6] p-4 text-sm text-slate-500">
                   Po prvním úspěšném generování se sem uloží poslední návrhy pro rychlé vrácení.
                 </div>
               )}
             </div>
           </section>
 
-          <section className="flex min-h-[640px] flex-col rounded-3xl border border-slate-200 bg-slate-500 shadow-xl">
-            <div className="flex items-center justify-between border-b border-slate-800 px-6 py-4">
+          <section className="flex min-h-[640px] flex-col rounded-[30px] border border-[#617086] bg-gradient-to-b from-[#5f7187] to-[#4e6177] shadow-[0_22px_48px_rgba(15,23,42,0.18)]">
+            <div className="flex items-center justify-between border-b border-slate-700/80 bg-slate-900/12 px-6 py-4">
               <div>
-                <p className="text-xs uppercase tracking-[0.22em] text-slate-500">Výstup pro sítě</p>
-                <p className="mt-1 text-sm text-slate-400">Hotový text, návrh vizuálu a hashtagy</p>
+                <p className="text-xs uppercase tracking-[0.22em] text-slate-300/70">Výstup pro sítě</p>
+                <p className="mt-1 text-sm text-slate-200/85">Hotový text, návrh vizuálu a hashtagy</p>
               </div>
 
               {generatedContent && (
                 <div className="flex flex-wrap gap-2">
                   <button
                     onClick={handleExportDocx}
-                    className="inline-flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-300 transition hover:border-slate-600 hover:text-white"
+                    className="inline-flex items-center gap-2 rounded-xl border border-slate-700/90 bg-slate-950/80 px-3 py-2 text-sm text-slate-200 transition hover:border-slate-500 hover:bg-slate-900 hover:text-white"
                   >
                     <Download className="h-4 w-4" />
                     Export DOCX
                   </button>
                   <button
                     onClick={() => copyToClipboard(fullContentWithContact)}
-                    className="inline-flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-300 transition hover:border-slate-600 hover:text-white"
+                    className="inline-flex items-center gap-2 rounded-xl border border-slate-700/90 bg-slate-950/80 px-3 py-2 text-sm text-slate-200 transition hover:border-slate-500 hover:bg-slate-900 hover:text-white"
                   >
                     {copied ? <Check className="h-4 w-4 text-emerald-400" /> : <ClipboardPaste className="h-4 w-4" />}
                     {copied ? 'Zkopírováno' : 'Kopírovat vše'}
@@ -2220,7 +2244,7 @@ Hashtagy: ${includeHashtags ? 'ano' : 'ne'}`;
             <div className="flex-1 overflow-auto p-6">
               {loading ? (
                 <div className="flex h-full flex-col items-center justify-center gap-4 text-center">
-                  <div className="rounded-full border border-lime-500/20 bg-lime-500/10 p-4">
+                  <div className="rounded-full border border-lime-400/30 bg-lime-500/12 p-4 shadow-[0_10px_24px_rgba(122,169,10,0.12)]">
                     <RefreshCw className="h-8 w-8 animate-spin text-lime-400" />
                   </div>
                   <div>
@@ -2452,11 +2476,11 @@ Hashtagy: ${includeHashtags ? 'ano' : 'ne'}`;
 function FieldSelect({ label, value, onChange, options }) {
   return (
     <div>
-      <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-slate-500">{label}</label>
+      <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-[0.12em] text-slate-500">{label}</label>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-800 outline-none transition focus:border-lime-300 focus:ring-4 focus:ring-lime-100"
+        className="w-full rounded-2xl border border-[#d6ddd0] bg-[#fffefb] px-3 py-3 text-sm text-slate-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] outline-none transition focus:border-lime-300 focus:ring-4 focus:ring-lime-100"
       >
         {options.map((option) => (
           <option key={option}>{option}</option>
@@ -2472,8 +2496,10 @@ function ToggleCard({ checked, onChange, title, description }) {
       type="button"
       onClick={() => onChange(!checked)}
       className={classNames(
-        'w-full rounded-2xl border px-4 py-3 text-left transition',
-        checked ? 'border-lime-200 bg-lime-50 shadow-sm' : 'border-slate-200 bg-slate-50 hover:bg-slate-100'
+        'w-full rounded-2xl border px-4 py-3 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.75)] transition',
+        checked
+          ? 'border-lime-200 bg-lime-50 shadow-[0_10px_22px_rgba(122,169,10,0.08)]'
+          : 'border-[#d7ded0] bg-[#fbfaf6] hover:border-lime-200 hover:bg-white'
       )}
     >
       <div className="flex items-start justify-between gap-3">
@@ -2500,16 +2526,16 @@ function ToggleCard({ checked, onChange, title, description }) {
 
 function ContentCard({ icon, title, tone = 'default', children, actions }) {
   const toneClasses = {
-    default: 'border-slate-800 bg-slate-900',
-    brand: 'border-lime-500/20 bg-lime-500/10',
-    slate: 'border-slate-800 bg-slate-900/80',
+    default: 'border-slate-700/90 bg-slate-900/96 shadow-[0_14px_30px_rgba(15,23,42,0.16)]',
+    brand: 'border-lime-300/20 bg-gradient-to-br from-lime-500/16 to-slate-900/28 shadow-[0_14px_30px_rgba(15,23,42,0.14)]',
+    slate: 'border-slate-700/90 bg-slate-900/86 shadow-[0_14px_30px_rgba(15,23,42,0.14)]',
   };
 
   return (
-    <div className={classNames('rounded-2xl border p-4', toneClasses[tone])}>
-      <div className="mb-3 flex items-center justify-between gap-3">
+    <div className={classNames('rounded-2xl border p-4 backdrop-blur-sm', toneClasses[tone])}>
+      <div className="mb-4 flex items-center justify-between gap-3 border-b border-white/8 pb-3">
         <div className="flex items-center gap-2 text-sm font-semibold text-white">
-          <div className="rounded-lg bg-white/10 p-1.5 text-lime-400">{icon}</div>
+          <div className="rounded-lg border border-white/8 bg-white/10 p-1.5 text-lime-400">{icon}</div>
           {title}
         </div>
         {actions}
@@ -2523,7 +2549,7 @@ function MiniCopyButton({ text, onCopy, label }) {
   return (
     <button
       onClick={() => onCopy(text)}
-      className="rounded-lg border border-slate-700 bg-slate-950 px-2.5 py-1.5 text-xs font-medium text-slate-300 transition hover:text-white"
+      className="rounded-lg border border-slate-700/90 bg-slate-950/80 px-2.5 py-1.5 text-xs font-medium text-slate-200 transition hover:border-slate-500 hover:bg-slate-900 hover:text-white"
     >
       {label}
     </button>
