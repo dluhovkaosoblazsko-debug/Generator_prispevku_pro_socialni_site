@@ -1328,9 +1328,9 @@ Telefon: ${companyContact.phone}`;
         context.fillStyle = '#ffffff';
         context.font = '700 46px "Segoe UI", Arial, sans-serif';
         context.textAlign = 'right';
-        context.fillText('FiremnĂ­ letĂˇk', canvas.width - 70, 62);
+        context.fillText('Firemní leták', canvas.width - 70, 62);
         context.font = '500 24px "Segoe UI", Arial, sans-serif';
-        context.fillText('ChytrĂˇ pÄ›na Bohemia s.r.o.', canvas.width - 70, 100);
+        context.fillText('Chytrá pěna Bohemia s.r.o.', canvas.width - 70, 100);
 
         const heroY = 184;
         const heroHeight = 670;
@@ -1371,7 +1371,7 @@ Telefon: ${companyContact.phone}`;
 
         context.fillStyle = '#0f172a';
         context.font = '700 26px "Segoe UI", Arial, sans-serif';
-        context.fillText('Kontaktujte nĂˇs', textX, currentY);
+        context.fillText('Kontaktujte nás', textX, currentY);
         currentY += 46;
 
         context.fillStyle = '#334155';
@@ -1424,9 +1424,9 @@ Telefon: ${companyContact.phone}`;
         context.fillStyle = '#ffffff';
         context.textAlign = 'right';
         context.font = '700 48px "Segoe UI", Arial, sans-serif';
-        context.fillText('LetĂˇk', canvas.width - 110, 145);
+        context.fillText('Leták', canvas.width - 110, 145);
         context.font = '500 24px "Segoe UI", Arial, sans-serif';
-        context.fillText('ChytrĂˇ pÄ›na Bohemia s.r.o.', canvas.width - 110, 188);
+        context.fillText('Chytrá pěna Bohemia s.r.o.', canvas.width - 110, 188);
 
         drawImageCover(context, heroImage, 70, 300, canvas.width - 140, 520, 0.5, 0.4);
         context.strokeStyle = '#c8d5b2';
