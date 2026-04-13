@@ -1,0 +1,167 @@
+[
+  {
+    "id": "savings",
+    "title": "Úspory a návratnost",
+    "keywords": ["úspora", "úspory", "náklady", "vytápění", "energie", "účty", "návratnost", "šetřit"],
+    "audiences": ["Majitelé starších rodinných domů", "SVJ a bytová družstva", "Firmy (haly a sklady)"],
+    "facts": [
+      "PUR izolace pomáhá výrazně snižovat tepelné ztráty a tím i náklady na vytápění.",
+      "Úspora až 70 % nákladů na vytápění se má používat jen jako firemní claim, ne jako univerzální slib pro každého.",
+      "Návratnost investice 5–8 let uváděj jen jako orientační firemní údaj, ne jako garanci."
+    ],
+    "toneHints": [
+      "Zdůrazni praktičnost, úsporu a racionální přínos místo přehnaného prodeje.",
+      "Piš důvěryhodně a konkrétně, aby text působil jako dobrá rada."
+    ],
+    "ctaHints": [
+      "CTA směruj k nezávazné kalkulaci nebo konzultaci nad konkrétní úsporou.",
+      "Výzva má znít bezpečně a jednoduše, ne nátlakově."
+    ],
+    "visualHints": [
+      "Vizuál má ukazovat dům, střechu nebo podkroví ve spojení s únikem tepla a finanční úsporou.",
+      "Preferuj realistickou fotku nebo čistou marketingovou scénu s jasným praktickým benefitem."
+    ]
+  },
+  {
+    "id": "speed",
+    "title": "Rychlost realizace",
+    "keywords": ["rychlost", "rychle", "realizace", "za den", "termín", "bez čekání"],
+    "audiences": ["Majitelé starších rodinných domů", "Firmy (haly a sklady)"],
+    "facts": [
+      "Rodinný dům do 200 m² lze zvládnout zateplit za 1 den jako orientační firemní údaj.",
+      "Rychlost realizace je silná výhoda hlavně tam, kde klient řeší omezení zásahu do provozu nebo domácnosti."
+    ],
+    "toneHints": [
+      "Piš svižně a jistě, ale stále věcně.",
+      "Vypíchni jednoduchost a rychlé uvedení do praxe."
+    ],
+    "ctaHints": [
+      "V CTA zdůrazni rychlé ověření termínu nebo nezávaznou domluvu.",
+      "Pomoz čtenáři udělat snadný první krok."
+    ],
+    "visualHints": [
+      "Vizuál může ukázat tým při realizaci, hotovou střechu nebo rychlou proměnu před a po.",
+      "Kompozice má působit efektivně, čistě a profesionálně."
+    ]
+  },
+  {
+    "id": "airtightness",
+    "title": "Těsnost a tepelné mosty",
+    "keywords": ["tepelné mosty", "mezery", "únik tepla", "utěsnění", "těsnost", "průvan", "podkroví", "střecha"],
+    "audiences": [
+      "Majitelé starších rodinných domů",
+      "Lidé plánující novostavbu",
+      "SVJ a bytová družstva",
+      "Firmy (haly a sklady)"
+    ],
+    "facts": [
+      "Stříkaná PUR izolace pomáhá vyplnit problematická místa a omezit tepelné mosty.",
+      "Téma utěsnění konstrukce je vhodné pro texty o podkroví, střeše a starších domech s úniky tepla."
+    ],
+    "toneHints": [
+      "Vysvětluj srozumitelně příčinu problému i dopad na komfort a náklady.",
+      "Technické téma převáděj do běžného jazyka."
+    ],
+    "ctaHints": [
+      "Výzva má směřovat ke konzultaci konkrétního problému se střechou nebo podkrovím.",
+      "CTA může nabídnout ověření, kde teplo nejčastěji uniká."
+    ],
+    "visualHints": [
+      "Vizuál má ukazovat střechu, podkroví nebo detail problémového místa s náznakem úniku tepla.",
+      "Používej realistické prostředí, ne abstraktní technické schéma."
+    ]
+  },
+  {
+    "id": "lifespan",
+    "title": "Životnost a kvalita",
+    "keywords": ["životnost", "kvalita", "německá", "záruka", "spolehlivost", "dlouhodobě"],
+    "audiences": [
+      "Majitelé starších rodinných domů",
+      "Lidé plánující novostavbu",
+      "SVJ a bytová družstva",
+      "Firmy (haly a sklady)"
+    ],
+    "facts": [
+      "Životnost 30+ let a záruka 5 let na práci jsou firemní důvěryhodnostní argumenty.",
+      "Používej je střízlivě, spíš jako podporu rozhodnutí než jako agresivní prodejní claim."
+    ],
+    "toneHints": [
+      "Tón má být klidný, profesionální a důvěryhodný.",
+      "Zdůrazni jistotu rozhodnutí a dlouhodobou hodnotu."
+    ],
+    "ctaHints": [
+      "Výzva k akci má působit seriózně a poradensky.",
+      "Místo tlaku nabídni možnost ověření vhodného řešení."
+    ],
+    "visualHints": [
+      "Vizuál má působit kvalitně, trvale a profesionálně.",
+      "Hodí se čistý záběr hotové realizace nebo kvalitně zpracované střechy."
+    ]
+  },
+  {
+    "id": "subsidies",
+    "title": "Dotace a poradenství",
+    "keywords": ["dotace", "nová zelená úsporám", "podpora", "příspěvek"],
+    "audiences": ["Majitelé starších rodinných domů", "Lidé plánující novostavbu", "SVJ a bytová družstva"],
+    "facts": [
+      "Firma pomáhá s dotacemi Nová zelená úsporám.",
+      "U dotací používej praktický a důvěryhodný tón, ne příslib automatického schválení."
+    ],
+    "toneHints": [
+      "Piš uklidňujícím a praktickým tónem, který snižuje nejistotu kolem dotací.",
+      "Zdůrazni pomoc a orientaci v procesu místo slibování výsledku."
+    ],
+    "ctaHints": [
+      "CTA může zvát k prověření možností dotace nebo krátké konzultaci postupu.",
+      "Výzva má působit jako pomoc, ne jako tvrdý prodej."
+    ],
+    "visualHints": [
+      "Vizuál může spojit rodinný dům nebo střechu s dojmem podpory, plánování nebo úspory.",
+      "Nevytvářej obrázky připomínající úřední dokumenty s čitelným textem."
+    ]
+  },
+  {
+    "id": "new-build",
+    "title": "Novostavby a prevence chyb",
+    "keywords": ["novostavba", "novostavby", "správně napoprvé", "prevence", "bez chyb"],
+    "audiences": ["Lidé plánující novostavbu"],
+    "facts": [
+      "U novostaveb funguje argument udělat rozhodnutí správně hned na začátku.",
+      "Zdůrazňuj prevenci budoucích problémů a vyhnutí se předělávkám."
+    ],
+    "toneHints": [
+      "Piš moderně, věcně a sebejistě.",
+      "Téma stav na prevenci chyb a dobrém rozhodnutí napoprvé."
+    ],
+    "ctaHints": [
+      "CTA má směřovat ke konzultaci vhodného řešení ještě před realizací.",
+      "Podpoř čtenáře, aby si nechal zkontrolovat volbu izolace včas."
+    ],
+    "visualHints": [
+      "Vizuál má pracovat s novostavbou, čistou architekturou a dojmem správně provedeného řešení.",
+      "Hodí se moderní dům, detail střechy nebo fáze stavby bez chaosu."
+    ]
+  },
+  {
+    "id": "b2b",
+    "title": "Provoz a firmy",
+    "keywords": ["hala", "sklad", "firma", "provoz", "výroba", "logistika"],
+    "audiences": ["Firmy (haly a sklady)"],
+    "facts": [
+      "Pro firmy je důležitější efektivita provozu, termíny a omezení ztrát než emotivní jazyk.",
+      "Texty pro haly a sklady mají být věcnější a obchodnější než pro rodinné domy."
+    ],
+    "toneHints": [
+      "Piš stručně, obchodně a bez zbytečné emotivnosti.",
+      "Zdůrazni provozní přínos a efektivitu."
+    ],
+    "ctaHints": [
+      "CTA může zvát k obchodní konzultaci, ověření provozních úspor nebo domluvě termínu.",
+      "Výzva má být jasná a profesionální."
+    ],
+    "visualHints": [
+      "Vizuál má ukazovat halu, sklad nebo průmyslový objekt v čistém profesionálním stylu.",
+      "Kompozice má podporovat dojem výkonu, řádu a provozní efektivity."
+    ]
+  }
+]

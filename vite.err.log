@@ -1,0 +1,56 @@
+[2m4:04:13[22m [31m[1m[vite][22m[39m [31merror while updating dependencies:
+Error: ENOENT: no such file or directory, open 'C:\Users\Petr\Desktop\Klára\node_modules\xlsx\xlsx.mjs'
+    at async open (node:internal/fs/promises:639:25)
+    at async Object.readFile (node:internal/fs/promises:1249:14)
+    at async extractExportsData (file:///C:/Users/Petr/Desktop/Kl%C3%A1ra/node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:51156:24)
+    at async file:///C:/Users/Petr/Desktop/Kl%C3%A1ra/node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:50904:27
+    at async Promise.all (index 6)
+    at async prepareEsbuildOptimizerRun (file:///C:/Users/Petr/Desktop/Kl%C3%A1ra/node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:50901:3)[39m
+[2m4:11:53[22m [31m[1m[vite][22m[39m [31merror while updating dependencies:
+Error: ENOENT: no such file or directory, open 'C:\Users\Petr\Desktop\Klára\node_modules\xlsx\xlsx.mjs'
+    at async open (node:internal/fs/promises:639:25)
+    at async Object.readFile (node:internal/fs/promises:1249:14)
+    at async extractExportsData (file:///C:/Users/Petr/Desktop/Kl%C3%A1ra/node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:51156:24)
+    at async file:///C:/Users/Petr/Desktop/Kl%C3%A1ra/node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:50904:27
+    at async Promise.all (index 6)
+    at async prepareEsbuildOptimizerRun (file:///C:/Users/Petr/Desktop/Kl%C3%A1ra/node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:50901:3)[39m
+[2m4:19:56[22m [31m[1m[vite][22m[39m [31merror while updating dependencies:
+Error: ENOENT: no such file or directory, open 'C:\Users\Petr\Desktop\Klára\node_modules\xlsx\xlsx.mjs'
+    at async open (node:internal/fs/promises:639:25)
+    at async Object.readFile (node:internal/fs/promises:1249:14)
+    at async extractExportsData (file:///C:/Users/Petr/Desktop/Kl%C3%A1ra/node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:51156:24)
+    at async file:///C:/Users/Petr/Desktop/Kl%C3%A1ra/node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:50904:27
+    at async Promise.all (index 6)
+    at async prepareEsbuildOptimizerRun (file:///C:/Users/Petr/Desktop/Kl%C3%A1ra/node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:50901:3)[39m
+[2m4:22:39[22m [31m[1m[vite][22m[39m [31merror while updating dependencies:
+Error: ENOENT: no such file or directory, open 'C:\Users\Petr\Desktop\Klára\node_modules\xlsx\xlsx.mjs'
+    at async open (node:internal/fs/promises:639:25)
+    at async Object.readFile (node:internal/fs/promises:1249:14)
+    at async extractExportsData (file:///C:/Users/Petr/Desktop/Kl%C3%A1ra/node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:51156:24)
+    at async file:///C:/Users/Petr/Desktop/Kl%C3%A1ra/node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:50904:27
+    at async Promise.all (index 6)
+    at async prepareEsbuildOptimizerRun (file:///C:/Users/Petr/Desktop/Kl%C3%A1ra/node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:50901:3)[39m
+[2m4:31:06[22m [31m[1m[vite][22m[39m [31merror while updating dependencies:
+Error: ENOENT: no such file or directory, open 'C:\Users\Petr\Desktop\Klára\node_modules\xlsx\xlsx.mjs'
+    at async open (node:internal/fs/promises:639:25)
+    at async Object.readFile (node:internal/fs/promises:1249:14)
+    at async extractExportsData (file:///C:/Users/Petr/Desktop/Kl%C3%A1ra/node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:51156:24)
+    at async file:///C:/Users/Petr/Desktop/Kl%C3%A1ra/node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:50904:27
+    at async Promise.all (index 6)
+    at async prepareEsbuildOptimizerRun (file:///C:/Users/Petr/Desktop/Kl%C3%A1ra/node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:50901:3)[39m
+[2m4:33:15[22m [31m[1m[vite][22m[39m [31merror while updating dependencies:
+Error: ENOENT: no such file or directory, open 'C:\Users\Petr\Desktop\Klára\node_modules\xlsx\xlsx.mjs'
+    at async open (node:internal/fs/promises:639:25)
+    at async Object.readFile (node:internal/fs/promises:1249:14)
+    at async extractExportsData (file:///C:/Users/Petr/Desktop/Kl%C3%A1ra/node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:51156:24)
+    at async file:///C:/Users/Petr/Desktop/Kl%C3%A1ra/node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:50904:27
+    at async Promise.all (index 6)
+    at async prepareEsbuildOptimizerRun (file:///C:/Users/Petr/Desktop/Kl%C3%A1ra/node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:50901:3)[39m
+[2m4:33:35[22m [31m[1m[vite][22m[39m [31merror while updating dependencies:
+Error: ENOENT: no such file or directory, open 'C:\Users\Petr\Desktop\Klára\node_modules\xlsx\xlsx.mjs'
+    at async open (node:internal/fs/promises:639:25)
+    at async Object.readFile (node:internal/fs/promises:1249:14)
+    at async extractExportsData (file:///C:/Users/Petr/Desktop/Kl%C3%A1ra/node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:51156:24)
+    at async file:///C:/Users/Petr/Desktop/Kl%C3%A1ra/node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:50904:27
+    at async Promise.all (index 6)
+    at async prepareEsbuildOptimizerRun (file:///C:/Users/Petr/Desktop/Kl%C3%A1ra/node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:50901:3)[39m
