@@ -1783,7 +1783,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                 <h2 className="text-lg font-bold">Zadání příspěvku</h2>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-5">
                 <div className="rounded-[22px] border border-[#cfd8c2] bg-white p-4 shadow-[0_8px_18px_rgba(15,23,42,0.04)]">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="flex items-center gap-2">
@@ -1852,7 +1852,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                   )}
                 </div>
 
-                <div>
+                <div className="rounded-[22px] border border-[#cfd8c2] bg-white p-4 shadow-[0_8px_18px_rgba(15,23,42,0.04)]">
                   <div className="mb-1 flex items-center justify-between">
                     <label className="block text-xs font-bold uppercase tracking-wide text-slate-500">
                       Téma / hlavní myšlenka
@@ -1867,16 +1867,29 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                   />
                 </div>
 
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <FieldSelect label="Cílovka" value={targetAudience} onChange={setTargetAudience} options={audienceOptions} />
-                  <FieldSelect label="Platforma" value={platform} onChange={setPlatform} options={platformOptions} />
-                  <FieldSelect label="Tón" value={tone} onChange={setTone} options={toneOptions} />
-                  <FieldSelect label="Délka" value={postLength} onChange={setPostLength} options={lengthOptions} />
+                <div className="rounded-[22px] border border-[#cfd8c2] bg-white p-4 shadow-[0_8px_18px_rgba(15,23,42,0.04)]">
+                  <div className="mb-4 flex items-center gap-2 border-b border-[#edf1e7] pb-3">
+                    <div className="h-2.5 w-2.5 rounded-full bg-lime-500" />
+                    <p className="text-sm font-semibold text-slate-900">Cílení a formát</p>
+                  </div>
+
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <FieldSelect label="Cílovka" value={targetAudience} onChange={setTargetAudience} options={audienceOptions} />
+                    <FieldSelect label="Platforma" value={platform} onChange={setPlatform} options={platformOptions} />
+                    <FieldSelect label="Tón" value={tone} onChange={setTone} options={toneOptions} />
+                    <FieldSelect label="Délka" value={postLength} onChange={setPostLength} options={lengthOptions} />
+                  </div>
+
+                  <div className="mt-3">
+                    <FieldSelect label="Výzva k akci (CTA)" value={cta} onChange={setCta} options={ctaOptions} />
+                  </div>
                 </div>
 
-                <FieldSelect label="Výzva k akci (CTA)" value={cta} onChange={setCta} options={ctaOptions} />
-
-                <div>
+                <div className="rounded-[22px] border border-[#cfd8c2] bg-white p-4 shadow-[0_8px_18px_rgba(15,23,42,0.04)]">
+                  <div className="mb-4 flex items-center gap-2 border-b border-[#edf1e7] pb-3">
+                    <div className="h-2.5 w-2.5 rounded-full bg-lime-500" />
+                    <p className="text-sm font-semibold text-slate-900">Firemní cílení podle IČO</p>
+                  </div>
                   <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-slate-500">
                     IČO firmy
                   </label>
@@ -1900,7 +1913,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                   </div>
                   {companyModeActive && (
                     <>
-                    <p className="mt-2 text-xs leading-5 text-slate-500">
+                    <p className="mt-3 text-xs leading-5 text-slate-500">
                       Dohledaná firma: <span className="font-semibold text-slate-700">{formatCompanyProfile(companyProfile)}</span>
                     </p>
                     <p className="text-xs leading-5 text-slate-500">
@@ -2496,19 +2509,19 @@ function ToggleCard({ checked, onChange, title, description }) {
       type="button"
       onClick={() => onChange(!checked)}
       className={classNames(
-        'w-full rounded-2xl border px-4 py-3 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.75)] transition',
+        'w-full rounded-[20px] border px-4 py-3 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.75)] transition',
         checked
-          ? 'border-lime-200 bg-lime-50 shadow-[0_10px_22px_rgba(122,169,10,0.08)]'
-          : 'border-[#d7ded0] bg-[#fbfaf6] hover:border-lime-200 hover:bg-white'
+          ? 'border-lime-300 bg-lime-50 shadow-[0_12px_24px_rgba(122,169,10,0.12)]'
+          : 'border-[#ccd5c0] bg-white hover:border-lime-300 hover:bg-[#fcfdf8]'
       )}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="pr-2">
-          <div className="font-semibold text-slate-900">{title}</div>
+          <div className="text-sm font-semibold text-slate-900">{title}</div>
         </div>
         <div
           className={classNames(
-            'mt-0.5 h-6 w-11 rounded-full p-1 transition',
+            'mt-0.5 h-6 w-11 rounded-full p-1 shadow-inner transition',
             checked ? 'bg-lime-500' : 'bg-slate-300'
           )}
         >
