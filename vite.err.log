@@ -180,3 +180,4 @@ Error: ENOENT: no such file or directory, open 'C:\Users\Petr\Desktop\Klára\nod
     at async file:///C:/Users/Petr/Desktop/Kl%C3%A1ra/node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:50904:27
     at async Promise.all (index 6)
     at async prepareEsbuildOptimizerRun (file:///C:/Users/Petr/Desktop/Kl%C3%A1ra/node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:50901:3)[39m
+^C

@@ -9,18 +9,36 @@
       "Úspora až 70 % nákladů na vytápění se má používat jen jako firemní claim, ne jako univerzální slib pro každého.",
       "Návratnost investice 5–8 let uváděj jen jako orientační firemní údaj, ne jako garanci."
     ],
+    "painPoints": [
+      "Vysoké účty za vytápění nebo chlazení.",
+      "Pocit, že teplo uniká střechou, podkrovím nebo obvodovou konstrukcí.",
+      "Nejistota, jestli se investice do izolace skutečně vyplatí."
+    ],
+    "benefitClaims": [
+      "Zdůrazni nižší provozní náklady a dlouhodobější kontrolu nad výdaji za energie.",
+      "Převáděj technické benefity do běžného dopadu na rodinný rozpočet nebo firemní provoz."
+    ],
+    "proofPoints": [
+      "Mluv o omezení tepelných ztrát, lepším komfortu a orientační návratnosti.",
+      "Když použiješ čísla, dělej to opatrně a jen jako firemní orientační údaj."
+    ],
     "toneHints": [
       "Zdůrazni praktičnost, úsporu a racionální přínos místo přehnaného prodeje.",
       "Piš důvěryhodně a konkrétně, aby text působil jako dobrá rada."
     ],
     "ctaHints": [
-      "CTA směruj k nezávazné kalkulaci nebo konzultaci nad konkrétní úsporou.",
+      "CTA směřuj k nezávazné kalkulaci nebo konzultaci nad konkrétní úsporou.",
       "Výzva má znít bezpečně a jednoduše, ne nátlakově."
     ],
     "visualHints": [
       "Vizuál má ukazovat dům, střechu nebo podkroví ve spojení s únikem tepla a finanční úsporou.",
       "Preferuj realistickou fotku nebo čistou marketingovou scénu s jasným praktickým benefitem."
-    ]
+    ],
+    "negativeHints": [
+      "Neslibuj konkrétní úsporu každému objektu bez kontextu.",
+      "Nevytvářej dojem okamžité nebo garantované návratnosti."
+    ],
+    "applicableProducts": ["EKO S 500", "EKO H 200"]
   },
   {
     "id": "speed",
@@ -30,6 +48,18 @@
     "facts": [
       "Rodinný dům do 200 m² lze zvládnout zateplit za 1 den jako orientační firemní údaj.",
       "Rychlost realizace je silná výhoda hlavně tam, kde klient řeší omezení zásahu do provozu nebo domácnosti."
+    ],
+    "painPoints": [
+      "Obava z dlouhé a nepořádné realizace.",
+      "Strach z narušení provozu firmy nebo běžného fungování domácnosti."
+    ],
+    "benefitClaims": [
+      "Zdůrazni, že rychlá realizace snižuje komplikace a urychluje přínos izolace.",
+      "U firem mluv o omezení prostojů, u rodin o menším zásahu do běžného života."
+    ],
+    "proofPoints": [
+      "Pracuj s představou krátkého zásahu a rychlého výsledku.",
+      "Rychlost vždy podávej jako orientační benefit, ne absolutní slib."
     ],
     "toneHints": [
       "Piš svižně a jistě, ale stále věcně.",
@@ -42,21 +72,33 @@
     "visualHints": [
       "Vizuál může ukázat tým při realizaci, hotovou střechu nebo rychlou proměnu před a po.",
       "Kompozice má působit efektivně, čistě a profesionálně."
-    ]
+    ],
+    "negativeHints": [
+      "Nepřeháněj rychlost tak, aby zněla nevěrohodně.",
+      "Nevytvářej dojem odfláknuté práce kvůli rychlosti."
+    ],
+    "applicableProducts": ["EKO S 500", "EKO H 200"]
   },
   {
     "id": "airtightness",
     "title": "Těsnost a tepelné mosty",
     "keywords": ["tepelné mosty", "mezery", "únik tepla", "utěsnění", "těsnost", "průvan", "podkroví", "střecha"],
-    "audiences": [
-      "Majitelé starších rodinných domů",
-      "Lidé plánující novostavbu",
-      "SVJ a bytová družstva",
-      "Firmy (haly a sklady)"
-    ],
+    "audiences": ["Majitelé starších rodinných domů", "Lidé plánující novostavbu", "SVJ a bytová družstva", "Firmy (haly a sklady)"],
     "facts": [
       "Stříkaná PUR izolace pomáhá vyplnit problematická místa a omezit tepelné mosty.",
       "Téma utěsnění konstrukce je vhodné pro texty o podkroví, střeše a starších domech s úniky tepla."
+    ],
+    "painPoints": [
+      "Průvan, chladné kouty a nerovnoměrná teplota v interiéru.",
+      "Podezření, že problém nejsou jen účty, ale i mezery a špatně řešené detaily."
+    ],
+    "benefitClaims": [
+      "Vysvětluj, že kvalitní izolace neřeší jen tloušťku vrstvy, ale i problematická místa konstrukce.",
+      "Převáděj téma těsnosti do komfortu, klidu a menších ztrát."
+    ],
+    "proofPoints": [
+      "Mluv o vyplnění škvír, omezení tepelných mostů a lepším utěsnění konstrukce.",
+      "Drž se srozumitelného vysvětlení bez zbytečně odborného žargonu."
     ],
     "toneHints": [
       "Vysvětluj srozumitelně příčinu problému i dopad na komfort a náklady.",
@@ -69,21 +111,33 @@
     "visualHints": [
       "Vizuál má ukazovat střechu, podkroví nebo detail problémového místa s náznakem úniku tepla.",
       "Používej realistické prostředí, ne abstraktní technické schéma."
-    ]
+    ],
+    "negativeHints": [
+      "Nevysvětluj problematiku příliš technicky.",
+      "Nepoužívej absolutní formulace typu odstranění všech problémů za každé situace."
+    ],
+    "applicableProducts": ["EKO S 500", "EKO H 200"]
   },
   {
     "id": "lifespan",
     "title": "Životnost a kvalita",
     "keywords": ["životnost", "kvalita", "německá", "záruka", "spolehlivost", "dlouhodobě"],
-    "audiences": [
-      "Majitelé starších rodinných domů",
-      "Lidé plánující novostavbu",
-      "SVJ a bytová družstva",
-      "Firmy (haly a sklady)"
-    ],
+    "audiences": ["Majitelé starších rodinných domů", "Lidé plánující novostavbu", "SVJ a bytová družstva", "Firmy (haly a sklady)"],
     "facts": [
       "Životnost 30+ let a záruka 5 let na práci jsou firemní důvěryhodnostní argumenty.",
-      "Používej je střízlivě, spíš jako podporu rozhodnutí než jako agresivní prodejní claim."
+      "Používej je střídmě, spíš jako podporu rozhodnutí než jako agresivní prodejní claim."
+    ],
+    "painPoints": [
+      "Neochota investovat do řešení, které by se muselo brzy opravovat.",
+      "Nejistota, jestli zvolený materiál vydrží dlouhodobě a bez problémů."
+    ],
+    "benefitClaims": [
+      "Zdůrazni dlouhodobou hodnotu rozhodnutí a omezení budoucích starostí.",
+      "Působ spíš jako poradce než jako hlasitý prodejce."
+    ],
+    "proofPoints": [
+      "Použij důvěryhodné prvky typu životnost, záruka, zkušenost a počet realizací.",
+      "Tyto argumenty slouží jako opora, ne jako jediné sdělení textu."
     ],
     "toneHints": [
       "Tón má být klidný, profesionální a důvěryhodný.",
@@ -96,16 +150,33 @@
     "visualHints": [
       "Vizuál má působit kvalitně, trvale a profesionálně.",
       "Hodí se čistý záběr hotové realizace nebo kvalitně zpracované střechy."
-    ]
+    ],
+    "negativeHints": [
+      "Nepůsob příliš bombasticky nebo sebechvalně.",
+      "Nevydávej orientační firemní údaje za bezvýjimečnou garanci."
+    ],
+    "applicableProducts": ["EKO S 500", "EKO H 200"]
   },
   {
     "id": "subsidies",
     "title": "Dotace a poradenství",
-    "keywords": ["dotace", "nová zelená úsporám", "podpora", "příspěvek"],
+    "keywords": ["dotace", "nová zelená úsporám", "podpora", "příspěvek", "oprav dům po babičce"],
     "audiences": ["Majitelé starších rodinných domů", "Lidé plánující novostavbu", "SVJ a bytová družstva"],
     "facts": [
       "Firma pomáhá s dotacemi Nová zelená úsporám.",
       "U dotací používej praktický a důvěryhodný tón, ne příslib automatického schválení."
+    ],
+    "painPoints": [
+      "Lidé se v dotačních programech často neorientují a bojí se administrativy.",
+      "Klienti chtějí vědět, jestli má smysl řešit izolaci právě teď."
+    ],
+    "benefitClaims": [
+      "Zdůrazni, že firma umí klienta procesem provést a ušetřit mu nejistotu.",
+      "Dotace stav jako podporu rozhodnutí, ne jako jediné téma."
+    ],
+    "proofPoints": [
+      "Mluv o pomoci s orientací v programech a dalším postupu.",
+      "Vyhýbej se slibům jistého nároku nebo jistého schválení."
     ],
     "toneHints": [
       "Piš uklidňujícím a praktickým tónem, který snižuje nejistotu kolem dotací.",
@@ -118,16 +189,33 @@
     "visualHints": [
       "Vizuál může spojit rodinný dům nebo střechu s dojmem podpory, plánování nebo úspory.",
       "Nevytvářej obrázky připomínající úřední dokumenty s čitelným textem."
-    ]
+    ],
+    "negativeHints": [
+      "Neslibuj automatické schválení dotace.",
+      "Neuváděj konkrétní částky, pokud nejsou v aktuální schválené databázi."
+    ],
+    "applicableProducts": ["EKO S 500", "EKO H 200"]
   },
   {
     "id": "new-build",
     "title": "Novostavby a prevence chyb",
-    "keywords": ["novostavba", "novostavby", "správně napoprvé", "prevence", "bez chyb"],
+    "keywords": ["novostavba", "novostavby", "správně napoprvé", "prevence", "bez chyb", "pasiv"],
     "audiences": ["Lidé plánující novostavbu"],
     "facts": [
       "U novostaveb funguje argument udělat rozhodnutí správně hned na začátku.",
       "Zdůrazňuj prevenci budoucích problémů a vyhnutí se předělávkám."
+    ],
+    "painPoints": [
+      "Obava, že špatné rozhodnutí na začátku zdraží celý dům v budoucnu.",
+      "Tlak udělat vše správně hned při stavbě."
+    ],
+    "benefitClaims": [
+      "Prezentuj izolaci jako chytré rozhodnutí napoprvé, ne jako pozdější opravu problému.",
+      "Zdůrazni kvalitu řešení při omezeném prostoru a vysokých nárocích."
+    ],
+    "proofPoints": [
+      "Mluv o prevenci, dlouhodobé funkčnosti a omezení budoucích kompromisů.",
+      "Když pracuješ s pasivním standardem, zůstaň u obecného principu bez tvrdých technických slibů."
     ],
     "toneHints": [
       "Piš moderně, věcně a sebejistě.",
@@ -140,16 +228,34 @@
     "visualHints": [
       "Vizuál má pracovat s novostavbou, čistou architekturou a dojmem správně provedeného řešení.",
       "Hodí se moderní dům, detail střechy nebo fáze stavby bez chaosu."
-    ]
+    ],
+    "negativeHints": [
+      "Nepoužívej strašení chybami příliš agresivně.",
+      "Nevydávej doporučení za univerzální řešení pro každý typ stavby."
+    ],
+    "applicableProducts": ["EKO S 500", "EKO H 200"]
   },
   {
     "id": "b2b",
     "title": "Provoz a firmy",
-    "keywords": ["hala", "sklad", "firma", "provoz", "výroba", "logistika"],
-    "audiences": ["Firmy (haly a sklady)"],
+    "keywords": ["hala", "sklad", "firma", "provoz", "výroba", "logistika", "objekt", "administrativa"],
+    "audiences": ["Firmy (haly a sklady)", "SVJ a bytová družstva"],
     "facts": [
       "Pro firmy je důležitější efektivita provozu, termíny a omezení ztrát než emotivní jazyk.",
       "Texty pro haly a sklady mají být věcnější a obchodnější než pro rodinné domy."
+    ],
+    "painPoints": [
+      "Rostoucí provozní náklady na vytápění nebo chlazení.",
+      "Zbytečné ztráty způsobené neefektivní obálkou budovy.",
+      "Obava z narušení provozu při realizaci."
+    ],
+    "benefitClaims": [
+      "Zdůrazni dopad na provozní efektivitu, stabilitu prostředí a rozumnou návratnost.",
+      "U SVJ nebo škol mluv o komfortu uživatelů a odpovědném hospodaření."
+    ],
+    "proofPoints": [
+      "Opírej se o praktické přínosy pro provoz, správu budovy a dlouhodobé náklady.",
+      "Jazyk drž profesionální, konkrétní a střízlivý."
     ],
     "toneHints": [
       "Piš stručně, obchodně a bez zbytečné emotivnosti.",
@@ -160,8 +266,91 @@
       "Výzva má být jasná a profesionální."
     ],
     "visualHints": [
-      "Vizuál má ukazovat halu, sklad nebo průmyslový objekt v čistém profesionálním stylu.",
+      "Vizuál má ukazovat halu, sklad, školu, bytový dům nebo jiný větší objekt v čistém profesionálním stylu.",
       "Kompozice má podporovat dojem výkonu, řádu a provozní efektivity."
-    ]
+    ],
+    "negativeHints": [
+      "Nepoužívej rodinně-emotivní jazyk tam, kde se hodí profesionální tón.",
+      "Nevymýšlej konkrétní interní problémy firmy, pokud nejsou známé."
+    ],
+    "applicableProducts": ["EKO H 200", "EKO S 500"]
+  },
+  {
+    "id": "product-soft-foam",
+    "title": "Měkká pěna pro interiéry a podkroví",
+    "keywords": ["podkroví", "krov", "měkká pěna", "otevřená struktura", "zvuk", "interiér"],
+    "audiences": ["Majitelé starších rodinných domů", "Lidé plánující novostavbu"],
+    "facts": [
+      "Měkká PUR pěna s otevřenou buněčnou strukturou se hodí hlavně pro podkroví, krovy a interiérové konstrukce.",
+      "Je vhodná tam, kde kromě tepelné izolace hraje roli i akustický komfort."
+    ],
+    "painPoints": [
+      "Chlad v podkroví a nízký komfort obytného prostoru.",
+      "Pocit hlučnosti nebo nestability teplot v horních částech domu."
+    ],
+    "benefitClaims": [
+      "Vysvětluj přirozeně, proč se tento typ řešení hodí právě pro podkroví a interiérové konstrukce.",
+      "Spojuj benefit s pohodlím a využitelností prostoru."
+    ],
+    "proofPoints": [
+      "Mluv o vhodnosti pro krovy, podkroví a členité interiérové prostory.",
+      "Nevstupuj do detailních technických parametrů, pokud nejsou výslovně potřeba."
+    ],
+    "toneHints": [
+      "Piš vysvětlujícím a srozumitelným stylem.",
+      "Pomáhej čtenáři pochopit, proč je volba materiálu důležitá."
+    ],
+    "ctaHints": [
+      "Výzva může směřovat ke konzultaci konkrétního podkroví nebo střechy.",
+      "Působ jako odborný poradce, ne jako prodejce materiálu."
+    ],
+    "visualHints": [
+      "Vizuál může ukazovat podkroví, krovy nebo útulný interiér pod střechou.",
+      "Pokud je to vhodné, ukaž realistický detail konstrukce bez přehnané technické stylizace."
+    ],
+    "negativeHints": [
+      "Nevydávej tento produkt za řešení pro každý typ konstrukce.",
+      "Nepřetěžuj marketingový text přehnanou technickou terminologií."
+    ],
+    "applicableProducts": ["EKO S 500"]
+  },
+  {
+    "id": "product-rigid-foam",
+    "title": "Polotvrdá pěna pro náročnější použití",
+    "keywords": ["fasáda", "základy", "hala", "sklad", "polotvrdá pěna", "uzavřená struktura", "vlhkost"],
+    "audiences": ["Firmy (haly a sklady)", "SVJ a bytová družstva", "Majitelé starších rodinných domů"],
+    "facts": [
+      "Polotvrdá pěna s uzavřenou buněčnou strukturou se hodí pro náročnější aplikace, kde je důležitá vyšší odolnost a práce s vlhkostí.",
+      "Je vhodná například pro fasády, základy nebo větší technické a provozní objekty."
+    ],
+    "painPoints": [
+      "Vlhkost, náročné podmínky a vyšší požadavky na odolnost konstrukce.",
+      "Potřeba řešení pro větší nebo technicky složitější objekt."
+    ],
+    "benefitClaims": [
+      "Zdůrazni odolnost, praktičnost a vhodnost pro náročnější aplikace.",
+      "U firem a správců budov mluv o stabilitě a dlouhodobé funkčnosti."
+    ],
+    "proofPoints": [
+      "Opírej se o vhodnost pro fasády, základy a provozní objekty.",
+      "Vysvětluj přínos bez přehnaně technických detailů."
+    ],
+    "toneHints": [
+      "Piš jistě, věcně a profesionálně.",
+      "Zdůrazni technickou vhodnost a provozní smysl."
+    ],
+    "ctaHints": [
+      "CTA může zvát ke konzultaci vhodného řešení pro konkrétní typ objektu.",
+      "Výzva má být profesionální a klidná."
+    ],
+    "visualHints": [
+      "Vizuál může ukazovat větší objekt, technickou část stavby, základ nebo průmyslovější prostředí.",
+      "Preferuj realistickou architekturu a čistou kompozici."
+    ],
+    "negativeHints": [
+      "Nevysvětluj produkt přehnaně laboratorně.",
+      "Nepoužívej nepodložené absolutní sliby o odolnosti."
+    ],
+    "applicableProducts": ["EKO H 200"]
   }
 ]

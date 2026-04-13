@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+﻿import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Document, Packer, Paragraph, TextRun, HeadingLevel } from 'docx';
 import { saveAs } from 'file-saver';
 import {
@@ -33,17 +33,15 @@ if (!apiKey) {
   console.warn('Missing VITE_GEMINI_API_KEY');
 }
 
-const brandContext = `Jsme Chytrá pěna Bohemia s.r.o., lídr na trhu se stříkanou PUR izolací v ČR.
+const brandContext = `Jsme Chytrá pěna Bohemia s.r.o., specialista na stříkanou PUR izolaci.
 
-Klíčové výhody a fakta:
-- Úspora až 70 % nákladů na vytápění.
-- Návratnost investice 5–8 let.
-- Zateplení RD do 200 m² za 1 den.
-- Bez tepelných mostů, dokonalé utěsnění konstrukce.
-- Německá kvalita, životnost 30+ let.
-- Záruka 5 let na práci.
-- 9 000+ realizací.
-- Pomoc s dotacemi Nová zelená úsporám.`;
+Klíčové výhody a firemní argumenty:
+- Úspora až 70 % nákladů na vytápění používej jen jako firemní claim, ne jako univerzální slib.
+- Návratnost investice 5–8 let uváděj jen orientačně a bez garance.
+- Zateplení rodinného domu do 200 m² za 1 den podávej jako orientační firemní údaj.
+- Silná témata značky: omezení tepelných mostů, utěsnění konstrukce, rychlost realizace a dlouhodobá funkčnost.
+- Důvěryhodnost podpoř argumenty jako počet realizací, zkušenost, kvalita provedení a pomoc s dotacemi.
+- Když si nejsi jistý přesností tvrzení, zvol raději opatrnější a poradenskou formulaci.`;
 
 const defaultPromptTemplates = [
   'Proč zateplit střechu ještě před další topnou sezonou',
@@ -88,53 +86,69 @@ const companyContact = {
 const audienceBriefs = {
   'Majitelé starších rodinných domů': `
 - Tito lidé řeší vysoké účty za vytápění, průvan, tepelné ztráty a obavy z drahé nebo špatné rekonstrukce.
-- Důležitá témata: úspora, pohodlí, teplo domova, jistota správného rozhodnutí, jednoduchost realizace.
+- Důležitá témata: úspora, pohodlí, teplo domova, jistota správného rozhodnutí a jednoduchost realizace.
 - Piš civilně, srozumitelně a prakticky.
 - Používej konkrétní životní situace a běžné problémy.
-- Omez technický žargon.
-- CTA má působit bezpečně a jednoduše.
+- Omez technický žargon a převáděj technické pojmy do běžného jazyka.
 `,
   'Lidé plánující novostavbu': `
 - Tito lidé chtějí udělat správné rozhodnutí hned na začátku a vyhnout se budoucím chybám.
-- Důležitá témata: prevence chyb, kvalita řešení, dlouhodobá funkčnost, bez kompromisů.
+- Důležitá témata: prevence chyb, kvalita řešení, dlouhodobá funkčnost a správné rozhodnutí napoprvé.
 - Piš věcně, ale stále srozumitelně.
-- Zdůrazni výhodu správného řešení napoprvé.
-- CTA má podporovat konzultaci nebo nezávazné ověření řešení.
+- Zdůrazni výhodu správného řešení už ve fázi plánování nebo výstavby.
 `,
   'SVJ a bytová družstva': `
 - Tito lidé řeší rozpočet, odpovědnost, schvalování a dlouhodobý přínos pro více vlastníků.
-- Důležitá témata: provozní náklady, plánování, důvěryhodnost dodavatele, systematičnost.
+- Důležitá témata: provozní náklady, plánování, důvěryhodnost dodavatele, systematičnost a dopad na obyvatele.
 - Piš profesionálněji, méně emotivně.
 - Zdůrazni stabilitu, přehlednost a ekonomický dopad.
-- CTA má působit profesionálně a seriózně.
 `,
   'Firmy (haly a sklady)': `
 - Tito lidé řeší provozní náklady, efektivitu, rychlost realizace a omezení provozních ztrát.
-- Důležitá témata: výkon, návratnost, provoz, logistika, termín, efektivita.
+- Důležitá témata: výkon, návratnost, provoz, logistika, termín a efektivita.
 - Piš stručně, věcně a obchodně.
-- Zdůrazni dopad na provoz a náklady.
-- CTA má být jasné, rychlé a orientované na obchodní jednání.
+- Zdůrazni dopad na provoz a náklady místo obecného marketingu.
 `,
 };
 
 const platformBriefs = {
   Facebook: `
-- Styl: civilní, praktický, dobře čitelný.
+- Styl: civilní, praktický a dobře čitelný.
 - Vhodné jsou kratší odstavce a silný úvod.
 - Text má být přístupný širokému publiku.
 `,
   Instagram: `
-- Styl: údernější, vizuálnější, emotivnější.
+- Styl: údernější, vizuálnější a emotivnější.
 - Používej kratší řádky a svižnější rytmus.
-- Text musí fungovat spolu s vizuálem.
+- Text musí dobře fungovat spolu s vizuálem.
 `,
   LinkedIn: `
-- Styl: profesionálnější, důvěryhodný, expertní.
+- Styl: profesionálnější, důvěryhodný a expertní.
 - Piš věcněji, méně emotivně.
 - Zdůrazni kompetenci, přínos a kvalitu řešení.
-  `,
+`,
 };
 
+const messagingExamples = {
+  social: `
+Příklad dobrého směru pro běžný příspěvek:
+- Háček: pojmenuj častý problém čtenáře.
+- Důsledek: ukaž, proč je problém drahý nebo nepříjemný.
+- Řešení: vysvětli přínos PUR izolace srozumitelně a bez přehánění.
+- Závěr: klidná výzva k dalšímu kroku.`,
+  company: `
+Příklad dobrého směru pro firemní oslovení:
+- Oslov konkrétní firmu nebo její roli profesionálně a věcně.
+- Ukaž, jak se téma propisuje do provozu, rozpočtu nebo správy objektu.
+- Nabídni řešení bez agresivního nátlaku.
+- Závěr směřuj ke konzultaci, ověření stavu nebo nezávaznému návrhu.`,
+  flyer: `
+Příklad dobrého směru pro leták:
+- Krátký silný nadpis.
+- 3 až 5 stručných benefitových vět.
+- Minimum výplňových frází, maximum srozumitelnosti.
+- Jedno jasné CTA a firemní kontakty.`
+};
 const companyPhotoModules = import.meta.glob('./assets/Foto/*.{png,jpg,jpeg,webp}', {
   eager: true,
   import: 'default',
@@ -147,8 +161,8 @@ const companyPhotoLibrary = Object.entries(companyPhotoModules).map(([path, url]
 }));
 
 const flyerTemplates = [
-  { id: 'classic', label: 'Klasický' },
-  { id: 'split', label: 'Rozdělený' },
+  { id: 'classic', label: 'KlasickĂ˝' },
+  { id: 'split', label: 'RozdÄ›lenĂ˝' },
   { id: 'focus', label: 'Benefit' },
 ];
 
@@ -160,7 +174,7 @@ function loadImage(src) {
   return new Promise((resolve, reject) => {
     const image = new Image();
     image.onload = () => resolve(image);
-    image.onerror = () => reject(new Error(`Nepodařilo se načíst obrázek: ${src}`));
+    image.onerror = () => reject(new Error(`NepodaĹ™ilo se naÄŤĂ­st obrĂˇzek: ${src}`));
     image.src = src;
   });
 }
@@ -169,7 +183,7 @@ function fileToDataUrl(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(String(reader.result || ''));
-    reader.onerror = () => reject(new Error('Nepodařilo se načíst vybranou fotku.'));
+    reader.onerror = () => reject(new Error('NepodaĹ™ilo se naÄŤĂ­st vybranou fotku.'));
     reader.readAsDataURL(file);
   });
 }
@@ -178,7 +192,7 @@ function blobToDataUrl(blob) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(String(reader.result || ''));
-    reader.onerror = () => reject(new Error('Nepodařilo se převést obrázek.'));
+    reader.onerror = () => reject(new Error('NepodaĹ™ilo se pĹ™evĂ©st obrĂˇzek.'));
     reader.readAsDataURL(blob);
   });
 }
@@ -216,11 +230,11 @@ function serializeGeneratedContent({ main, visual, hashtags }) {
   const sections = [];
 
   if (main) {
-    sections.push(`[HLAVNÍ TEXT]\n${main}`);
+    sections.push(`[HLAVNĂŤ TEXT]\n${main}`);
   }
 
   if (visual) {
-    sections.push(`[NÁVRH VIZUÁLU]\n${visual}`);
+    sections.push(`[NĂVRH VIZUĂLU]\n${visual}`);
   }
 
   if (hashtags) {
@@ -263,10 +277,10 @@ function formatCompanyProfile(company) {
     company.legalForm,
     company.industry,
     company.address,
-    company.ico ? `IČO ${company.ico}` : '',
+    company.ico ? `IÄŚO ${company.ico}` : '',
   ]
     .filter(Boolean)
-    .join(' · ');
+    .join(' Â· ');
 }
 
 function formatRecommendedContact(company) {
@@ -360,11 +374,11 @@ function evaluateGeneratedContent({ main, visual, hashtags }, options) {
   const ctaNormalized = (options.cta || '').toLowerCase();
 
   if (!normalizedMain) {
-    issues.push('Hlavní text chybí.');
+    issues.push('HlavnĂ­ text chybĂ­.');
   }
 
   if (normalizedMain && hookCandidates.length < 45) {
-    issues.push('Úvod je velmi krátký a nemusí dostatečně zaujmout.');
+    issues.push('Ăšvod je velmi krĂˇtkĂ˝ a nemusĂ­ dostateÄŤnÄ› zaujmout.');
   }
 
   if (
@@ -372,31 +386,31 @@ function evaluateGeneratedContent({ main, visual, hashtags }, options) {
     ctaNormalized &&
     !normalizedMain.toLowerCase().includes(ctaNormalized.slice(0, Math.max(10, ctaNormalized.length - 8)))
   ) {
-    issues.push('Text nepůsobí, že opravdu končí zvolenou výzvou k akci.');
+    issues.push('Text nepĹŻsobĂ­, Ĺľe opravdu konÄŤĂ­ zvolenou vĂ˝zvou k akci.');
   }
 
   if (options.includeVisual && !visual.trim()) {
-    issues.push('Chybí návrh vizuálu.');
+    issues.push('ChybĂ­ nĂˇvrh vizuĂˇlu.');
   }
 
   if (options.includeHashtags && hashtagList.length !== 5) {
-    issues.push('Hashtagů není přesně 5.');
+    issues.push('HashtagĹŻ nenĂ­ pĹ™esnÄ› 5.');
   }
 
-  if (options.strictClaims && /\b(100 %|garantovan|nejlepší|bezkonkurenční)\b/i.test(normalizedMain)) {
-    issues.push('Text obsahuje silné marketingové tvrzení, které může být potřeba ověřit.');
+  if (options.strictClaims && /\b(100 %|garantovan|nejlepĹˇĂ­|bezkonkurenÄŤnĂ­)\b/i.test(normalizedMain)) {
+    issues.push('Text obsahuje silnĂ© marketingovĂ© tvrzenĂ­, kterĂ© mĹŻĹľe bĂ˝t potĹ™eba ovÄ›Ĺ™it.');
   }
 
-  if (options.postLength.startsWith('Krátký') && words > 110) {
-    issues.push('Krátká varianta je příliš dlouhá.');
+  if (options.postLength.startsWith('KrĂˇtkĂ˝') && words > 110) {
+    issues.push('KrĂˇtkĂˇ varianta je pĹ™Ă­liĹˇ dlouhĂˇ.');
   }
 
-  if (options.postLength.startsWith('Střední') && (words < 100 || words > 210)) {
-    issues.push('Střední varianta je mimo doporučený rozsah.');
+  if (options.postLength.startsWith('StĹ™ednĂ­') && (words < 100 || words > 210)) {
+    issues.push('StĹ™ednĂ­ varianta je mimo doporuÄŤenĂ˝ rozsah.');
   }
 
-  if (options.postLength.startsWith('Dlouhý') && words < 170) {
-    issues.push('Dlouhá varianta je zatím spíš stručná.');
+  if (options.postLength.startsWith('DlouhĂ˝') && words < 170) {
+    issues.push('DlouhĂˇ varianta je zatĂ­m spĂ­Ĺˇ struÄŤnĂˇ.');
   }
 
   return {
@@ -410,8 +424,8 @@ function parseGeneratedContent(text) {
     return { main: '', visual: '', hashtags: '' };
   }
 
-  const mainMatch = text.match(/\[HLAVNÍ TEXT\]\s*:?[\s\S]*?(?=\[NÁVRH VIZUÁLU\]|\[HASHTAGY\]|$)/i);
-  const visualMatch = text.match(/\[NÁVRH VIZUÁLU\]\s*:?[\s\S]*?(?=\[HASHTAGY\]|$)/i);
+  const mainMatch = text.match(/\[HLAVNĂŤ TEXT\]\s*:?[\s\S]*?(?=\[NĂVRH VIZUĂLU\]|\[HASHTAGY\]|$)/i);
+  const visualMatch = text.match(/\[NĂVRH VIZUĂLU\]\s*:?[\s\S]*?(?=\[HASHTAGY\]|$)/i);
   const hashtagsMatch = text.match(/\[HASHTAGY\]\s*:?[\s\S]*$/i);
 
   let main = text.trim();
@@ -419,11 +433,11 @@ function parseGeneratedContent(text) {
   let hashtags = '';
 
   if (mainMatch) {
-    main = mainMatch[0].replace(/\[HLAVNÍ TEXT\]\s*:?/i, '').trim();
+    main = mainMatch[0].replace(/\[HLAVNĂŤ TEXT\]\s*:?/i, '').trim();
   }
 
   if (visualMatch) {
-    visual = visualMatch[0].replace(/\[NÁVRH VIZUÁLU\]\s*:?/i, '').trim();
+    visual = visualMatch[0].replace(/\[NĂVRH VIZUĂLU\]\s*:?/i, '').trim();
   }
 
   if (hashtagsMatch) {
@@ -490,6 +504,15 @@ function buildHintSection(entries, key, fallbackText) {
   }
 
   return hints.map((hint) => `- ${hint}`).join('\n');
+}
+
+function buildProductSection(entries) {
+  const products = collectKnowledgeHints(entries, 'applicableProducts');
+  if (!products.length) {
+    return '- Znalostní databáze neurčila konkrétní produktovou vazbu.';
+  }
+
+  return products.map((product) => `- ${product}`).join('\n');
 }
 
 export default function App() {
@@ -749,6 +772,33 @@ export default function App() {
     () => (useKnowledgeBase ? getRelevantKnowledgeEntries(contentPrompt, targetAudience) : []),
     [contentPrompt, targetAudience, useKnowledgeBase]
   );
+  const selectedPainPoints = useMemo(
+    () =>
+      buildHintSection(
+        selectedKnowledgeEntries,
+        'painPoints',
+        '- Nemáš žádné doplňkové pain points z databáze.'
+      ),
+    [selectedKnowledgeEntries]
+  );
+  const selectedBenefitClaims = useMemo(
+    () =>
+      buildHintSection(
+        selectedKnowledgeEntries,
+        'benefitClaims',
+        '- Nemáš žádné doplňkové benefitové argumenty z databáze.'
+      ),
+    [selectedKnowledgeEntries]
+  );
+  const selectedProofPoints = useMemo(
+    () =>
+      buildHintSection(
+        selectedKnowledgeEntries,
+        'proofPoints',
+        '- Nemáš žádné doplňkové důkazní body z databáze.'
+      ),
+    [selectedKnowledgeEntries]
+  );
   const selectedToneHints = useMemo(
     () =>
       buildHintSection(
@@ -774,6 +824,19 @@ export default function App() {
         'visualHints',
         '- Nemáš žádné doplňkové pokyny k vizuálu z databáze.'
       ),
+    [selectedKnowledgeEntries]
+  );
+  const selectedNegativeHints = useMemo(
+    () =>
+      buildHintSection(
+        selectedKnowledgeEntries,
+        'negativeHints',
+        '- Nemáš žádná speciální varování z databáze.'
+      ),
+    [selectedKnowledgeEntries]
+  );
+  const selectedProducts = useMemo(
+    () => buildProductSection(selectedKnowledgeEntries),
     [selectedKnowledgeEntries]
   );
 
@@ -809,7 +872,7 @@ Telefon: ${companyContact.phone}`.trim();
       setCopied(true);
       setTimeout(() => setCopied(false), 1800);
     } catch {
-      setError('Nepodařilo se zkopírovat text do schránky.');
+      setError('NepodaĹ™ilo se zkopĂ­rovat text do schrĂˇnky.');
     }
   };
 
@@ -827,7 +890,7 @@ Telefon: ${companyContact.phone}`.trim();
     }
 
     if (normalizedIco.length !== 8) {
-      setError('IČO musí mít 8 číslic.');
+      setError('IÄŚO musĂ­ mĂ­t 8 ÄŤĂ­slic.');
       setCompanyProfile(null);
       return null;
     }
@@ -840,14 +903,14 @@ Telefon: ${companyContact.phone}`.trim();
       const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
-        throw new Error(data?.error || 'Nepodařilo se dohledat firmu podle IČO.');
+        throw new Error(data?.error || 'NepodaĹ™ilo se dohledat firmu podle IÄŚO.');
       }
 
       setCompanyProfile(data);
       return data;
     } catch (err) {
       setCompanyProfile(null);
-      setError(err.message || 'Nepodařilo se dohledat firmu podle IČO.');
+      setError(err.message || 'NepodaĹ™ilo se dohledat firmu podle IÄŚO.');
       return null;
     } finally {
       setCompanyLookupLoading(false);
@@ -870,13 +933,13 @@ Telefon: ${companyContact.phone}`.trim();
           properties: {},
           children: [
             new Paragraph({
-              text: "Chytrá pěna - Návrh příspěvku",
+              text: "ChytrĂˇ pÄ›na - NĂˇvrh pĹ™Ă­spÄ›vku",
               heading: HeadingLevel.HEADING_1,
               spacing: { after: 300 },
             }),
             new Paragraph({
               children: [
-                new TextRun({ text: "Téma: ", bold: true }),
+                new TextRun({ text: "TĂ©ma: ", bold: true }),
                 new TextRun(contentPrompt),
               ],
             }),
@@ -888,7 +951,7 @@ Telefon: ${companyContact.phone}`.trim();
             }),
             new Paragraph({
               children: [
-                new TextRun({ text: "Cílová skupina: ", bold: true }),
+                new TextRun({ text: "CĂ­lovĂˇ skupina: ", bold: true }),
                 new TextRun(targetAudience),
               ],
             }),
@@ -901,19 +964,19 @@ Telefon: ${companyContact.phone}`.trim();
             }),
             
             new Paragraph({
-              text: "Hlavní text příspěvku",
+              text: "HlavnĂ­ text pĹ™Ă­spÄ›vku",
               heading: HeadingLevel.HEADING_2,
               spacing: { before: 200, after: 150 },
             }),
             ...mainParagraphs,
 
             new Paragraph({
-              text: "Návrh vizuálu",
+              text: "NĂˇvrh vizuĂˇlu",
               heading: HeadingLevel.HEADING_2,
               spacing: { before: 300, after: 150 },
             }),
             new Paragraph({
-              children: [new TextRun(parsed.visual || "Žádný vizuál navržen.")],
+              children: [new TextRun(parsed.visual || "Ĺ˝ĂˇdnĂ˝ vizuĂˇl navrĹľen.")],
               spacing: { after: 120 },
             }),
 
@@ -923,7 +986,7 @@ Telefon: ${companyContact.phone}`.trim();
               spacing: { before: 300, after: 150 },
             }),
             new Paragraph({
-              children: [new TextRun(parsed.hashtags || "Bez hashtagů.")],
+              children: [new TextRun(parsed.hashtags || "Bez hashtagĹŻ.")],
               spacing: { after: 120 },
             }),
 
@@ -944,7 +1007,7 @@ Telefon: ${companyContact.phone}`.trim();
       const blob = await Packer.toBlob(doc);
       saveAs(blob, `chytra-pena-prispevek-${new Date().toISOString().slice(0, 10)}.docx`);
     } catch (err) {
-      setError(`Chyba při generování Word dokumentu: ${err.message}`);
+      setError(`Chyba pĹ™i generovĂˇnĂ­ Word dokumentu: ${err.message}`);
     }
   };
 
@@ -963,7 +1026,7 @@ Telefon: ${companyContact.phone}`.trim();
 
       const context = canvas.getContext('2d');
       if (!context) {
-        throw new Error('Canvas není k dispozici.');
+        throw new Error('Canvas nenĂ­ k dispozici.');
       }
 
       context.drawImage(baseImage, 0, 0, canvas.width, canvas.height);
@@ -1028,7 +1091,7 @@ Telefon: ${companyContact.phone}`.trim();
           if (value) {
             resolve(value);
           } else {
-            reject(new Error('Nepodařilo se vytvořit výsledný obrázek.'));
+            reject(new Error('NepodaĹ™ilo se vytvoĹ™it vĂ˝slednĂ˝ obrĂˇzek.'));
           }
         }, 'image/png');
       });
@@ -1041,7 +1104,7 @@ Telefon: ${companyContact.phone}`.trim();
 
   const generateWithGemini = async (prompt, systemPrompt, options = {}) => {
     if (!apiKey) {
-      setError('Chybí API klíč. Zkontrolujte VITE_GEMINI_API_KEY v .env a restartujte dev server.');
+      setError('ChybĂ­ API klĂ­ÄŤ. Zkontrolujte VITE_GEMINI_API_KEY v .env a restartujte dev server.');
       return null;
     }
 
@@ -1049,7 +1112,7 @@ Telefon: ${companyContact.phone}`.trim();
     setError('');
 
     const modelsToTry = [primaryModel, fallbackModel];
-    let lastError = 'Neznámá chyba';
+    let lastError = 'NeznĂˇmĂˇ chyba';
 
     for (const currentModel of modelsToTry) {
       let delay = 900;
@@ -1085,11 +1148,11 @@ Telefon: ${companyContact.phone}`.trim();
             const apiMessage = data?.error?.message || `HTTP ${response.status}`;
 
             if (response.status === 503) {
-              throw new Error(`Model ${currentModel} je momentálně přetížený.`);
+              throw new Error(`Model ${currentModel} je momentĂˇlnÄ› pĹ™etĂ­ĹľenĂ˝.`);
             }
 
             if (response.status === 429) {
-              throw new Error(`Model ${currentModel} narazil na limit požadavků.`);
+              throw new Error(`Model ${currentModel} narazil na limit poĹľadavkĹŻ.`);
             }
 
             throw new Error(apiMessage);
@@ -1098,7 +1161,7 @@ Telefon: ${companyContact.phone}`.trim();
           const resultText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
           if (!resultText) {
-            throw new Error(`Model ${currentModel} vrátil prázdnou odpověď.`);
+            throw new Error(`Model ${currentModel} vrĂˇtil prĂˇzdnou odpovÄ›ÄŹ.`);
           }
 
           setLoading(false);
@@ -1123,15 +1186,15 @@ Telefon: ${companyContact.phone}`.trim();
   const translateVisualPromptToCzech = async (visualPrompt) => {
     if (!visualPrompt.trim()) return '';
 
-    const systemPrompt = `Jsi jazykový editor. Tvůj jediný úkol je převést zadaný návrh vizuálu do přirozené a stručné češtiny.
+    const systemPrompt = `Jsi jazykovĂ˝ editor. TvĹŻj jedinĂ˝ Ăşkol je pĹ™evĂ©st zadanĂ˝ nĂˇvrh vizuĂˇlu do pĹ™irozenĂ© a struÄŤnĂ© ÄŤeĹˇtiny.
 
 Pravidla:
-- Zachovej význam, scénu i kompozici.
-- Nevymýšlej nové prvky.
-- Vrať pouze samotný český text bez uvozovek, bez markdownu a bez vysvětlení.
-- Výsledek musí být vhodný jako zadání pro generátor obrázku.`;
+- Zachovej vĂ˝znam, scĂ©nu i kompozici.
+- NevymĂ˝Ĺˇlej novĂ© prvky.
+- VraĹĄ pouze samotnĂ˝ ÄŤeskĂ˝ text bez uvozovek, bez markdownu a bez vysvÄ›tlenĂ­.
+- VĂ˝sledek musĂ­ bĂ˝t vhodnĂ˝ jako zadĂˇnĂ­ pro generĂˇtor obrĂˇzku.`;
 
-    const prompt = `Převeď do češtiny tento návrh vizuálu:
+    const prompt = `PĹ™eveÄŹ do ÄŤeĹˇtiny tento nĂˇvrh vizuĂˇlu:
 
 ${visualPrompt}`;
 
@@ -1153,6 +1216,8 @@ ${visualPrompt}`;
 
 Tvým úkolem je vytvořit krátký text na leták v češtině.
 
+${messagingExamples.flyer}
+
 Vrať pouze čistý JSON bez markdownu a bez vysvětlení v tomto tvaru:
 {
   "title": "krátký silný nadpis",
@@ -1160,10 +1225,11 @@ Vrať pouze čistý JSON bez markdownu a bez vysvětlení v tomto tvaru:
 }
 
 Pravidla:
-- Vycházej pouze z dodaného hlavního textu a firemních kontaktů.
-- Nadpis má být krátký a úderný.
+- Vycházej pouze z dodaného hlavního textu, znalostních vodítek a firemních kontaktů.
+- Nadpis má být krátký, úderný a srozumitelný.
 - Tělo textu má být vhodné na jednostránkový leták.
 - Použij 3 až 5 krátkých benefitových vět nebo krátkých odstavců.
+- Zachovej důvěryhodný a profesionální tón.
 - Zakonči krátkou výzvou k akci.
 - Nepiš hashtagy.
 - Výstup musí být celý česky.`;
@@ -1175,6 +1241,21 @@ ${parsed.main}
 
 CTA:
 ${cta}
+
+Důležité pain points:
+${selectedPainPoints}
+
+Doporučené benefitové argumenty:
+${selectedBenefitClaims}
+
+Důkazní body:
+${selectedProofPoints}
+
+Preferované produktové vazby:
+${selectedProducts}
+
+Čemu se vyhnout:
+${selectedNegativeHints}
 
 Kontakty firmy:
 Web: ${companyContact.web}
@@ -1202,14 +1283,14 @@ Telefon: ${companyContact.phone}`;
 
   const handleGenerateFlyer = async () => {
     if (!generatedImage) {
-      setError('Nejdřív je potřeba mít vygenerovaný obrázek.');
+      setError('NejdĹ™Ă­v je potĹ™eba mĂ­t vygenerovanĂ˝ obrĂˇzek.');
       return;
     }
 
-    const flyerHeading = flyerTitle.trim() || contentPrompt.trim() || 'Chytrá pěna';
+    const flyerHeading = flyerTitle.trim() || contentPrompt.trim() || 'ChytrĂˇ pÄ›na';
     const flyerCopy = flyerText.trim() || parsed.main.trim();
     if (!flyerCopy) {
-      setError('Nejdřív je potřeba mít text pro leták.');
+      setError('NejdĹ™Ă­v je potĹ™eba mĂ­t text pro letĂˇk.');
       return;
     }
 
@@ -1228,7 +1309,7 @@ Telefon: ${companyContact.phone}`;
 
       const context = canvas.getContext('2d');
       if (!context) {
-        throw new Error('Canvas není k dispozici.');
+        throw new Error('Canvas nenĂ­ k dispozici.');
       }
 
       context.imageSmoothingEnabled = true;
@@ -1247,9 +1328,9 @@ Telefon: ${companyContact.phone}`;
         context.fillStyle = '#ffffff';
         context.font = '700 46px "Segoe UI", Arial, sans-serif';
         context.textAlign = 'right';
-        context.fillText('Firemní leták', canvas.width - 70, 62);
+        context.fillText('FiremnĂ­ letĂˇk', canvas.width - 70, 62);
         context.font = '500 24px "Segoe UI", Arial, sans-serif';
-        context.fillText('Chytrá pěna Bohemia s.r.o.', canvas.width - 70, 100);
+        context.fillText('ChytrĂˇ pÄ›na Bohemia s.r.o.', canvas.width - 70, 100);
 
         const heroY = 184;
         const heroHeight = 670;
@@ -1290,7 +1371,7 @@ Telefon: ${companyContact.phone}`;
 
         context.fillStyle = '#0f172a';
         context.font = '700 26px "Segoe UI", Arial, sans-serif';
-        context.fillText('Kontaktujte nás', textX, currentY);
+        context.fillText('Kontaktujte nĂˇs', textX, currentY);
         currentY += 46;
 
         context.fillStyle = '#334155';
@@ -1343,9 +1424,9 @@ Telefon: ${companyContact.phone}`;
         context.fillStyle = '#ffffff';
         context.textAlign = 'right';
         context.font = '700 48px "Segoe UI", Arial, sans-serif';
-        context.fillText('Leták', canvas.width - 110, 145);
+        context.fillText('LetĂˇk', canvas.width - 110, 145);
         context.font = '500 24px "Segoe UI", Arial, sans-serif';
-        context.fillText('Chytrá pěna Bohemia s.r.o.', canvas.width - 110, 188);
+        context.fillText('ChytrĂˇ pÄ›na Bohemia s.r.o.', canvas.width - 110, 188);
 
         drawImageCover(context, heroImage, 70, 300, canvas.width - 140, 520, 0.5, 0.4);
         context.strokeStyle = '#c8d5b2';
@@ -1381,7 +1462,7 @@ Telefon: ${companyContact.phone}`;
       const flyerDataUrl = canvas.toDataURL('image/png');
       setFlyerImage(flyerDataUrl);
     } catch (err) {
-      setError(`Nepodařilo se vytvořit leták: ${err.message}`);
+      setError(`NepodaĹ™ilo se vytvoĹ™it letĂˇk: ${err.message}`);
     } finally {
       setFlyerLoading(false);
     }
@@ -1400,12 +1481,12 @@ Telefon: ${companyContact.phone}`;
     const visualPrompt = parsed.visual || contentPrompt;
 
     if (!visualPrompt.trim()) {
-      setImageError('Nejdřív je potřeba mít návrh vizuálu nebo aspoň vyplněné téma příspěvku.');
+      setImageError('NejdĹ™Ă­v je potĹ™eba mĂ­t nĂˇvrh vizuĂˇlu nebo aspoĹ vyplnÄ›nĂ© tĂ©ma pĹ™Ă­spÄ›vku.');
       return;
     }
 
     if (imageMode === 'edit' && !sourceImageDataUrl) {
-      setImageError('Pro režim reálné fotky nejdřív nahrajte firemní fotografii.');
+      setImageError('Pro reĹľim reĂˇlnĂ© fotky nejdĹ™Ă­v nahrajte firemnĂ­ fotografii.');
       return;
     }
 
@@ -1419,10 +1500,10 @@ Telefon: ${companyContact.phone}`;
           ? {
               imageDataUrl: sourceImageDataUrl,
               fileName: sourceImageName || 'firemni-fotka.png',
-              prompt: `Uprav přiloženou reálnou fotografii pro marketingový příspěvek firmy Chytrá pěna. Zachovej hlavní scénu, konstrukci, proporce i věrohodnost. Vylepši světlo, čistotu kompozice, barevnost a celkový profesionální dojem pro sociální sítě. Bez jakéhokoli textu v obrázku, bez nápisů, bez titulků, bez typografie, bez loga, bez watermarku, bez písmen a bez čísel. ${visualPrompt}`,
+              prompt: `Uprav pĹ™iloĹľenou reĂˇlnou fotografii pro marketingovĂ˝ pĹ™Ă­spÄ›vek firmy ChytrĂˇ pÄ›na. Zachovej hlavnĂ­ scĂ©nu, konstrukci, proporce i vÄ›rohodnost. VylepĹˇi svÄ›tlo, ÄŤistotu kompozice, barevnost a celkovĂ˝ profesionĂˇlnĂ­ dojem pro sociĂˇlnĂ­ sĂ­tÄ›. Bez jakĂ©hokoli textu v obrĂˇzku, bez nĂˇpisĹŻ, bez titulkĹŻ, bez typografie, bez loga, bez watermarku, bez pĂ­smen a bez ÄŤĂ­sel. ${visualPrompt}`,
             }
           : {
-              prompt: `Realistický marketingový vizuál pro firmu Chytrá pěna. Profesionální fotografie vhodná pro sociální sítě. Bez jakéhokoli textu v obrázku, bez nápisů, bez titulků, bez typografie, bez loga, bez watermarku, bez písmen a bez čísel. ${visualPrompt}`,
+              prompt: `RealistickĂ˝ marketingovĂ˝ vizuĂˇl pro firmu ChytrĂˇ pÄ›na. ProfesionĂˇlnĂ­ fotografie vhodnĂˇ pro sociĂˇlnĂ­ sĂ­tÄ›. Bez jakĂ©hokoli textu v obrĂˇzku, bez nĂˇpisĹŻ, bez titulkĹŻ, bez typografie, bez loga, bez watermarku, bez pĂ­smen a bez ÄŤĂ­sel. ${visualPrompt}`,
             };
 
       const response = await fetch(endpoint, {
@@ -1444,15 +1525,15 @@ Telefon: ${companyContact.phone}`;
             : payload?.error || payload?.message;
 
         if (response.status === 401) {
-          throw new Error('OpenAI API klíč je neplatný nebo chybí. Zkontrolujte OPENAI_API_KEY v .env a restartujte dev server.');
+          throw new Error('OpenAI API klĂ­ÄŤ je neplatnĂ˝ nebo chybĂ­. Zkontrolujte OPENAI_API_KEY v .env a restartujte dev server.');
         }
 
         if (response.status === 429) {
-          throw new Error('Byl překročen limit OpenAI API nebo došel kredit. Zkontrolujte billing a limity u OpenAI.');
+          throw new Error('Byl pĹ™ekroÄŤen limit OpenAI API nebo doĹˇel kredit. Zkontrolujte billing a limity u OpenAI.');
         }
 
         if (response.status === 400) {
-          throw new Error(message || 'OpenAI odmítlo požadavek. Zkuste upravit prompt nebo nastavení obrázku.');
+          throw new Error(message || 'OpenAI odmĂ­tlo poĹľadavek. Zkuste upravit prompt nebo nastavenĂ­ obrĂˇzku.');
         }
 
         throw new Error(message || `HTTP ${response.status}`);
@@ -1463,7 +1544,7 @@ Telefon: ${companyContact.phone}`;
 
       setGeneratedImage(imageUrl);
     } catch (err) {
-      setImageError(`Obrázek se nepodařilo vytvořit: ${err.message}`);
+      setImageError(`ObrĂˇzek se nepodaĹ™ilo vytvoĹ™it: ${err.message}`);
     } finally {
       setImageLoading(false);
     }
@@ -1497,6 +1578,10 @@ Telefon: ${companyContact.phone}`;
       }
     }
 
+    const contentMode = resolvedCompanyProfile?.name ? 'personalized-company-offer' : 'social-post';
+    const resolvedContactLabel =
+      resolvedCompanyProfile?.recommendedContact?.label || 'vedení společnosti';
+
     const companyPromptBlock = resolvedCompanyProfile?.name
       ? `Přímé cílení na konkrétní firmu:
 - IČO: ${resolvedCompanyProfile.ico}
@@ -1504,13 +1589,14 @@ Telefon: ${companyContact.phone}`;
 - Právní forma: ${resolvedCompanyProfile.legalForm || 'neuvedeno'}
 - Obor / NACE: ${resolvedCompanyProfile.industry || 'neuvedeno'}
 - Sídlo: ${resolvedCompanyProfile.address || 'neuvedeno'}
+- Doporučená role k oslovení: ${resolvedContactLabel}
 
 Speciální režim psaní:
 - Nejde o obecný post pro široké publikum.
 - Piš text tak, jako by firma Chytrá pěna oslovovala přímo tuto konkrétní firmu s nabídkou služeb.
-- Zaměř se na potřeby firmy, provoz, úspory, komfort nebo efektivitu podle tématu a podle typu společnosti.
+- Zaměř se na potřeby firmy, provoz, správu objektu, úspory, komfort nebo efektivitu podle tématu a typu organizace.
 - Text má působit jako personalizovaná nabídka nebo obchodní oslovení, ne jako obecná reklama.
-- Přirozeně můžeš použít formulace typu "pro vaši firmu", "ve vašem provozu", "vaše hala", "váš objekt", pokud to dává smysl.
+- Přirozeně můžeš použít formulace typu "pro váš objekt", "ve vašem provozu", "pro správu budovy", "pro vaši organizaci", pokud to dává smysl.
 - Nevymýšlej si konkrétní interní problémy firmy, pouze rozumně odvozuj možné potřeby z názvu nebo oboru, pokud jsou zřejmé.`
       : `Přímé cílení na konkrétní firmu:
 - ne`;
@@ -1518,7 +1604,10 @@ Speciální režim psaní:
     const systemPrompt = `Jsi seniorní copywriter pro firmu Chytrá pěna.
 
 Tvoje role:
-Píšeš česky kvalitní marketingové příspěvky pro sociální sítě o zateplení, úsporách energií a PUR izolaci.
+Píšeš česky kvalitní marketingové texty o zateplení, úsporách energií a PUR izolaci.
+
+Režim výstupu:
+- ${contentMode}
 
 Kontext značky:
 ${useBrandContext ? brandContext : '- Používej pouze informace ze zadání.'}
@@ -1526,21 +1615,26 @@ ${useBrandContext ? brandContext : '- Používej pouze informace ze zadání.'}
 Znalostní databáze:
 ${buildKnowledgeContext(selectedKnowledgeEntries)}
 
-Parametry:
-- Platforma: ${platform}
-- Tón: ${tone}
-- Cílová skupina: ${targetAudience}
-- Délka: ${postLength}
-- CTA: ${cta}
-
-Firemní cílení podle IČO:
-${companyPromptBlock}
-
 Marketingový briefing pro cílovou skupinu:
 ${audienceBriefs[targetAudience] || ''}
 
 Pravidla pro platformu:
 ${platformBriefs[platform] || ''}
+
+Firemní cílení podle IČO:
+${companyPromptBlock}
+
+Hlavní pain points:
+${selectedPainPoints}
+
+Doporučené benefitové argumenty:
+${selectedBenefitClaims}
+
+Důkazní body:
+${selectedProofPoints}
+
+Produktové vazby:
+${selectedProducts}
 
 Tónové vodítko z databáze:
 ${selectedToneHints}
@@ -1551,10 +1645,23 @@ ${selectedCtaHints}
 Vodítka pro vizuál z databáze:
 ${selectedVisualHints}
 
+Čemu se vyhnout:
+${selectedNegativeHints}
+
+Příklad směru psaní:
+${resolvedCompanyProfile?.name ? messagingExamples.company : messagingExamples.social}
+
+Parametry:
+- Platforma: ${platform}
+- Tón: ${tone}
+- Cílová skupina: ${targetAudience}
+- Délka: ${postLength}
+- CTA: ${cta}
+
 Pravidla psaní:
 - Piš přirozeně, srozumitelně a bez výplňových frází.
 - Text musí být konkrétní a užitečný pro cílovou skupinu.
-- Začni silným háčkem nebo problémem.
+- Začni silným háčkem nebo pojmenováním problému.
 - Použij logiku PAS: problém -> důsledek -> řešení.
 - Neopakuj stejnou myšlenku různými slovy.
 - Nepiš obecné reklamní fráze bez obsahu.
@@ -1586,23 +1693,21 @@ Pravidla pro JSON:
     const prompt = `Téma příspěvku: ${contentPrompt}
 
 ${resolvedCompanyProfile?.name ? `Zadané IČO firmy: ${resolvedCompanyProfile.ico}
-Název firmy: ${resolvedCompanyProfile.name}` : 'IČO firmy není zadáno.'}
+Název firmy: ${resolvedCompanyProfile.name}
+Doporučená role k oslovení: ${resolvedContactLabel}` : 'IČO firmy není zadáno.'}
 
-Vytvoř příspěvek pro zadanou cílovou skupinu.
+Vytvoř ${resolvedCompanyProfile?.name ? 'personalizované oslovení / nabídku služeb' : 'příspěvek pro zadanou cílovou skupinu'}.
 Zaměř se na praktický přínos pro čtenáře.
 Zakonči text konkrétní výzvou k akci: ${cta}
 
 Návrh vizuálu: ${includeVisual ? 'ano' : 'ne'}
 Hashtagy: ${includeHashtags ? 'ano' : 'ne'}`;
 
-    const resolvedContactLabel =
-      resolvedCompanyProfile?.recommendedContact?.label || 'vedení společnosti';
-
     const promptWithCompanyContacting = resolvedCompanyProfile?.name
       ? `${prompt}
 
-Doporučená osoba / funkce k oslovení: ${resolvedContactLabel}
-Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto roli.`
+Text má působit tak, že Chytrá pěna oslovuje tuto firmu profesionálně a konkrétně.
+Piš pro roli: ${resolvedContactLabel}.`
       : prompt;
 
     const result = await generateWithGemini(promptWithCompanyContacting, systemPrompt, {
@@ -1664,7 +1769,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
   };
 
   const handleAddTemplate = () => {
-    setPromptTemplates((current) => [...current, 'Nová rychlá šablona']);
+    setPromptTemplates((current) => [...current, 'NovĂˇ rychlĂˇ Ĺˇablona']);
     setTemplateEditorOpen(true);
   };
 
@@ -1693,7 +1798,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
       setCompanyGalleryOpen(false);
       setImageError('');
     } catch (err) {
-      setImageError(err.message || 'Nepodařilo se načíst vybranou fotku.');
+      setImageError(err.message || 'NepodaĹ™ilo se naÄŤĂ­st vybranou fotku.');
     } finally {
       event.target.value = '';
     }
@@ -1718,7 +1823,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
       setCompanyGalleryOpen(false);
       setImageError('');
     } catch {
-      setImageError('Nepodařilo se načíst firemní fotku z galerie.');
+      setImageError('NepodaĹ™ilo se naÄŤĂ­st firemnĂ­ fotku z galerie.');
     }
   };
 
@@ -1759,15 +1864,15 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
             <div className="rounded-2xl border border-white/80 bg-white px-4 py-3 shadow-[0_10px_24px_rgba(15,23,42,0.12)]">
               <img
                 src={logoImageUrl}
-                alt="Chytrá pěna"
+                alt="ChytrĂˇ pÄ›na"
                 className="h-12 w-auto sm:h-14"
               />
             </div>
           </div>
 
           <div className="text-center">
-            <h1 className="text-xl font-extrabold tracking-tight text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.15)] sm:text-2xl">Generátor příspěvků pro sociální sítě</h1>
-            <p className="mt-1 text-sm font-medium text-lime-50/95">Chytrá pěna Bohemia s.r.o.</p>
+            <h1 className="text-xl font-extrabold tracking-tight text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.15)] sm:text-2xl">GenerĂˇtor pĹ™Ă­spÄ›vkĹŻ pro sociĂˇlnĂ­ sĂ­tÄ›</h1>
+            <p className="mt-1 text-sm font-medium text-lime-50/95">ChytrĂˇ pÄ›na Bohemia s.r.o.</p>
           </div>
 
           <div />
@@ -1782,7 +1887,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                 <div className="rounded-xl bg-lime-100 p-2 text-lime-700">
                   <Lightbulb className="h-5 w-5" />
                 </div>
-                <h2 className="text-lg font-bold">Zadání příspěvku</h2>
+                <h2 className="text-lg font-bold">ZadĂˇnĂ­ pĹ™Ă­spÄ›vku</h2>
               </div>
 
               <div className="space-y-5">
@@ -1790,7 +1895,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="flex items-center gap-2">
                       <Target className="h-4 w-4 text-lime-500" />
-                      <h3 className="text-sm font-semibold text-slate-900">Rychlé šablony zadání</h3>
+                      <h3 className="text-sm font-semibold text-slate-900">RychlĂ© Ĺˇablony zadĂˇnĂ­</h3>
                     </div>
 
                     <button
@@ -1798,7 +1903,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                       onClick={() => setTemplateEditorOpen((current) => !current)}
                       className="rounded-full border border-[#cad3bc] bg-[#fbfaf6] px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-lime-300 hover:bg-lime-50 hover:text-lime-700"
                     >
-                      {templateEditorOpen ? 'Skrýt správu' : 'Spravovat šablony'}
+                      {templateEditorOpen ? 'SkrĂ˝t sprĂˇvu' : 'Spravovat Ĺˇablony'}
                     </button>
                   </div>
 
@@ -1822,7 +1927,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                             value={item}
                             onChange={(e) => handleTemplateChange(index, e.target.value)}
                             className="min-w-0 flex-1 rounded-xl border border-[#d3dbc8] bg-[#fffefb] px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-lime-300 focus:ring-4 focus:ring-lime-100"
-                            placeholder="Text rychlé šablony"
+                            placeholder="Text rychlĂ© Ĺˇablony"
                           />
                           <button
                             type="button"
@@ -1840,14 +1945,14 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                           onClick={handleAddTemplate}
                           className="rounded-xl border border-[#d3dbc8] bg-[#fffefb] px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-lime-300 hover:bg-lime-50 hover:text-lime-700"
                         >
-                          Přidat šablonu
+                          PĹ™idat Ĺˇablonu
                         </button>
                         <button
                           type="button"
                           onClick={handleResetTemplates}
                           className="rounded-xl border border-[#d3dbc8] bg-[#fffefb] px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
                         >
-                          Obnovit výchozí
+                          Obnovit vĂ˝chozĂ­
                         </button>
                       </div>
                     </div>
@@ -1857,13 +1962,13 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                 <div className="rounded-[22px] border-2 border-[#c7d3b8] border-l-[5px] border-l-[#8fbb1a] bg-white p-4 shadow-[0_10px_22px_rgba(15,23,42,0.05)]">
                   <div className="mb-1 flex items-center justify-between">
                     <label className="block text-xs font-bold uppercase tracking-wide text-slate-500">
-                      Téma / hlavní myšlenka
+                      TĂ©ma / hlavnĂ­ myĹˇlenka
                     </label>
                     <span className="text-xs text-slate-400">{estimatedWords} slov</span>
                   </div>
                   <textarea
                     className="h-28 w-full resize-none rounded-2xl border border-[#d0d9c4] bg-[#fffefb] p-4 text-sm outline-none shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] transition placeholder:text-slate-400 focus:border-lime-300 focus:ring-4 focus:ring-lime-100"
-                    placeholder="Např. Proč zateplit střechu právě teď a co tím majitel domu reálně získá?"
+                    placeholder="NapĹ™. ProÄŤ zateplit stĹ™echu prĂˇvÄ› teÄŹ a co tĂ­m majitel domu reĂˇlnÄ› zĂ­skĂˇ?"
                     value={contentPrompt}
                     onChange={(e) => setContentPrompt(e.target.value)}
                   />
@@ -1872,28 +1977,28 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                 <div className="rounded-[22px] border-2 border-[#c7d3b8] border-l-[5px] border-l-[#8fbb1a] bg-white p-4 shadow-[0_10px_22px_rgba(15,23,42,0.05)]">
                   <div className="mb-4 flex items-center gap-2 rounded-xl bg-[#f7faee] px-3 py-2 ring-1 ring-[#e3ebd6]">
                     <div className="h-2.5 w-2.5 rounded-full bg-lime-500" />
-                    <p className="text-sm font-bold text-slate-900">Cílení a formát</p>
+                    <p className="text-sm font-bold text-slate-900">CĂ­lenĂ­ a formĂˇt</p>
                   </div>
 
                   <div className="grid gap-3 sm:grid-cols-2">
-                    <FieldSelect label="Cílovka" value={targetAudience} onChange={setTargetAudience} options={audienceOptions} />
+                    <FieldSelect label="CĂ­lovka" value={targetAudience} onChange={setTargetAudience} options={audienceOptions} />
                     <FieldSelect label="Platforma" value={platform} onChange={setPlatform} options={platformOptions} />
-                    <FieldSelect label="Tón" value={tone} onChange={setTone} options={toneOptions} />
-                    <FieldSelect label="Délka" value={postLength} onChange={setPostLength} options={lengthOptions} />
+                    <FieldSelect label="TĂłn" value={tone} onChange={setTone} options={toneOptions} />
+                    <FieldSelect label="DĂ©lka" value={postLength} onChange={setPostLength} options={lengthOptions} />
                   </div>
 
                   <div className="mt-3">
-                    <FieldSelect label="Výzva k akci (CTA)" value={cta} onChange={setCta} options={ctaOptions} />
+                    <FieldSelect label="VĂ˝zva k akci (CTA)" value={cta} onChange={setCta} options={ctaOptions} />
                   </div>
                 </div>
 
                 <div className="rounded-[22px] border-2 border-[#c7d3b8] border-l-[5px] border-l-[#8fbb1a] bg-white p-4 shadow-[0_10px_22px_rgba(15,23,42,0.05)]">
                   <div className="mb-4 flex items-center gap-2 rounded-xl bg-[#f7faee] px-3 py-2 ring-1 ring-[#e3ebd6]">
                     <div className="h-2.5 w-2.5 rounded-full bg-lime-500" />
-                    <p className="text-sm font-bold text-slate-900">Firemní cílení podle IČO</p>
+                    <p className="text-sm font-bold text-slate-900">FiremnĂ­ cĂ­lenĂ­ podle IÄŚO</p>
                   </div>
                   <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-slate-500">
-                    IČO firmy
+                    IÄŚO firmy
                   </label>
                   <div className="flex gap-2">
                     <input
@@ -1901,7 +2006,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                       onChange={(e) => handleCompanyIcoChange(e.target.value)}
                       inputMode="numeric"
                       maxLength={8}
-                      placeholder="Např. 12345678"
+                      placeholder="NapĹ™. 12345678"
                       className="min-w-0 flex-1 rounded-2xl border border-[#d0d9c4] bg-[#fffefb] px-3 py-3 text-sm text-slate-800 outline-none shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] transition placeholder:text-slate-400 focus:border-lime-300 focus:ring-4 focus:ring-lime-100"
                     />
                     <button
@@ -1910,18 +2015,18 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                       disabled={companyLookupLoading || !normalizedCompanyIco}
                       className="rounded-2xl border border-[#d0d9c4] bg-[#fffefb] px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-lime-300 hover:bg-lime-50 hover:text-lime-700 disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      {companyLookupLoading ? 'Načítám…' : 'Dohledat'}
+                      {companyLookupLoading ? 'NaÄŤĂ­tĂˇmâ€¦' : 'Dohledat'}
                     </button>
                   </div>
                   {companyModeActive && (
                     <>
                     <p className="mt-3 text-xs leading-5 text-slate-500">
-                      Dohledaná firma: <span className="font-semibold text-slate-700">{formatCompanyProfile(companyProfile)}</span>
+                      DohledanĂˇ firma: <span className="font-semibold text-slate-700">{formatCompanyProfile(companyProfile)}</span>
                     </p>
                     <p className="text-xs leading-5 text-slate-500">
-                      Doporučená osoba / funkce k oslovení:{' '}
+                      DoporuÄŤenĂˇ osoba / funkce k oslovenĂ­:{' '}
                       <span className="font-semibold text-slate-700">
-                        {formatRecommendedContact(companyProfile) || 'vedení společnosti'}
+                        {formatRecommendedContact(companyProfile) || 'vedenĂ­ spoleÄŤnosti'}
                       </span>
                     </p>
                     </>
@@ -1935,48 +2040,48 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                 <div className="rounded-xl bg-lime-100 p-2 text-lime-700">
                   <Settings2 className="h-5 w-5" />
                 </div>
-                <h2 className="text-lg font-bold">Nastavení výstupu</h2>
+                <h2 className="text-lg font-bold">NastavenĂ­ vĂ˝stupu</h2>
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2">
                 <ToggleCard
                   checked={useBrandContext}
                   onChange={setUseBrandContext}
-                  title="Používat firemní data"
-                  description="Zapojí fakta o úsporách, kvalitě, realizacích a dotacích."
+                  title="PouĹľĂ­vat firemnĂ­ data"
+                  description="ZapojĂ­ fakta o ĂşsporĂˇch, kvalitÄ›, realizacĂ­ch a dotacĂ­ch."
                 />
                 <ToggleCard
                   checked={useKnowledgeBase}
                   onChange={setUseKnowledgeBase}
-                  title="Použít znalostní databázi"
-                  description="Doplní do promptu relevantní ověřené poznatky podle tématu a cílovky."
+                  title="PouĹľĂ­t znalostnĂ­ databĂˇzi"
+                  description="DoplnĂ­ do promptu relevantnĂ­ ovÄ›Ĺ™enĂ© poznatky podle tĂ©matu a cĂ­lovky."
                 />
                 <ToggleCard
                   checked={strictClaims}
                   onChange={setStrictClaims}
-                  title="Držet se ověřených tvrzení"
-                  description="Omezí vymýšlení čísel a marketingových přehánění."
+                  title="DrĹľet se ovÄ›Ĺ™enĂ˝ch tvrzenĂ­"
+                  description="OmezĂ­ vymĂ˝ĹˇlenĂ­ ÄŤĂ­sel a marketingovĂ˝ch pĹ™ehĂˇnÄ›nĂ­."
                 />
                 <ToggleCard
                   checked={includeEmojis}
                   onChange={setIncludeEmojis}
-                  title="Použít emoji"
-                  description="Vhodné hlavně pro Facebook a Instagram."
+                  title="PouĹľĂ­t emoji"
+                  description="VhodnĂ© hlavnÄ› pro Facebook a Instagram."
                 />
                 <div className="sm:col-span-2">
                   <ToggleCard
                     checked={includeVisual}
                     onChange={setIncludeVisual}
-                    title="Navrhnout vizuál"
-                    description="Přidá konkrétní doporučení k fotce nebo grafice."
+                    title="Navrhnout vizuĂˇl"
+                    description="PĹ™idĂˇ konkrĂ©tnĂ­ doporuÄŤenĂ­ k fotce nebo grafice."
                   />
                 </div>
                 <div className="sm:col-span-2">
                   <ToggleCard
                     checked={includeHashtags}
                     onChange={setIncludeHashtags}
-                    title="Přidat hashtagy"
-                    description="Na konci výstupu doplní 5 relevantních hashtagů."
+                    title="PĹ™idat hashtagy"
+                    description="Na konci vĂ˝stupu doplnĂ­ 5 relevantnĂ­ch hashtagĹŻ."
                   />
                 </div>
               </div>
@@ -1984,9 +2089,9 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
               <div className="mt-4 rounded-[22px] border-2 border-[#c7d3b8] border-l-[5px] border-l-[#8fbb1a] bg-white p-4 shadow-[0_10px_22px_rgba(15,23,42,0.05)]">
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <p className="text-sm font-semibold text-slate-900">Režim obrázku</p>
+                    <p className="text-sm font-semibold text-slate-900">ReĹľim obrĂˇzku</p>
                     <p className="mt-1 text-xs text-slate-500">
-                      Pro věrnější výstupy doporučuju reálnou fotku s AI úpravou.
+                      Pro vÄ›rnÄ›jĹˇĂ­ vĂ˝stupy doporuÄŤuju reĂˇlnou fotku s AI Ăşpravou.
                     </p>
                   </div>
                 </div>
@@ -2002,8 +2107,8 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                         : 'border-[#d0d9c4] bg-[#fffefb] text-slate-600 hover:border-lime-300 hover:bg-[#fcfdf8]'
                     )}
                   >
-                    <div className="font-semibold">Reálná fotka + AI úprava</div>
-                    <div className="mt-1 text-xs">Zachová skutečnou realizaci a jen ji vizuálně doladí.</div>
+                    <div className="font-semibold">ReĂˇlnĂˇ fotka + AI Ăşprava</div>
+                    <div className="mt-1 text-xs">ZachovĂˇ skuteÄŤnou realizaci a jen ji vizuĂˇlnÄ› doladĂ­.</div>
                   </button>
 
                   <button
@@ -2017,7 +2122,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                     )}
                   >
                     <div className="font-semibold">AI generace od nuly</div>
-                    <div className="mt-1 text-xs">Použije pouze textový popis bez podkladové fotky.</div>
+                    <div className="mt-1 text-xs">PouĹľije pouze textovĂ˝ popis bez podkladovĂ© fotky.</div>
                   </button>
                 </div>
 
@@ -2027,9 +2132,9 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                       <div className="mb-4">
                         <div className="flex items-center justify-between gap-3">
                           <div>
-                            <p className="text-sm font-semibold text-slate-900">Firemní galerie</p>
+                            <p className="text-sm font-semibold text-slate-900">FiremnĂ­ galerie</p>
                             <p className="mt-1 text-xs text-slate-500">
-                              Vyber fotku ze složky `src/assets/Foto` a použij ji jako základ pro AI úpravu.
+                              Vyber fotku ze sloĹľky `src/assets/Foto` a pouĹľij ji jako zĂˇklad pro AI Ăşpravu.
                             </p>
                           </div>
                           <button
@@ -2037,7 +2142,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                             onClick={() => setCompanyGalleryOpen((current) => !current)}
                             className="rounded-xl border border-[#d3dbc8] bg-[#fbfaf6] px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-lime-300 hover:bg-lime-50 hover:text-lime-700"
                           >
-                            {companyGalleryOpen ? 'Skrýt galerii' : 'Otevřít galerii'}
+                            {companyGalleryOpen ? 'SkrĂ˝t galerii' : 'OtevĹ™Ă­t galerii'}
                           </button>
                         </div>
 
@@ -2072,9 +2177,9 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
 
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div>
-                        <p className="text-sm font-semibold text-slate-900">Podkladová firemní fotka</p>
+                        <p className="text-sm font-semibold text-slate-900">PodkladovĂˇ firemnĂ­ fotka</p>
                         <p className="mt-1 text-xs text-slate-500">
-                          Nahraj reálnou fotku realizace, kterou má AI upravit pro sociální sítě.
+                          Nahraj reĂˇlnou fotku realizace, kterou mĂˇ AI upravit pro sociĂˇlnĂ­ sĂ­tÄ›.
                         </p>
                       </div>
                       <input
@@ -2090,7 +2195,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                         className="inline-flex items-center gap-2 rounded-xl border border-[#d0d9c4] bg-[#fbfaf6] px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-lime-300 hover:bg-lime-50 hover:text-lime-700"
                       >
                         <Upload className="h-4 w-4" />
-                        {sourceImageDataUrl ? 'Vyměnit fotku' : 'Nahrát fotku'}
+                        {sourceImageDataUrl ? 'VymÄ›nit fotku' : 'NahrĂˇt fotku'}
                       </button>
                     </div>
 
@@ -2098,13 +2203,13 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                       <div className="mt-4 flex gap-4 rounded-2xl border border-[#d0d9c4] bg-[#fbfaf6] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]">
                         <img
                           src={sourceImageDataUrl}
-                          alt="Vybraná firemní fotka"
+                          alt="VybranĂˇ firemnĂ­ fotka"
                           className="h-24 w-24 rounded-xl object-cover"
                         />
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-sm font-semibold text-slate-900">{sourceImageName}</p>
                           <p className="mt-1 text-xs leading-5 text-slate-500">
-                            Tato fotka bude použita jako reálný základ a AI upraví hlavně světlo, kompozici a marketingový dojem.
+                            Tato fotka bude pouĹľita jako reĂˇlnĂ˝ zĂˇklad a AI upravĂ­ hlavnÄ› svÄ›tlo, kompozici a marketingovĂ˝ dojem.
                           </p>
                           <button
                             type="button"
@@ -2118,7 +2223,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                       </div>
                     ) : (
                       <div className="mt-4 rounded-2xl border border-dashed border-[#d0d9c4] bg-[#fbfaf6] p-4 text-sm text-slate-500">
-                        Zatím není vybraná žádná firemní fotka.
+                        ZatĂ­m nenĂ­ vybranĂˇ ĹľĂˇdnĂˇ firemnĂ­ fotka.
                       </div>
                     )}
                   </div>
@@ -2128,14 +2233,14 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                   <div>
                     <p className="text-sm font-semibold text-slate-900">Pozice loga</p>
                     <p className="mt-1 text-xs text-slate-500">
-                      Brand badge se vkládá až po vygenerování obrázku, zcela nezávisle na AI.
+                      Brand badge se vklĂˇdĂˇ aĹľ po vygenerovĂˇnĂ­ obrĂˇzku, zcela nezĂˇvisle na AI.
                     </p>
                   </div>
 
                   <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
                     {[
-                      ['top-left', 'Vlevo nahoře'],
-                      ['top-right', 'Vpravo nahoře'],
+                      ['top-left', 'Vlevo nahoĹ™e'],
+                      ['top-right', 'Vpravo nahoĹ™e'],
                       ['bottom-left', 'Vlevo dole'],
                       ['bottom-right', 'Vpravo dole'],
                     ].map(([value, label]) => (
@@ -2165,7 +2270,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                 className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#7aa90a] to-[#6d9808] px-5 py-3.5 font-bold text-white shadow-[0_14px_30px_rgba(122,169,10,0.28)] transition hover:from-[#6f9d08] hover:to-[#648b07] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {loading ? <RefreshCw className="h-5 w-5 animate-spin" /> : <Sparkles className="h-5 w-5" />}
-                Vygenerovat příspěvek
+                Vygenerovat pĹ™Ă­spÄ›vek
               </button>
 
               <button
@@ -2188,11 +2293,11 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
               <div className="mb-4 flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
                   <History className="h-5 w-5 text-lime-500" />
-                  <h2 className="text-lg font-bold">Historie návrhů</h2>
+                  <h2 className="text-lg font-bold">Historie nĂˇvrhĹŻ</h2>
                 </div>
                 {historyItems.length > 0 && (
                   <span className="rounded-full border border-[#d7ded0] bg-[#f7f7f2] px-3 py-1 text-xs font-semibold text-slate-500">
-                    {Math.min(historyItems.length, 12)} položek
+                    {Math.min(historyItems.length, 12)} poloĹľek
                   </span>
                 )}
               </div>
@@ -2210,7 +2315,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                         <div className="min-w-0">
                           <p className="line-clamp-2 text-sm font-semibold text-slate-900">{item.contentPrompt}</p>
                           <p className="mt-1 text-xs text-slate-500">
-                            {item.targetAudience} · {item.platform}
+                            {item.targetAudience} Â· {item.platform}
                           </p>
                         </div>
                         <span className="shrink-0 text-xs text-slate-400">
@@ -2218,14 +2323,14 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                         </span>
                       </div>
                       <p className="mt-3 line-clamp-2 text-sm text-slate-600">
-                        {parseGeneratedContent(item.generatedContent).main || 'Bez náhledu textu.'}
+                        {parseGeneratedContent(item.generatedContent).main || 'Bez nĂˇhledu textu.'}
                       </p>
                     </button>
                   ))}
                 </div>
               ) : (
                 <div className="rounded-2xl border border-dashed border-[#d7ded0] bg-[#fbfaf6] p-4 text-sm text-slate-500">
-                  Po prvním úspěšném generování se sem uloží poslední návrhy pro rychlé vrácení.
+                  Po prvnĂ­m ĂşspÄ›ĹˇnĂ©m generovĂˇnĂ­ se sem uloĹľĂ­ poslednĂ­ nĂˇvrhy pro rychlĂ© vrĂˇcenĂ­.
                 </div>
               )}
             </div>
@@ -2234,8 +2339,8 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
           <section className="flex min-h-[640px] flex-col rounded-[30px] border border-[#4f6178] bg-gradient-to-b from-[#58697f] via-[#4d5f76] to-[#42546a] shadow-[0_24px_54px_rgba(15,23,42,0.24)]">
             <div className="flex items-center justify-between border-b border-slate-700/80 bg-slate-900/12 px-6 py-4">
               <div>
-                <p className="text-xs uppercase tracking-[0.22em] text-slate-300/70">Výstup pro sítě</p>
-                <p className="mt-1 text-sm text-slate-200/85">Hotový text, návrh vizuálu a hashtagy</p>
+                <p className="text-xs uppercase tracking-[0.22em] text-slate-300/70">VĂ˝stup pro sĂ­tÄ›</p>
+                <p className="mt-1 text-sm text-slate-200/85">HotovĂ˝ text, nĂˇvrh vizuĂˇlu a hashtagy</p>
               </div>
 
               {generatedContent && (
@@ -2252,7 +2357,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                     className="inline-flex items-center gap-2 rounded-xl border border-slate-700/90 bg-slate-950/80 px-3 py-2 text-sm text-slate-200 transition hover:border-slate-500 hover:bg-slate-900 hover:text-white"
                   >
                     {copied ? <Check className="h-4 w-4 text-emerald-400" /> : <ClipboardPaste className="h-4 w-4" />}
-                    {copied ? 'Zkopírováno' : 'Kopírovat vše'}
+                    {copied ? 'ZkopĂ­rovĂˇno' : 'KopĂ­rovat vĹˇe'}
                   </button>
                 </div>
               )}
@@ -2265,17 +2370,17 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                     <RefreshCw className="h-8 w-8 animate-spin text-lime-400" />
                   </div>
                   <div>
-                    <p className="font-medium text-slate-200">Generuji příspěvek za Chytrou pěnu…</p>
-                    <p className="mt-1 text-sm text-slate-500">Ladím strukturu, tón i CTA.</p>
+                    <p className="font-medium text-slate-200">Generuji pĹ™Ă­spÄ›vek za Chytrou pÄ›nuâ€¦</p>
+                    <p className="mt-1 text-sm text-slate-500">LadĂ­m strukturu, tĂłn i CTA.</p>
                   </div>
                 </div>
               ) : generatedContent ? (
                 <div className="space-y-5">
                   <ContentCard
                     icon={<FileText className="h-4 w-4" />}
-                    title="Hlavní text"
+                    title="HlavnĂ­ text"
                     tone="default"
-                    actions={<MiniCopyButton text={parsed.main} onCopy={copyToClipboard} label="Kopírovat text" />}
+                    actions={<MiniCopyButton text={parsed.main} onCopy={copyToClipboard} label="KopĂ­rovat text" />}
                   >
                     <textarea
                       ref={mainTextAreaRef}
@@ -2297,14 +2402,14 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                   {parsed.visual && (
                     <ContentCard
                       icon={<ImageIcon className="h-4 w-4" />}
-                      title="Doporučený vizuál"
+                      title="DoporuÄŤenĂ˝ vizuĂˇl"
                       tone="brand"
                       actions={
                         <div className="flex flex-wrap gap-2">
                           <MiniCopyButton
                             text={parsed.visual}
                             onCopy={copyToClipboard}
-                            label="Kopírovat vizuál"
+                            label="KopĂ­rovat vizuĂˇl"
                           />
                           <button
                             onClick={handleGenerateImage}
@@ -2312,10 +2417,10 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                             className="rounded-lg border border-lime-300/30 bg-lime-500/20 px-2.5 py-1.5 text-xs font-medium text-lime-50 hover:bg-lime-500/30 disabled:opacity-50"
                           >
                             {imageLoading
-                              ? 'Zpracovávám…'
+                              ? 'ZpracovĂˇvĂˇmâ€¦'
                               : imageMode === 'edit'
-                                ? 'Upravit reálnou fotku'
-                                : 'Vytvořit obrázek'}
+                                ? 'Upravit reĂˇlnou fotku'
+                                : 'VytvoĹ™it obrĂˇzek'}
                           </button>
                         </div>
                       }
@@ -2325,18 +2430,18 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                       {imageMode === 'edit' && sourceImageDataUrl && (
                         <div className="mt-4 rounded-xl border border-lime-300/25 bg-[#0f172a]/26 p-3">
                           <p className="text-xs font-semibold uppercase tracking-wide text-lime-100/80">
-                            Podkladová fotka
+                            PodkladovĂˇ fotka
                           </p>
                           <div className="mt-3 flex gap-3">
                             <img
                               src={sourceImageDataUrl}
-                              alt="Podkladová firemní fotka"
+                              alt="PodkladovĂˇ firemnĂ­ fotka"
                               className="h-20 w-20 rounded-xl object-cover"
                             />
                             <div className="text-xs leading-5 text-lime-50/85">
-                              <p className="font-semibold text-lime-50">{sourceImageName || 'Vybraná fotka'}</p>
+                              <p className="font-semibold text-lime-50">{sourceImageName || 'VybranĂˇ fotka'}</p>
                               <p className="mt-1">
-                                AI zachová hlavní scénu a upraví hlavně světlo, kompozici a prezentaci pro sociální sítě.
+                                AI zachovĂˇ hlavnĂ­ scĂ©nu a upravĂ­ hlavnÄ› svÄ›tlo, kompozici a prezentaci pro sociĂˇlnĂ­ sĂ­tÄ›.
                               </p>
                             </div>
                           </div>
@@ -2351,7 +2456,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                         <div className="mt-4 overflow-hidden rounded-xl border border-lime-300/20">
                           <img
                             src={generatedImage}
-                            alt="AI návrh obrázku"
+                            alt="AI nĂˇvrh obrĂˇzku"
                             className="h-auto w-full"
                           />
                         </div>
@@ -2364,7 +2469,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                       icon={<Hash className="h-4 w-4" />}
                       title="Hashtagy"
                       tone="slate"
-                      actions={<MiniCopyButton text={parsed.hashtags} onCopy={copyToClipboard} label="Kopírovat hashtagy" />}
+                      actions={<MiniCopyButton text={parsed.hashtags} onCopy={copyToClipboard} label="KopĂ­rovat hashtagy" />}
                     >
                       <div className="flex flex-wrap gap-2">
                         {parsed.hashtags
@@ -2385,7 +2490,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                   {(generatedImage || flyerImage) && (
                     <ContentCard
                       icon={<Download className="h-4 w-4" />}
-                      title="Leták"
+                      title="LetĂˇk"
                       tone="brand"
                       actions={
                         <div className="flex flex-wrap gap-2">
@@ -2395,7 +2500,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                             disabled={flyerTextLoading}
                             className="rounded-lg border border-lime-300/35 bg-lime-500/22 px-2.5 py-1.5 text-xs font-medium text-lime-50 hover:bg-lime-500/34 disabled:opacity-50"
                           >
-                            {flyerTextLoading ? 'Navrhuji…' : 'Navrhnout text letáku'}
+                            {flyerTextLoading ? 'Navrhujiâ€¦' : 'Navrhnout text letĂˇku'}
                           </button>
                           <button
                             type="button"
@@ -2403,7 +2508,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                             disabled={flyerLoading || !generatedImage}
                             className="rounded-lg border border-lime-300/35 bg-lime-500/22 px-2.5 py-1.5 text-xs font-medium text-lime-50 hover:bg-lime-500/34 disabled:opacity-50"
                           >
-                            {flyerLoading ? 'Generuji…' : 'Vygenerovat leták'}
+                            {flyerLoading ? 'Generujiâ€¦' : 'Vygenerovat letĂˇk'}
                           </button>
                           {flyerImage && (
                             <button
@@ -2411,7 +2516,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                               onClick={handleDownloadFlyer}
                               className="rounded-lg border border-slate-700/90 bg-slate-950/82 px-2.5 py-1.5 text-xs font-medium text-slate-200 transition hover:border-slate-500 hover:text-white"
                             >
-                              Stáhnout leták
+                              StĂˇhnout letĂˇk
                             </button>
                           )}
                         </div>
@@ -2421,7 +2526,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                         <input
                           value={flyerTitle}
                           onChange={(e) => setFlyerTitle(e.target.value)}
-                          placeholder="Nadpis letáku"
+                          placeholder="Nadpis letĂˇku"
                           className="rounded-xl border border-slate-700/90 bg-[#0b1220] px-3 py-3 text-sm font-semibold text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-lime-400 focus:ring-4 focus:ring-lime-500/10"
                         />
 
@@ -2447,19 +2552,19 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                       <textarea
                         value={flyerText}
                         onChange={(e) => setFlyerText(e.target.value)}
-                        placeholder="Sem můžeš ručně upravit nebo nechat AI navrhnout text letáku."
+                        placeholder="Sem mĹŻĹľeĹˇ ruÄŤnÄ› upravit nebo nechat AI navrhnout text letĂˇku."
                         className="min-h-[160px] w-full rounded-xl border border-slate-700/90 bg-[#0b1220] p-3 text-sm leading-7 text-slate-200 outline-none transition placeholder:text-slate-500 focus:border-lime-400 focus:ring-4 focus:ring-lime-500/10"
                       />
 
                       <div className="mt-4 rounded-xl border border-lime-300/20 bg-slate-950/20 p-3 text-xs leading-6 text-lime-50/85">
-                        Leták se skládá z vygenerované fotografie, textu výše a firemních kontaktů. Nejlépe funguje s krátkým nadpisem a několika stručnými benefitovými větami.
+                        LetĂˇk se sklĂˇdĂˇ z vygenerovanĂ© fotografie, textu vĂ˝Ĺˇe a firemnĂ­ch kontaktĹŻ. NejlĂ©pe funguje s krĂˇtkĂ˝m nadpisem a nÄ›kolika struÄŤnĂ˝mi benefitovĂ˝mi vÄ›tami.
                       </div>
 
                       {flyerImage && (
                         <div className="mt-4 overflow-hidden rounded-xl border border-lime-300/20">
                           <img
                             src={flyerImage}
-                            alt="Náhled letáku"
+                            alt="NĂˇhled letĂˇku"
                             className="h-auto w-full"
                           />
                         </div>
@@ -2472,13 +2577,13 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                   <div className="rounded-full border border-slate-800 bg-slate-900 p-5">
                     <MessageCircle className="h-10 w-10 text-slate-700" />
                   </div>
-                  <h3 className="mt-5 text-lg font-semibold text-slate-200">Zatím není co zobrazit</h3>
+                  <h3 className="mt-5 text-lg font-semibold text-slate-200">ZatĂ­m nenĂ­ co zobrazit</h3>
                   <p className="mt-2 max-w-md text-sm leading-6 text-slate-500">
-                    Vyplňte vlevo téma, zvolte parametry a spusťte generování. Výstup se zobrazí přehledně po sekcích.
+                    VyplĹte vlevo tĂ©ma, zvolte parametry a spusĹĄte generovĂˇnĂ­. VĂ˝stup se zobrazĂ­ pĹ™ehlednÄ› po sekcĂ­ch.
                   </p>
                   <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-slate-800 bg-slate-900 px-4 py-2 text-xs text-slate-400">
                     <ChevronRight className="h-4 w-4 text-lime-400" />
-                    Začněte zadáním tématu
+                    ZaÄŤnÄ›te zadĂˇnĂ­m tĂ©matu
                   </div>
                 </div>
               )}
@@ -2572,3 +2677,4 @@ function MiniCopyButton({ text, onCopy, label }) {
     </button>
   );
 }
+
