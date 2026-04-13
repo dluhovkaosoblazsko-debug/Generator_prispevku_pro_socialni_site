@@ -3,46 +3,114 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { InferenceClient } from '@huggingface/inference';
 
 dotenv.config();
 
 const app = express();
+const port = process.env.PORT || 3001;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 app.use(cors());
-app.use(express.json({ limit: '10mb' }));
-
-const hfToken = process.env.VITE_HF_API_KEY;
-
-if (!hfToken) {
-  console.warn('Missing VITE_HF_API_KEY');
-}
-
-const client = new InferenceClient(hfToken);
+app.use(express.json({ limit: '20mb' }));
 
 app.post('/api/generate-image', async (req, res) => {
   try {
     const { prompt } = req.body;
 
-    if (!prompt?.trim()) {
-      return res.status(400).json({ error: 'Missing prompt' });
+    if (!prompt) {
+      return res.status(400).json({ error: 'Chybí prompt.' });
     }
 
-    const imageBlob = await client.textToImage({
-      model: 'black-forest-labs/FLUX.1-dev',
-      inputs: prompt,
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(500).json({ error: 'Chybí OPENAI_API_KEY.' });
+    }
+
+    const response = await fetch('https://api.openai.com/v1/images/generations', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: 'gpt-image-1',
+        prompt,
+        size: '1024x1024',
+      }),
     });
 
-    const buffer = Buffer.from(await imageBlob.arrayBuffer());
+    const data = await response.json();
 
-    res.setHeader('Content-Type', imageBlob.type || 'image/png');
-    res.send(buffer);
+    if (!response.ok) {
+      return res.status(response.status).json({
+        error: data?.error?.message || 'OpenAI API chyba',
+      });
+    }
+
+    const imageBase64 = data?.data?.[0]?.b64_json;
+
+    if (!imageBase64) {
+      return res.status(500).json({ error: 'OpenAI nevrátil obrázek.' });
+    }
+
+    const imageBuffer = Buffer.from(imageBase64, 'base64');
+
+    res.setHeader('Content-Type', 'image/png');
+    res.send(imageBuffer);
   } catch (err) {
     res.status(500).json({
-      error: err.message || 'Image generation failed',
+      error: err.message || 'Neočekávaná chyba serveru.',
+    });
+  }
+});
+
+app.post('/api/edit-image', async (req, res) => {
+  try {
+    const { prompt } = req.body;
+
+    if (!prompt) {
+      return res.status(400).json({ error: 'Chybí prompt.' });
+    }
+
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(500).json({ error: 'Chybí OPENAI_API_KEY.' });
+    }
+
+    const response = await fetch('https://api.openai.com/v1/images/generations', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: 'gpt-image-1',
+        prompt,
+        size: '1024x1024',
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return res.status(response.status).json({
+        error: data?.error?.message || 'OpenAI API chyba',
+      });
+    }
+
+    const imageBase64 = data?.data?.[0]?.b64_json;
+
+    if (!imageBase64) {
+      return res.status(500).json({ error: 'OpenAI nevrátil obrázek.' });
+    }
+
+    const imageBuffer = Buffer.from(imageBase64, 'base64');
+
+    res.setHeader('Content-Type', 'image/png');
+    res.send(imageBuffer);
+  } catch (err) {
+    res.status(500).json({
+      error: err.message || 'Neočekávaná chyba serveru.',
     });
   }
 });
@@ -53,8 +121,6 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
-const PORT = process.env.PORT || 3001;
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+app.listen(port, () => {
+  console.log(`Server běží na portu ${port}`);
 });

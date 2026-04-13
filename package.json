@@ -1,5 +1,5 @@
 {
-  "name": "generator-prispevku-pro-socialni-site",
+  "name": "chytra-pena-social-hub",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -7,13 +7,13 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "image-server": "node server.js"
+    "start": "node server.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
-    "docx": "^8.5.0",
     "dotenv": "^16.4.5",
     "express": "^4.21.2",
+    "docx": "^8.5.0",
     "file-saver": "^2.0.5",
     "lucide-react": "^0.511.0",
     "react": "^18.3.1",
@@ -21,10 +21,8 @@
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.11",
-    "@huggingface/inference": "^3.10.0",
     "@vitejs/plugin-react": "^4.3.4",
     "tailwindcss": "^4.1.11",
     "vite": "^5.4.10"
-    
   }
 }

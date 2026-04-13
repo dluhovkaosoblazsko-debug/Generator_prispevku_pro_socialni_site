@@ -850,24 +850,14 @@ Telefon: ${companyContact.phone}`.trim();
 
     try {
       const endpoint = imageMode === 'edit' ? '/api/edit-image' : '/api/generate-image';
-      const requestBody =
-        imageMode === 'edit'
-          ? {
-              imageDataUrl: sourceImageDataUrl,
-              fileName: sourceImageName || 'firemni-fotka.png',
-              prompt: `Uprav přiloženou reálnou fotografii pro marketingový příspěvek firmy Chytrá pěna. Zachovej hlavní scénu, konstrukci, proporce i věrohodnost. Vylepši světlo, čistotu kompozice, barevnost a celkový profesionální dojem pro sociální sítě. Bez jakéhokoli textu v obrázku, bez nápisů, bez titulků, bez typografie, bez loga, bez watermarku, bez písmen a bez čísel. ${visualPrompt}`,
-            }
-          : {
-              prompt: `Realistický marketingový vizuál pro firmu Chytrá pěna. Profesionální fotografie vhodná pro sociální sítě. Bez jakéhokoli textu v obrázku, bez nápisů, bez titulků, bez typografie, bez loga, bez watermarku, bez písmen a bez čísel. ${visualPrompt}`,
-            };
 
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody),
-      });
+const response = await fetch(endpoint, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify(requestBody),
+});
 
       if (!response.ok) {
         const contentType = response.headers.get('content-type') || '';
