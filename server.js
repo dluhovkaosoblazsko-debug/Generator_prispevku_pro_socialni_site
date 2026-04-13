@@ -15,6 +15,35 @@ const __dirname = path.dirname(__filename);
 app.use(cors());
 app.use(express.json({ limit: '20mb' }));
 
+function normalizeIco(value) {
+  return String(value || '').replace(/\D/g, '').trim();
+}
+
+function buildCompanyProfile(payload, ico) {
+  const sidlo = payload?.sidlo || {};
+  const addressParts = [
+    sidlo?.nazevUlice,
+    [sidlo?.cisloDomovni, sidlo?.cisloOrientacni ? `/${sidlo.cisloOrientacni}` : '']
+      .filter(Boolean)
+      .join(''),
+    sidlo?.nazevObce,
+    sidlo?.psc ? String(sidlo.psc) : '',
+  ].filter(Boolean);
+
+  return {
+    ico,
+    name:
+      payload?.obchodniJmeno ||
+      payload?.obchodniFirma ||
+      payload?.nazev ||
+      payload?.jmeno ||
+      '',
+    legalForm: payload?.pravniForma?.nazev || '',
+    industry: payload?.czNace?.length ? payload.czNace.map((item) => item?.text || item?.nazev).filter(Boolean).join(', ') : '',
+    address: addressParts.join(', '),
+  };
+}
+
 function dataUrlToFile(dataUrl, fileName = 'source-image.png') {
   const match = String(dataUrl || '').match(/^data:(.+?);base64,(.+)$/);
 
@@ -130,6 +159,49 @@ app.post('/api/edit-image', async (req, res) => {
   } catch (err) {
     res.status(500).json({
       error: err.message || 'Neočekávaná chyba serveru.',
+    });
+  }
+});
+
+app.get('/api/company-by-ico/:ico', async (req, res) => {
+  try {
+    const ico = normalizeIco(req.params.ico);
+
+    if (!ico || ico.length !== 8) {
+      return res.status(400).json({ error: 'IČO musí mít 8 číslic.' });
+    }
+
+    const response = await fetch(
+      `https://ares.gov.cz/ekonomicke-subjekty-v-be/rest/ekonomicke-subjekty/${ico}`,
+      {
+        headers: {
+          Accept: 'application/json',
+        },
+      }
+    );
+
+    const data = await response.json().catch(() => null);
+
+    if (response.status === 404) {
+      return res.status(404).json({ error: 'Firma s tímto IČO nebyla v ARES nalezena.' });
+    }
+
+    if (!response.ok) {
+      return res.status(response.status).json({
+        error: data?.message || 'ARES lookup se nepodařilo načíst.',
+      });
+    }
+
+    const companyProfile = buildCompanyProfile(data, ico);
+
+    if (!companyProfile.name) {
+      return res.status(404).json({ error: 'Z ARES se nepodařilo získat název firmy.' });
+    }
+
+    return res.json(companyProfile);
+  } catch (err) {
+    return res.status(500).json({
+      error: err.message || 'Nepodařilo se dohledat firmu podle IČO.',
     });
   }
 });

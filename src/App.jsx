@@ -146,6 +146,12 @@ const companyPhotoLibrary = Object.entries(companyPhotoModules).map(([path, url]
   url,
 }));
 
+const flyerTemplates = [
+  { id: 'classic', label: 'Klasický' },
+  { id: 'split', label: 'Rozdělený' },
+  { id: 'focus', label: 'Benefit' },
+];
+
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ');
 }
@@ -243,6 +249,69 @@ function looksLikeEnglishVisual(text) {
   ];
 
   return englishSignals.some((signal) => normalized.includes(signal));
+}
+
+function normalizeIco(value) {
+  return String(value || '').replace(/\D/g, '').trim();
+}
+
+function formatCompanyProfile(company) {
+  if (!company?.name) return '';
+
+  return [
+    company.name,
+    company.legalForm,
+    company.industry,
+    company.address,
+    company.ico ? `IČO ${company.ico}` : '',
+  ]
+    .filter(Boolean)
+    .join(' · ');
+}
+
+function wrapCanvasText(context, text, maxWidth) {
+  const words = String(text || '').split(/\s+/).filter(Boolean);
+  const lines = [];
+  let currentLine = '';
+
+  words.forEach((word) => {
+    const testLine = currentLine ? `${currentLine} ${word}` : word;
+    if (context.measureText(testLine).width > maxWidth && currentLine) {
+      lines.push(currentLine);
+      currentLine = word;
+    } else {
+      currentLine = testLine;
+    }
+  });
+
+  if (currentLine) {
+    lines.push(currentLine);
+  }
+
+  return lines;
+}
+
+function drawWrappedCanvasText(context, text, x, y, maxWidth, lineHeight) {
+  const paragraphs = String(text || '')
+    .split('\n')
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean);
+
+  let currentY = y;
+
+  paragraphs.forEach((paragraph, paragraphIndex) => {
+    const lines = wrapCanvasText(context, paragraph, maxWidth);
+    lines.forEach((line) => {
+      context.fillText(line, x, currentY);
+      currentY += lineHeight;
+    });
+
+    if (paragraphIndex < paragraphs.length - 1) {
+      currentY += Math.round(lineHeight * 0.45);
+    }
+  });
+
+  return currentY;
 }
 
 function evaluateGeneratedContent({ main, visual, hashtags }, options) {
@@ -410,6 +479,8 @@ export default function App() {
   const [strictClaims, setStrictClaims] = useState(true);
 
   const [contentPrompt, setContentPrompt] = useState('');
+  const [companyIco, setCompanyIco] = useState('');
+  const [companyProfile, setCompanyProfile] = useState(null);
   const [platform, setPlatform] = useState('Facebook');
   const [tone, setTone] = useState('Důraz na úspory a finance');
   const [targetAudience, setTargetAudience] = useState('Majitelé starších rodinných domů');
@@ -417,10 +488,16 @@ export default function App() {
   const [cta, setCta] = useState('Získat nezávaznou kalkulaci zdarma');
   const [generatedContent, setGeneratedContent] = useState('');
   const [generatedImage, setGeneratedImage] = useState('');
+  const [flyerTitle, setFlyerTitle] = useState('');
+  const [flyerText, setFlyerText] = useState('');
+  const [flyerImage, setFlyerImage] = useState('');
   const [imageLoading, setImageLoading] = useState(false);
+  const [flyerLoading, setFlyerLoading] = useState(false);
+  const [flyerTextLoading, setFlyerTextLoading] = useState(false);
   const [imageError, setImageError] = useState('');
   const [imageMode, setImageMode] = useState('edit');
   const [logoPosition, setLogoPosition] = useState('bottom-right');
+  const [flyerTemplate, setFlyerTemplate] = useState('classic');
   const [sourceImageDataUrl, setSourceImageDataUrl] = useState('');
   const [sourceImageName, setSourceImageName] = useState('');
   const [selectedCompanyPhotoId, setSelectedCompanyPhotoId] = useState('');
@@ -428,6 +505,7 @@ export default function App() {
   const [promptTemplates, setPromptTemplates] = useState(defaultPromptTemplates);
   const [templateEditorOpen, setTemplateEditorOpen] = useState(false);
   const [companyGalleryOpen, setCompanyGalleryOpen] = useState(false);
+  const [companyLookupLoading, setCompanyLookupLoading] = useState(false);
   const fileInputRef = useRef(null);
   const mainTextAreaRef = useRef(null);
 
@@ -460,6 +538,8 @@ export default function App() {
       const draft = JSON.parse(raw);
 
       setContentPrompt(draft.contentPrompt || '');
+      setCompanyIco(draft.companyIco || '');
+      setCompanyProfile(draft.companyProfile || null);
       setPlatform(draft.platform || 'Facebook');
       setTone(draft.tone || 'Důraz na úspory a finance');
       setTargetAudience(draft.targetAudience || 'Majitelé starších rodinných domů');
@@ -473,8 +553,12 @@ export default function App() {
       setStrictClaims(draft.strictClaims ?? true);
       setGeneratedContent(draft.generatedContent || '');
       setGeneratedImage(draft.generatedImage || '');
+      setFlyerTitle(draft.flyerTitle || '');
+      setFlyerText(draft.flyerText || '');
+      setFlyerImage(draft.flyerImage || '');
       setImageMode(draft.imageMode || 'edit');
       setLogoPosition(draft.logoPosition || 'bottom-right');
+      setFlyerTemplate(draft.flyerTemplate || 'classic');
       setSourceImageDataUrl(draft.sourceImageDataUrl || '');
       setSourceImageName(draft.sourceImageName || '');
       setSelectedCompanyPhotoId(draft.selectedCompanyPhotoId || '');
@@ -566,6 +650,8 @@ export default function App() {
         draftStorageKey,
         JSON.stringify({
           contentPrompt,
+          companyIco,
+          companyProfile,
           platform,
           tone,
           targetAudience,
@@ -579,8 +665,12 @@ export default function App() {
           strictClaims,
           generatedContent,
           generatedImage,
+          flyerTitle,
+          flyerText,
+          flyerImage,
           imageMode,
           logoPosition,
+          flyerTemplate,
           sourceImageDataUrl,
           sourceImageName,
           selectedCompanyPhotoId,
@@ -591,6 +681,8 @@ export default function App() {
     }
   }, [
     contentPrompt,
+    companyIco,
+    companyProfile,
     platform,
     tone,
     targetAudience,
@@ -604,8 +696,12 @@ export default function App() {
     strictClaims,
     generatedContent,
     generatedImage,
+    flyerTitle,
+    flyerText,
+    flyerImage,
     imageMode,
     logoPosition,
+    flyerTemplate,
     sourceImageDataUrl,
     sourceImageName,
     selectedCompanyPhotoId,
@@ -615,6 +711,9 @@ export default function App() {
     if (!contentPrompt.trim()) return 0;
     return contentPrompt.trim().split(/\s+/).length;
   }, [contentPrompt]);
+
+  const normalizedCompanyIco = useMemo(() => normalizeIco(companyIco), [companyIco]);
+  const companyModeActive = Boolean(companyProfile?.name && normalizedCompanyIco.length === 8);
 
   const selectedKnowledgeEntries = useMemo(
     () => (useKnowledgeBase ? getRelevantKnowledgeEntries(contentPrompt, targetAudience) : []),
@@ -681,6 +780,47 @@ Telefon: ${companyContact.phone}`.trim();
       setTimeout(() => setCopied(false), 1800);
     } catch {
       setError('Nepodařilo se zkopírovat text do schránky.');
+    }
+  };
+
+  const handleCompanyIcoChange = (value) => {
+    setCompanyIco(normalizeIco(value).slice(0, 8));
+    setCompanyProfile(null);
+  };
+
+  const lookupCompanyByIco = async (icoValue = companyIco) => {
+    const normalizedIco = normalizeIco(icoValue);
+
+    if (!normalizedIco) {
+      setCompanyProfile(null);
+      return null;
+    }
+
+    if (normalizedIco.length !== 8) {
+      setError('IČO musí mít 8 číslic.');
+      setCompanyProfile(null);
+      return null;
+    }
+
+    setCompanyLookupLoading(true);
+    setError('');
+
+    try {
+      const response = await fetch(`/api/company-by-ico/${normalizedIco}`);
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(data?.error || 'Nepodařilo se dohledat firmu podle IČO.');
+      }
+
+      setCompanyProfile(data);
+      return data;
+    } catch (err) {
+      setCompanyProfile(null);
+      setError(err.message || 'Nepodařilo se dohledat firmu podle IČO.');
+      return null;
+    } finally {
+      setCompanyLookupLoading(false);
     }
   };
 
@@ -972,6 +1112,258 @@ ${visualPrompt}`;
     return translated?.trim() || visualPrompt;
   };
 
+  const handleSuggestFlyerText = async () => {
+    if (!parsed.main.trim()) return;
+
+    setFlyerTextLoading(true);
+    setError('');
+
+    try {
+      const systemPrompt = `Jsi seniorní copywriter pro firmu Chytrá pěna.
+
+Tvým úkolem je vytvořit krátký text na leták v češtině.
+
+Vrať pouze čistý JSON bez markdownu a bez vysvětlení v tomto tvaru:
+{
+  "title": "krátký silný nadpis",
+  "body": "stručný text letáku"
+}
+
+Pravidla:
+- Vycházej pouze z dodaného hlavního textu a firemních kontaktů.
+- Nadpis má být krátký a úderný.
+- Tělo textu má být vhodné na jednostránkový leták.
+- Použij 3 až 5 krátkých benefitových vět nebo krátkých odstavců.
+- Zakonči krátkou výzvou k akci.
+- Nepiš hashtagy.
+- Výstup musí být celý česky.`;
+
+      const prompt = `Vytvoř text letáku z tohoto podkladu:
+
+Hlavní text:
+${parsed.main}
+
+CTA:
+${cta}
+
+Kontakty firmy:
+Web: ${companyContact.web}
+E-mail: ${companyContact.email}
+Telefon: ${companyContact.phone}`;
+
+      const result = await generateWithGemini(prompt, systemPrompt, {
+        temperature: 0.4,
+        expectJson: true,
+      });
+
+      if (result) {
+        const payload = extractJsonPayload(result);
+        if (payload?.title || payload?.body) {
+          setFlyerTitle(String(payload.title || '').trim());
+          setFlyerText(String(payload.body || '').trim());
+        } else {
+          setFlyerText(result.trim());
+        }
+      }
+    } finally {
+      setFlyerTextLoading(false);
+    }
+  };
+
+  const handleGenerateFlyer = async () => {
+    if (!generatedImage) {
+      setError('Nejdřív je potřeba mít vygenerovaný obrázek.');
+      return;
+    }
+
+    const flyerHeading = flyerTitle.trim() || contentPrompt.trim() || 'Chytrá pěna';
+    const flyerCopy = flyerText.trim() || parsed.main.trim();
+    if (!flyerCopy) {
+      setError('Nejdřív je potřeba mít text pro leták.');
+      return;
+    }
+
+    setFlyerLoading(true);
+    setError('');
+
+    try {
+      const [heroImage, logoImage] = await Promise.all([
+        loadImage(generatedImage),
+        loadImage(logoImageUrl),
+      ]);
+
+      const canvas = document.createElement('canvas');
+      canvas.width = 1240;
+      canvas.height = 1754;
+
+      const context = canvas.getContext('2d');
+      if (!context) {
+        throw new Error('Canvas není k dispozici.');
+      }
+
+      context.fillStyle = '#f7f6f1';
+      context.fillRect(0, 0, canvas.width, canvas.height);
+
+      const logoWidth = 280;
+      const logoHeight = (logoImage.naturalHeight / logoImage.naturalWidth) * logoWidth;
+
+      if (flyerTemplate === 'classic') {
+        context.fillStyle = '#79aa0a';
+        context.fillRect(0, 0, canvas.width, 136);
+        context.drawImage(logoImage, 70, 28, logoWidth, logoHeight);
+
+        context.fillStyle = '#ffffff';
+        context.font = '700 46px "Segoe UI", Arial, sans-serif';
+        context.textAlign = 'right';
+        context.fillText('Firemní leták', canvas.width - 70, 62);
+        context.font = '500 24px "Segoe UI", Arial, sans-serif';
+        context.fillText('Chytrá pěna Bohemia s.r.o.', canvas.width - 70, 100);
+
+        const heroY = 184;
+        const heroHeight = 670;
+        context.drawImage(heroImage, 70, heroY, canvas.width - 140, heroHeight);
+        context.strokeStyle = '#cad3bb';
+        context.lineWidth = 3;
+        context.strokeRect(70, heroY, canvas.width - 140, heroHeight);
+
+        const textCardY = heroY + heroHeight - 60;
+        context.fillStyle = '#ffffff';
+        context.shadowColor = 'rgba(15, 23, 42, 0.12)';
+        context.shadowBlur = 24;
+        context.shadowOffsetY = 10;
+        context.fillRect(90, textCardY, canvas.width - 180, 610);
+        context.shadowColor = 'transparent';
+        context.strokeStyle = '#d5dcc8';
+        context.lineWidth = 2;
+        context.strokeRect(90, textCardY, canvas.width - 180, 610);
+
+        const textX = 140;
+        const textWidth = canvas.width - 280;
+        let currentY = textCardY + 78;
+
+        context.fillStyle = '#14213d';
+        context.textAlign = 'left';
+        context.font = '700 38px "Segoe UI", Arial, sans-serif';
+        currentY = drawWrappedCanvasText(context, flyerHeading, textX, currentY, textWidth, 48);
+
+        currentY += 28;
+        context.font = '500 28px "Segoe UI", Arial, sans-serif';
+        context.fillStyle = '#334155';
+        currentY = drawWrappedCanvasText(context, flyerCopy, textX, currentY, textWidth, 40);
+
+        currentY += 36;
+        context.fillStyle = '#79aa0a';
+        context.fillRect(textX, currentY, textWidth, 2);
+        currentY += 42;
+
+        context.fillStyle = '#0f172a';
+        context.font = '700 26px "Segoe UI", Arial, sans-serif';
+        context.fillText('Kontaktujte nás', textX, currentY);
+        currentY += 46;
+
+        context.fillStyle = '#334155';
+        context.font = '600 24px "Segoe UI", Arial, sans-serif';
+        context.fillText(`Web: ${companyContact.web}`, textX, currentY);
+        currentY += 38;
+        context.fillText(`E-mail: ${companyContact.email}`, textX, currentY);
+        currentY += 38;
+        context.fillText(`Telefon: ${companyContact.phone}`, textX, currentY);
+      } else if (flyerTemplate === 'split') {
+        context.fillStyle = '#ffffff';
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        context.fillStyle = '#79aa0a';
+        context.fillRect(0, 0, canvas.width, 118);
+        context.drawImage(heroImage, 0, 118, 620, canvas.height - 118);
+        context.drawImage(logoImage, 70, 26, logoWidth, logoHeight);
+
+        context.fillStyle = '#f8fafc';
+        context.fillRect(620, 118, 620, canvas.height - 118);
+
+        let currentY = 210;
+        const textX = 680;
+        const textWidth = 480;
+        context.fillStyle = '#14213d';
+        context.font = '700 46px "Segoe UI", Arial, sans-serif';
+        currentY = drawWrappedCanvasText(context, flyerHeading, textX, currentY, textWidth, 56);
+        currentY += 20;
+        context.fillStyle = '#334155';
+        context.font = '500 26px "Segoe UI", Arial, sans-serif';
+        currentY = drawWrappedCanvasText(context, flyerCopy, textX, currentY, textWidth, 38);
+        currentY += 40;
+        context.fillStyle = '#79aa0a';
+        context.fillRect(textX, currentY, 180, 6);
+        currentY += 54;
+        context.fillStyle = '#0f172a';
+        context.font = '700 24px "Segoe UI", Arial, sans-serif';
+        context.fillText(companyContact.web, textX, currentY);
+        currentY += 38;
+        context.font = '600 22px "Segoe UI", Arial, sans-serif';
+        context.fillStyle = '#475569';
+        context.fillText(companyContact.email, textX, currentY);
+        currentY += 34;
+        context.fillText(companyContact.phone, textX, currentY);
+      } else {
+        context.fillStyle = '#eef4df';
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        context.fillStyle = '#79aa0a';
+        context.fillRect(70, 70, canvas.width - 140, 180);
+        context.drawImage(logoImage, 110, 98, logoWidth, logoHeight);
+        context.fillStyle = '#ffffff';
+        context.textAlign = 'right';
+        context.font = '700 48px "Segoe UI", Arial, sans-serif';
+        context.fillText('Leták', canvas.width - 110, 145);
+        context.font = '500 24px "Segoe UI", Arial, sans-serif';
+        context.fillText('Chytrá pěna Bohemia s.r.o.', canvas.width - 110, 188);
+
+        context.drawImage(heroImage, 70, 300, canvas.width - 140, 520);
+        context.strokeStyle = '#c8d5b2';
+        context.lineWidth = 3;
+        context.strokeRect(70, 300, canvas.width - 140, 520);
+
+        let currentY = 910;
+        const textX = 100;
+        const textWidth = canvas.width - 200;
+        context.textAlign = 'left';
+        context.fillStyle = '#14213d';
+        context.font = '700 42px "Segoe UI", Arial, sans-serif';
+        currentY = drawWrappedCanvasText(context, flyerHeading, textX, currentY, textWidth, 52);
+        currentY += 24;
+        context.fillStyle = '#334155';
+        context.font = '500 27px "Segoe UI", Arial, sans-serif';
+        currentY = drawWrappedCanvasText(context, flyerCopy, textX, currentY, textWidth, 39);
+        currentY += 36;
+
+        context.fillStyle = '#ffffff';
+        context.fillRect(70, 1460, canvas.width - 140, 170);
+        context.strokeStyle = '#d5dcc8';
+        context.lineWidth = 2;
+        context.strokeRect(70, 1460, canvas.width - 140, 170);
+
+        context.fillStyle = '#0f172a';
+        context.font = '700 24px "Segoe UI", Arial, sans-serif';
+        context.fillText(`Web: ${companyContact.web}`, 110, 1530);
+        context.fillText(`E-mail: ${companyContact.email}`, 110, 1572);
+        context.fillText(`Telefon: ${companyContact.phone}`, 110, 1614);
+      }
+
+      const flyerDataUrl = canvas.toDataURL('image/png');
+      setFlyerImage(flyerDataUrl);
+    } catch (err) {
+      setError(`Nepodařilo se vytvořit leták: ${err.message}`);
+    } finally {
+      setFlyerLoading(false);
+    }
+  };
+
+  const handleDownloadFlyer = () => {
+    if (!flyerImage) return;
+
+    const link = document.createElement('a');
+    link.href = flyerImage;
+    link.download = `chytra-pena-letak-${new Date().toISOString().slice(0, 10)}.png`;
+    link.click();
+  };
+
   const handleGenerateImage = async () => {
     const visualPrompt = parsed.visual || contentPrompt;
 
@@ -1047,6 +1439,8 @@ ${visualPrompt}`;
 
   const handleRestoreHistoryItem = (item) => {
     setContentPrompt(item.contentPrompt || '');
+    setCompanyIco(item.companyIco || '');
+    setCompanyProfile(item.companyProfile || null);
     setPlatform(item.platform || 'Facebook');
     setTone(item.tone || 'Důraz na úspory a finance');
     setTargetAudience(item.targetAudience || 'Majitelé starších rodinných domů');
@@ -1054,11 +1448,40 @@ ${visualPrompt}`;
     setCta(item.cta || 'Získat nezávaznou kalkulaci zdarma');
     setGeneratedContent(item.generatedContent || '');
     setGeneratedImage('');
+    setFlyerTitle('');
+    setFlyerText('');
+    setFlyerImage('');
     setImageError('');
   };
 
   const handleGenerateContent = async () => {
     if (!contentPrompt.trim()) return;
+
+    let resolvedCompanyProfile = companyProfile;
+    if (normalizedCompanyIco) {
+      resolvedCompanyProfile = await lookupCompanyByIco(normalizedCompanyIco);
+      if (!resolvedCompanyProfile) {
+        return;
+      }
+    }
+
+    const companyPromptBlock = resolvedCompanyProfile?.name
+      ? `Přímé cílení na konkrétní firmu:
+- IČO: ${resolvedCompanyProfile.ico}
+- Název firmy: ${resolvedCompanyProfile.name}
+- Právní forma: ${resolvedCompanyProfile.legalForm || 'neuvedeno'}
+- Obor / NACE: ${resolvedCompanyProfile.industry || 'neuvedeno'}
+- Sídlo: ${resolvedCompanyProfile.address || 'neuvedeno'}
+
+Speciální režim psaní:
+- Nejde o obecný post pro široké publikum.
+- Piš text tak, jako by firma Chytrá pěna oslovovala přímo tuto konkrétní firmu s nabídkou služeb.
+- Zaměř se na potřeby firmy, provoz, úspory, komfort nebo efektivitu podle tématu a podle typu společnosti.
+- Text má působit jako personalizovaná nabídka nebo obchodní oslovení, ne jako obecná reklama.
+- Přirozeně můžeš použít formulace typu "pro vaši firmu", "ve vašem provozu", "vaše hala", "váš objekt", pokud to dává smysl.
+- Nevymýšlej si konkrétní interní problémy firmy, pouze rozumně odvozuj možné potřeby z názvu nebo oboru, pokud jsou zřejmé.`
+      : `Přímé cílení na konkrétní firmu:
+- ne`;
 
     const systemPrompt = `Jsi seniorní copywriter pro firmu Chytrá pěna.
 
@@ -1077,6 +1500,9 @@ Parametry:
 - Cílová skupina: ${targetAudience}
 - Délka: ${postLength}
 - CTA: ${cta}
+
+Firemní cílení podle IČO:
+${companyPromptBlock}
 
 Marketingový briefing pro cílovou skupinu:
 ${audienceBriefs[targetAudience] || ''}
@@ -1127,6 +1553,9 @@ Pravidla pro JSON:
 
     const prompt = `Téma příspěvku: ${contentPrompt}
 
+${resolvedCompanyProfile?.name ? `Zadané IČO firmy: ${resolvedCompanyProfile.ico}
+Název firmy: ${resolvedCompanyProfile.name}` : 'IČO firmy není zadáno.'}
+
 Vytvoř příspěvek pro zadanou cílovou skupinu.
 Zaměř se na praktický přínos pro čtenáře.
 Zakonči text konkrétní výzvou k akci: ${cta}
@@ -1154,12 +1583,16 @@ Hashtagy: ${includeHashtags ? 'ano' : 'ne'}`;
       const serializedContent = serializeGeneratedContent(structuredPayload);
       setGeneratedContent(serializedContent);
       setGeneratedImage('');
+      setFlyerText('');
+      setFlyerImage('');
       setImageError('');
       setHistoryItems((current) => [
         {
           id: `${Date.now()}`,
           createdAt: new Date().toISOString(),
           contentPrompt,
+          companyIco: normalizedCompanyIco,
+          companyProfile: resolvedCompanyProfile,
           platform,
           tone,
           targetAudience,
@@ -1249,6 +1682,8 @@ Hashtagy: ${includeHashtags ? 'ano' : 'ne'}`;
 
   const handleReset = () => {
     setContentPrompt('');
+    setCompanyIco('');
+    setCompanyProfile(null);
     setPlatform('Facebook');
     setTone('Důraz na úspory a finance');
     setTargetAudience('Majitelé starších rodinných domů');
@@ -1262,6 +1697,9 @@ Hashtagy: ${includeHashtags ? 'ano' : 'ne'}`;
     setStrictClaims(true);
     setGeneratedContent('');
     setGeneratedImage('');
+    setFlyerTitle('');
+    setFlyerText('');
+    setFlyerImage('');
     setImageError('');
     setError('');
     try {
@@ -1395,6 +1833,35 @@ Hashtagy: ${includeHashtags ? 'ano' : 'ne'}`;
                 </div>
 
                 <FieldSelect label="Výzva k akci (CTA)" value={cta} onChange={setCta} options={ctaOptions} />
+
+                <div>
+                  <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-slate-500">
+                    IČO firmy
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      value={companyIco}
+                      onChange={(e) => handleCompanyIcoChange(e.target.value)}
+                      inputMode="numeric"
+                      maxLength={8}
+                      placeholder="Např. 12345678"
+                      className="min-w-0 flex-1 rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-lime-300 focus:ring-4 focus:ring-lime-100"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => lookupCompanyByIco()}
+                      disabled={companyLookupLoading || !normalizedCompanyIco}
+                      className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-lime-200 hover:text-lime-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {companyLookupLoading ? 'Načítám…' : 'Dohledat'}
+                    </button>
+                  </div>
+                  {companyModeActive && (
+                    <p className="mt-2 text-xs leading-5 text-slate-500">
+                      Cílení na firmu je aktivní: <span className="font-semibold text-slate-700">{formatCompanyProfile(companyProfile)}</span>
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -1845,6 +2312,91 @@ Hashtagy: ${includeHashtags ? 'ano' : 'ne'}`;
                             </span>
                           ))}
                       </div>
+                    </ContentCard>
+                  )}
+
+                  {(generatedImage || flyerImage) && (
+                    <ContentCard
+                      icon={<Download className="h-4 w-4" />}
+                      title="Leták"
+                      tone="brand"
+                      actions={
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            onClick={handleSuggestFlyerText}
+                            disabled={flyerTextLoading}
+                            className="rounded-lg border border-lime-300/30 bg-lime-500/20 px-2.5 py-1.5 text-xs font-medium text-lime-50 hover:bg-lime-500/30 disabled:opacity-50"
+                          >
+                            {flyerTextLoading ? 'Navrhuji…' : 'Navrhnout text letáku'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleGenerateFlyer}
+                            disabled={flyerLoading || !generatedImage}
+                            className="rounded-lg border border-lime-300/30 bg-lime-500/20 px-2.5 py-1.5 text-xs font-medium text-lime-50 hover:bg-lime-500/30 disabled:opacity-50"
+                          >
+                            {flyerLoading ? 'Generuji…' : 'Vygenerovat leták'}
+                          </button>
+                          {flyerImage && (
+                            <button
+                              type="button"
+                              onClick={handleDownloadFlyer}
+                              className="rounded-lg border border-slate-700 bg-slate-950 px-2.5 py-1.5 text-xs font-medium text-slate-200 transition hover:text-white"
+                            >
+                              Stáhnout leták
+                            </button>
+                          )}
+                        </div>
+                      }
+                    >
+                      <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_220px]">
+                        <input
+                          value={flyerTitle}
+                          onChange={(e) => setFlyerTitle(e.target.value)}
+                          placeholder="Nadpis letáku"
+                          className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-3 text-sm font-semibold text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-lime-400 focus:ring-4 focus:ring-lime-500/10"
+                        />
+
+                        <div className="grid grid-cols-3 gap-2">
+                          {flyerTemplates.map((template) => (
+                            <button
+                              key={template.id}
+                              type="button"
+                              onClick={() => setFlyerTemplate(template.id)}
+                              className={classNames(
+                                'rounded-xl border px-2 py-2 text-xs font-semibold transition',
+                                flyerTemplate === template.id
+                                  ? 'border-lime-300/30 bg-lime-500/20 text-lime-50'
+                                  : 'border-slate-700 bg-slate-950 text-slate-300 hover:text-white'
+                              )}
+                            >
+                              {template.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <textarea
+                        value={flyerText}
+                        onChange={(e) => setFlyerText(e.target.value)}
+                        placeholder="Sem můžeš ručně upravit nebo nechat AI navrhnout text letáku."
+                        className="min-h-[160px] w-full rounded-xl border border-slate-800 bg-slate-950 p-3 text-sm leading-7 text-slate-200 outline-none transition placeholder:text-slate-500 focus:border-lime-400 focus:ring-4 focus:ring-lime-500/10"
+                      />
+
+                      <div className="mt-4 rounded-xl border border-lime-300/20 bg-slate-950/20 p-3 text-xs leading-6 text-lime-50/85">
+                        Leták se skládá z vygenerované fotografie, textu výše a firemních kontaktů. Nejlépe funguje s krátkým nadpisem a několika stručnými benefitovými větami.
+                      </div>
+
+                      {flyerImage && (
+                        <div className="mt-4 overflow-hidden rounded-xl border border-lime-300/20">
+                          <img
+                            src={flyerImage}
+                            alt="Náhled letáku"
+                            className="h-auto w-full"
+                          />
+                        </div>
+                      )}
                     </ContentCard>
                   )}
                 </div>
