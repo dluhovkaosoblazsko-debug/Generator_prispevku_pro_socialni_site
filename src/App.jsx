@@ -1120,7 +1120,7 @@ Telefon: ${companyContact.phone}`.trim();
       for (let i = 0; i < 3; i += 1) {
         try {
           const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/${currentModel}:generateContentkey=${apiKey}`,
+            `https://generativelanguage.googleapis.com/v1beta/models/${currentModel}:generateContent?key=${apiKey}`,
             {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
