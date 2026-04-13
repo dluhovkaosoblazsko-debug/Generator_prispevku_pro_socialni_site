@@ -1752,7 +1752,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
   };
 
   return (
-    <div className="min-h-screen bg-[#f3f1e8] text-slate-900">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top,#f8f5ea_0%,#f2efe4_48%,#ebe7d9_100%)] text-slate-900">
       <header className="sticky top-0 z-20 border-b border-[#628b06] bg-gradient-to-r from-[#739f08] via-[#7cab0a] to-[#6b9608] shadow-[0_10px_28px_rgba(77,101,19,0.18)]">
         <div className="mx-auto grid h-28 max-w-7xl grid-cols-[auto_1fr_auto] items-center gap-6 px-4 sm:px-6 lg:px-8">
           <div className="flex items-center">
@@ -1777,14 +1777,14 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
       <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-[480px_minmax(0,1fr)]">
           <section className="space-y-5">
-            <div className="rounded-[28px] border border-[#b9c5aa] bg-[#fbfaf5] p-5 shadow-[0_18px_38px_rgba(15,23,42,0.07)]">
+            <div className="rounded-[28px] border border-[#aebe97] bg-[#f8f8f1] p-5 shadow-[0_20px_44px_rgba(15,23,42,0.09)]">
               <div className="mb-5 flex items-center gap-2 border-b border-[#d9e1cb] pb-4">
                 <Lightbulb className="h-5 w-5 text-lime-500" />
                 <h2 className="text-lg font-bold">Zadání příspěvku</h2>
               </div>
 
               <div className="space-y-4">
-                <div className="rounded-[22px] border border-[#d7ded0] bg-white/85 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]">
+                <div className="rounded-[22px] border border-[#cfd8c2] bg-white p-4 shadow-[0_8px_18px_rgba(15,23,42,0.04)]">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="flex items-center gap-2">
                       <Target className="h-4 w-4 text-lime-500" />
@@ -1794,7 +1794,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                     <button
                       type="button"
                       onClick={() => setTemplateEditorOpen((current) => !current)}
-                      className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-lime-200 hover:text-lime-700"
+                    className="rounded-full border border-[#cad3bc] bg-[#fbfaf6] px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-lime-300 hover:bg-lime-50 hover:text-lime-700"
                     >
                       {templateEditorOpen ? 'Skrýt správu' : 'Spravovat šablony'}
                     </button>
@@ -1805,7 +1805,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                       <button
                         key={`${item}-${index}`}
                         onClick={() => setContentPrompt(item)}
-                        className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-left text-xs font-medium leading-5 text-slate-700 transition hover:border-lime-200 hover:bg-lime-50 hover:text-lime-700"
+                        className="rounded-full border border-[#d3dbc8] bg-[#fcfcf9] px-3 py-1.5 text-left text-xs font-medium leading-5 text-slate-700 transition hover:border-lime-300 hover:bg-lime-50 hover:text-lime-700"
                       >
                         {item}
                       </button>
@@ -1819,13 +1819,13 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                           <input
                             value={item}
                             onChange={(e) => handleTemplateChange(index, e.target.value)}
-                            className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-lime-300 focus:ring-4 focus:ring-lime-100"
+                            className="min-w-0 flex-1 rounded-xl border border-[#d3dbc8] bg-[#fffefb] px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-lime-300 focus:ring-4 focus:ring-lime-100"
                             placeholder="Text rychlé šablony"
                           />
                           <button
                             type="button"
                             onClick={() => handleRemoveTemplate(index)}
-                            className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-500 transition hover:border-red-200 hover:text-red-600"
+                            className="rounded-xl border border-[#d3dbc8] bg-[#fffefb] px-3 py-2 text-xs font-semibold text-slate-500 transition hover:border-red-200 hover:text-red-600"
                           >
                             Smazat
                           </button>
@@ -1836,14 +1836,14 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                         <button
                           type="button"
                           onClick={handleAddTemplate}
-                          className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-lime-200 hover:text-lime-700"
+                          className="rounded-xl border border-[#d3dbc8] bg-[#fffefb] px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-lime-300 hover:bg-lime-50 hover:text-lime-700"
                         >
                           Přidat šablonu
                         </button>
                         <button
                           type="button"
                           onClick={handleResetTemplates}
-                          className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
+                          className="rounded-xl border border-[#d3dbc8] bg-[#fffefb] px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
                         >
                           Obnovit výchozí
                         </button>
@@ -1860,7 +1860,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                     <span className="text-xs text-slate-400">{estimatedWords} slov</span>
                   </div>
                   <textarea
-                    className="h-28 w-full resize-none rounded-2xl border border-slate-200 bg-white p-4 text-sm outline-none transition placeholder:text-slate-400 focus:border-lime-300 focus:ring-4 focus:ring-lime-100"
+                    className="h-28 w-full resize-none rounded-2xl border border-[#d0d9c4] bg-[#fffefb] p-4 text-sm outline-none shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] transition placeholder:text-slate-400 focus:border-lime-300 focus:ring-4 focus:ring-lime-100"
                     placeholder="Např. Proč zateplit střechu právě teď a co tím majitel domu reálně získá?"
                     value={contentPrompt}
                     onChange={(e) => setContentPrompt(e.target.value)}
@@ -1887,13 +1887,13 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                       inputMode="numeric"
                       maxLength={8}
                       placeholder="Např. 12345678"
-                      className="min-w-0 flex-1 rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-lime-300 focus:ring-4 focus:ring-lime-100"
+                      className="min-w-0 flex-1 rounded-2xl border border-[#d0d9c4] bg-[#fffefb] px-3 py-3 text-sm text-slate-800 outline-none shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] transition placeholder:text-slate-400 focus:border-lime-300 focus:ring-4 focus:ring-lime-100"
                     />
                     <button
                       type="button"
                       onClick={() => lookupCompanyByIco()}
                       disabled={companyLookupLoading || !normalizedCompanyIco}
-                      className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-lime-200 hover:text-lime-700 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="rounded-2xl border border-[#d0d9c4] bg-[#fffefb] px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-lime-300 hover:bg-lime-50 hover:text-lime-700 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {companyLookupLoading ? 'Načítám…' : 'Dohledat'}
                     </button>
@@ -1901,12 +1901,12 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                   {companyModeActive && (
                     <>
                     <p className="mt-2 text-xs leading-5 text-slate-500">
-                      Cílení na firmu je aktivní: <span className="font-semibold text-slate-700">{formatCompanyProfile(companyProfile)}</span>
+                      Dohledaná firma: <span className="font-semibold text-slate-700">{formatCompanyProfile(companyProfile)}</span>
                     </p>
                     <p className="text-xs leading-5 text-slate-500">
-                      DoporuÄŤenĂˇ osoba / funkce k oslovenĂ­:{' '}
+                      Doporučená osoba / funkce k oslovení:{' '}
                       <span className="font-semibold text-slate-700">
-                        {formatRecommendedContact(companyProfile) || 'vedenĂ­ spoleÄŤnosti'}
+                        {formatRecommendedContact(companyProfile) || 'vedení společnosti'}
                       </span>
                     </p>
                     </>
@@ -1915,7 +1915,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
               </div>
             </div>
 
-            <div className="rounded-[28px] border border-[#b9c5aa] bg-[#fbfaf5] p-5 shadow-[0_18px_38px_rgba(15,23,42,0.07)]">
+            <div className="rounded-[28px] border border-[#aebe97] bg-[#f8f8f1] p-5 shadow-[0_20px_44px_rgba(15,23,42,0.09)]">
               <div className="mb-4 flex items-center gap-2 border-b border-[#d9e1cb] pb-4">
                 <Settings2 className="h-5 w-5 text-lime-500" />
                 <h2 className="text-lg font-bold">Nastavení výstupu</h2>
@@ -1964,7 +1964,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                 </div>
               </div>
 
-              <div className="mt-4 rounded-[22px] border border-[#d7ded0] bg-white/85 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]">
+              <div className="mt-4 rounded-[22px] border border-[#cfd8c2] bg-white p-4 shadow-[0_8px_18px_rgba(15,23,42,0.04)]">
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <p className="text-sm font-semibold text-slate-900">Režim obrázku</p>
@@ -1981,8 +1981,8 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                     className={classNames(
                       'rounded-2xl border px-4 py-3 text-left transition',
                       imageMode === 'edit'
-                        ? 'border-lime-200 bg-lime-50 text-lime-700'
-                        : 'border-slate-200 bg-white text-slate-600 hover:border-lime-200'
+                        ? 'border-lime-300 bg-lime-50 text-lime-800 shadow-[0_8px_18px_rgba(122,169,10,0.10)]'
+                        : 'border-[#d0d9c4] bg-[#fffefb] text-slate-600 hover:border-lime-300'
                     )}
                   >
                     <div className="font-semibold">Reálná fotka + AI úprava</div>
@@ -1995,8 +1995,8 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                     className={classNames(
                       'rounded-2xl border px-4 py-3 text-left transition',
                       imageMode === 'generate'
-                        ? 'border-lime-200 bg-lime-50 text-lime-700'
-                        : 'border-slate-200 bg-white text-slate-600 hover:border-lime-200'
+                        ? 'border-lime-300 bg-lime-50 text-lime-800 shadow-[0_8px_18px_rgba(122,169,10,0.10)]'
+                        : 'border-[#d0d9c4] bg-[#fffefb] text-slate-600 hover:border-lime-300'
                     )}
                   >
                     <div className="font-semibold">AI generace od nuly</div>
@@ -2005,7 +2005,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                 </div>
 
                 {imageMode === 'edit' && (
-                  <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-4">
+                  <div className="mt-4 rounded-[22px] border border-[#cfd8c2] bg-white p-4 shadow-[0_8px_18px_rgba(15,23,42,0.04)]">
                     {companyPhotoLibrary.length > 0 && (
                       <div className="mb-4">
                         <div className="flex items-center justify-between gap-3">
@@ -2018,7 +2018,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                           <button
                             type="button"
                             onClick={() => setCompanyGalleryOpen((current) => !current)}
-                            className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-lime-200 hover:text-lime-700"
+                            className="rounded-xl border border-[#d3dbc8] bg-[#fbfaf6] px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-lime-300 hover:bg-lime-50 hover:text-lime-700"
                           >
                             {companyGalleryOpen ? 'Skrýt galerii' : 'Otevřít galerii'}
                           </button>
@@ -2034,8 +2034,8 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                                 className={classNames(
                                   'overflow-hidden rounded-2xl border text-left transition',
                                   selectedCompanyPhotoId === photo.id
-                                    ? 'border-lime-300 ring-2 ring-lime-200'
-                                    : 'border-slate-200 hover:border-lime-200'
+                                    ? 'border-lime-300 bg-lime-50 ring-2 ring-lime-200'
+                                    : 'border-[#d0d9c4] bg-white hover:border-lime-300'
                                 )}
                               >
                                 <img
@@ -2043,7 +2043,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                                   alt={photo.name}
                                   className="h-24 w-full object-cover"
                                 />
-                                <div className="border-t border-slate-200 bg-white px-3 py-2">
+                                <div className="border-t border-[#d0d9c4] bg-white px-3 py-2">
                                   <p className="truncate text-xs font-semibold text-slate-700">{photo.name}</p>
                                 </div>
                               </button>
@@ -2070,7 +2070,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                       <button
                         type="button"
                         onClick={handleOpenSourceImagePicker}
-                        className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-lime-200 hover:text-lime-700"
+                        className="inline-flex items-center gap-2 rounded-xl border border-[#d0d9c4] bg-[#fbfaf6] px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-lime-300 hover:bg-lime-50 hover:text-lime-700"
                       >
                         <Upload className="h-4 w-4" />
                         {sourceImageDataUrl ? 'Vyměnit fotku' : 'Nahrát fotku'}
@@ -2078,7 +2078,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                     </div>
 
                     {sourceImageDataUrl ? (
-                      <div className="mt-4 flex gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                      <div className="mt-4 flex gap-4 rounded-2xl border border-[#d0d9c4] bg-[#fbfaf6] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]">
                         <img
                           src={sourceImageDataUrl}
                           alt="Vybraná firemní fotka"
@@ -2100,14 +2100,14 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                         </div>
                       </div>
                     ) : (
-                      <div className="mt-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">
+                      <div className="mt-4 rounded-2xl border border-dashed border-[#d0d9c4] bg-[#fbfaf6] p-4 text-sm text-slate-500">
                         Zatím není vybraná žádná firemní fotka.
                       </div>
                     )}
                   </div>
                 )}
 
-                <div className="mt-4 rounded-[22px] border border-[#d7ded0] bg-white p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]">
+                <div className="mt-4 rounded-[22px] border border-[#cfd8c2] bg-white p-4 shadow-[0_8px_18px_rgba(15,23,42,0.04)]">
                   <div>
                     <p className="text-sm font-semibold text-slate-900">Pozice loga</p>
                     <p className="mt-1 text-xs text-slate-500">
@@ -2167,7 +2167,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
               </div>
             )}
 
-            <div className="rounded-[28px] border border-[#b9c5aa] bg-[#fbfaf5] p-5 shadow-[0_18px_38px_rgba(15,23,42,0.07)]">
+            <div className="rounded-[28px] border border-[#aebe97] bg-[#f8f8f1] p-5 shadow-[0_20px_44px_rgba(15,23,42,0.09)]">
               <div className="mb-4 flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
                   <History className="h-5 w-5 text-lime-500" />
@@ -2214,7 +2214,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
             </div>
           </section>
 
-          <section className="flex min-h-[640px] flex-col rounded-[30px] border border-[#617086] bg-gradient-to-b from-[#5f7187] to-[#4e6177] shadow-[0_22px_48px_rgba(15,23,42,0.18)]">
+          <section className="flex min-h-[640px] flex-col rounded-[30px] border border-[#4f6178] bg-gradient-to-b from-[#58697f] via-[#4d5f76] to-[#42546a] shadow-[0_24px_54px_rgba(15,23,42,0.24)]">
             <div className="flex items-center justify-between border-b border-slate-700/80 bg-slate-900/12 px-6 py-4">
               <div>
                 <p className="text-xs uppercase tracking-[0.22em] text-slate-300/70">Výstup pro sítě</p>
@@ -2264,10 +2264,10 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                       ref={mainTextAreaRef}
                       value={parsed.main}
                       onChange={(e) => handleMainTextChange(e.target.value)}
-                      className="min-h-[240px] w-full overflow-hidden rounded-xl border border-slate-800 bg-slate-950 p-3 text-sm leading-7 text-slate-200 outline-none transition focus:border-lime-400 focus:ring-4 focus:ring-lime-500/10"
+                      className="min-h-[240px] w-full overflow-hidden rounded-xl border border-slate-700/90 bg-[#0b1220] p-3 text-sm leading-7 text-slate-100 outline-none transition focus:border-lime-400 focus:ring-4 focus:ring-lime-500/10"
                     />
 
-                    <div className="mt-4 rounded-xl border border-slate-800 bg-slate-950/70 p-3">
+                    <div className="mt-4 rounded-xl border border-slate-700/90 bg-[#0f172a]/82 p-3">
                       <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Kontakt</p>
                       <div className="mt-2 space-y-1 text-sm text-slate-300">
                         <p>Web: {companyContact.web}</p>
@@ -2306,7 +2306,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                       <p className="text-sm leading-7 text-lime-50">{parsed.visual}</p>
 
                       {imageMode === 'edit' && sourceImageDataUrl && (
-                        <div className="mt-4 rounded-xl border border-lime-300/20 bg-slate-950/20 p-3">
+                        <div className="mt-4 rounded-xl border border-lime-300/25 bg-[#0f172a]/26 p-3">
                           <p className="text-xs font-semibold uppercase tracking-wide text-lime-100/80">
                             Podkladová fotka
                           </p>
@@ -2376,7 +2376,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                             type="button"
                             onClick={handleSuggestFlyerText}
                             disabled={flyerTextLoading}
-                            className="rounded-lg border border-lime-300/30 bg-lime-500/20 px-2.5 py-1.5 text-xs font-medium text-lime-50 hover:bg-lime-500/30 disabled:opacity-50"
+                            className="rounded-lg border border-lime-300/35 bg-lime-500/22 px-2.5 py-1.5 text-xs font-medium text-lime-50 hover:bg-lime-500/34 disabled:opacity-50"
                           >
                             {flyerTextLoading ? 'Navrhuji…' : 'Navrhnout text letáku'}
                           </button>
@@ -2384,7 +2384,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                             type="button"
                             onClick={handleGenerateFlyer}
                             disabled={flyerLoading || !generatedImage}
-                            className="rounded-lg border border-lime-300/30 bg-lime-500/20 px-2.5 py-1.5 text-xs font-medium text-lime-50 hover:bg-lime-500/30 disabled:opacity-50"
+                            className="rounded-lg border border-lime-300/35 bg-lime-500/22 px-2.5 py-1.5 text-xs font-medium text-lime-50 hover:bg-lime-500/34 disabled:opacity-50"
                           >
                             {flyerLoading ? 'Generuji…' : 'Vygenerovat leták'}
                           </button>
@@ -2392,7 +2392,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                             <button
                               type="button"
                               onClick={handleDownloadFlyer}
-                              className="rounded-lg border border-slate-700 bg-slate-950 px-2.5 py-1.5 text-xs font-medium text-slate-200 transition hover:text-white"
+                              className="rounded-lg border border-slate-700/90 bg-slate-950/82 px-2.5 py-1.5 text-xs font-medium text-slate-200 transition hover:border-slate-500 hover:text-white"
                             >
                               Stáhnout leták
                             </button>
@@ -2405,7 +2405,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                           value={flyerTitle}
                           onChange={(e) => setFlyerTitle(e.target.value)}
                           placeholder="Nadpis letáku"
-                          className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-3 text-sm font-semibold text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-lime-400 focus:ring-4 focus:ring-lime-500/10"
+                          className="rounded-xl border border-slate-700/90 bg-[#0b1220] px-3 py-3 text-sm font-semibold text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-lime-400 focus:ring-4 focus:ring-lime-500/10"
                         />
 
                         <div className="grid grid-cols-3 gap-2">
@@ -2417,8 +2417,8 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                               className={classNames(
                                 'rounded-xl border px-2 py-2 text-xs font-semibold transition',
                                 flyerTemplate === template.id
-                                  ? 'border-lime-300/30 bg-lime-500/20 text-lime-50'
-                                  : 'border-slate-700 bg-slate-950 text-slate-300 hover:text-white'
+                                  ? 'border-lime-300/35 bg-lime-500/22 text-lime-50'
+                                  : 'border-slate-700/90 bg-slate-950/82 text-slate-300 hover:border-slate-500 hover:text-white'
                               )}
                             >
                               {template.label}
@@ -2431,7 +2431,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                         value={flyerText}
                         onChange={(e) => setFlyerText(e.target.value)}
                         placeholder="Sem můžeš ručně upravit nebo nechat AI navrhnout text letáku."
-                        className="min-h-[160px] w-full rounded-xl border border-slate-800 bg-slate-950 p-3 text-sm leading-7 text-slate-200 outline-none transition placeholder:text-slate-500 focus:border-lime-400 focus:ring-4 focus:ring-lime-500/10"
+                        className="min-h-[160px] w-full rounded-xl border border-slate-700/90 bg-[#0b1220] p-3 text-sm leading-7 text-slate-200 outline-none transition placeholder:text-slate-500 focus:border-lime-400 focus:ring-4 focus:ring-lime-500/10"
                       />
 
                       <div className="mt-4 rounded-xl border border-lime-300/20 bg-slate-950/20 p-3 text-xs leading-6 text-lime-50/85">
