@@ -1786,7 +1786,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
               </div>
 
               <div className="space-y-5">
-                <div className="rounded-[22px] border-2 border-[#c7d3b8] bg-white p-4 shadow-[0_10px_22px_rgba(15,23,42,0.05)]">
+                <div className="rounded-[22px] border-2 border-[#c7d3b8] border-l-[5px] border-l-[#8fbb1a] bg-white p-4 shadow-[0_10px_22px_rgba(15,23,42,0.05)]">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="flex items-center gap-2">
                       <Target className="h-4 w-4 text-lime-500" />
@@ -1854,7 +1854,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                   )}
                 </div>
 
-                <div className="rounded-[22px] border-2 border-[#c7d3b8] bg-white p-4 shadow-[0_10px_22px_rgba(15,23,42,0.05)]">
+                <div className="rounded-[22px] border-2 border-[#c7d3b8] border-l-[5px] border-l-[#8fbb1a] bg-white p-4 shadow-[0_10px_22px_rgba(15,23,42,0.05)]">
                   <div className="mb-1 flex items-center justify-between">
                     <label className="block text-xs font-bold uppercase tracking-wide text-slate-500">
                       Téma / hlavní myšlenka
@@ -1869,7 +1869,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                   />
                 </div>
 
-                <div className="rounded-[22px] border-2 border-[#c7d3b8] bg-white p-4 shadow-[0_10px_22px_rgba(15,23,42,0.05)]">
+                <div className="rounded-[22px] border-2 border-[#c7d3b8] border-l-[5px] border-l-[#8fbb1a] bg-white p-4 shadow-[0_10px_22px_rgba(15,23,42,0.05)]">
                   <div className="mb-4 flex items-center gap-2 rounded-xl bg-[#f7faee] px-3 py-2 ring-1 ring-[#e3ebd6]">
                     <div className="h-2.5 w-2.5 rounded-full bg-lime-500" />
                     <p className="text-sm font-bold text-slate-900">Cílení a formát</p>
@@ -1887,7 +1887,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                   </div>
                 </div>
 
-                <div className="rounded-[22px] border-2 border-[#c7d3b8] bg-white p-4 shadow-[0_10px_22px_rgba(15,23,42,0.05)]">
+                <div className="rounded-[22px] border-2 border-[#c7d3b8] border-l-[5px] border-l-[#8fbb1a] bg-white p-4 shadow-[0_10px_22px_rgba(15,23,42,0.05)]">
                   <div className="mb-4 flex items-center gap-2 rounded-xl bg-[#f7faee] px-3 py-2 ring-1 ring-[#e3ebd6]">
                     <div className="h-2.5 w-2.5 rounded-full bg-lime-500" />
                     <p className="text-sm font-bold text-slate-900">Firemní cílení podle IČO</p>
@@ -1981,7 +1981,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                 </div>
               </div>
 
-              <div className="mt-4 rounded-[22px] border-2 border-[#c7d3b8] bg-white p-4 shadow-[0_10px_22px_rgba(15,23,42,0.05)]">
+              <div className="mt-4 rounded-[22px] border-2 border-[#c7d3b8] border-l-[5px] border-l-[#8fbb1a] bg-white p-4 shadow-[0_10px_22px_rgba(15,23,42,0.05)]">
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <p className="text-sm font-semibold text-slate-900">Režim obrázku</p>
@@ -2022,7 +2022,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                 </div>
 
                 {imageMode === 'edit' && (
-                  <div className="mt-4 rounded-[22px] border-2 border-[#c7d3b8] bg-white p-4 shadow-[0_10px_22px_rgba(15,23,42,0.05)]">
+                  <div className="mt-4 rounded-[22px] border-2 border-[#c7d3b8] border-l-[5px] border-l-[#8fbb1a] bg-white p-4 shadow-[0_10px_22px_rgba(15,23,42,0.05)]">
                     {companyPhotoLibrary.length > 0 && (
                       <div className="mb-4">
                         <div className="flex items-center justify-between gap-3">
@@ -2124,7 +2124,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                   </div>
                 )}
 
-                <div className="mt-4 rounded-[22px] border-2 border-[#c7d3b8] bg-white p-4 shadow-[0_10px_22px_rgba(15,23,42,0.05)]">
+                <div className="mt-4 rounded-[22px] border-2 border-[#c7d3b8] border-l-[5px] border-l-[#8fbb1a] bg-white p-4 shadow-[0_10px_22px_rgba(15,23,42,0.05)]">
                   <div>
                     <p className="text-sm font-semibold text-slate-900">Pozice loga</p>
                     <p className="mt-1 text-xs text-slate-500">
