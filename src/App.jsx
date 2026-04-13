@@ -1864,15 +1864,15 @@ Piš pro roli: ${resolvedContactLabel}.`
             <div className="rounded-2xl border border-white/80 bg-white px-4 py-3 shadow-[0_10px_24px_rgba(15,23,42,0.12)]">
               <img
                 src={logoImageUrl}
-                alt="ChytrĂˇ pÄ›na"
+                alt="Chytrá pěna"
                 className="h-12 w-auto sm:h-14"
               />
             </div>
           </div>
 
           <div className="text-center">
-            <h1 className="text-xl font-extrabold tracking-tight text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.15)] sm:text-2xl">GenerĂˇtor pĹ™Ă­spÄ›vkĹŻ pro sociĂˇlnĂ­ sĂ­tÄ›</h1>
-            <p className="mt-1 text-sm font-medium text-lime-50/95">ChytrĂˇ pÄ›na Bohemia s.r.o.</p>
+            <h1 className="text-xl font-extrabold tracking-tight text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.15)] sm:text-2xl">Generátor příspěvků pro sociální sítě</h1>
+            <p className="mt-1 text-sm font-medium text-lime-50/95">Chytrá pěna Bohemia s.r.o.</p>
           </div>
 
           <div />
@@ -1887,7 +1887,7 @@ Piš pro roli: ${resolvedContactLabel}.`
                 <div className="rounded-xl bg-lime-100 p-2 text-lime-700">
                   <Lightbulb className="h-5 w-5" />
                 </div>
-                <h2 className="text-lg font-bold">ZadĂˇnĂ­ pĹ™Ă­spÄ›vku</h2>
+                <h2 className="text-lg font-bold">Zadání příspěvku</h2>
               </div>
 
               <div className="space-y-5">
@@ -1895,7 +1895,7 @@ Piš pro roli: ${resolvedContactLabel}.`
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="flex items-center gap-2">
                       <Target className="h-4 w-4 text-lime-500" />
-                      <h3 className="text-sm font-semibold text-slate-900">RychlĂ© Ĺˇablony zadĂˇnĂ­</h3>
+                      <h3 className="text-sm font-semibold text-slate-900">Rychlé šablony zadání</h3>
                     </div>
 
                     <button
@@ -1927,7 +1927,7 @@ Piš pro roli: ${resolvedContactLabel}.`
                             value={item}
                             onChange={(e) => handleTemplateChange(index, e.target.value)}
                             className="min-w-0 flex-1 rounded-xl border border-[#d3dbc8] bg-[#fffefb] px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-lime-300 focus:ring-4 focus:ring-lime-100"
-                            placeholder="Text rychlĂ© Ĺˇablony"
+                            placeholder="Text rychlé šablony"
                           />
                           <button
                             type="button"
@@ -1945,14 +1945,14 @@ Piš pro roli: ${resolvedContactLabel}.`
                           onClick={handleAddTemplate}
                           className="rounded-xl border border-[#d3dbc8] bg-[#fffefb] px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-lime-300 hover:bg-lime-50 hover:text-lime-700"
                         >
-                          PĹ™idat Ĺˇablonu
+                          Přidat šablonu
                         </button>
                         <button
                           type="button"
                           onClick={handleResetTemplates}
                           className="rounded-xl border border-[#d3dbc8] bg-[#fffefb] px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
                         >
-                          Obnovit vĂ˝chozĂ­
+                          Obnovit výchozí
                         </button>
                       </div>
                     </div>
@@ -1962,13 +1962,13 @@ Piš pro roli: ${resolvedContactLabel}.`
                 <div className="rounded-[22px] border-2 border-[#c7d3b8] border-l-[5px] border-l-[#8fbb1a] bg-white p-4 shadow-[0_10px_22px_rgba(15,23,42,0.05)]">
                   <div className="mb-1 flex items-center justify-between">
                     <label className="block text-xs font-bold uppercase tracking-wide text-slate-500">
-                      TĂ©ma / hlavnĂ­ myĹˇlenka
+                      Téma / hlavní myšlenka
                     </label>
                     <span className="text-xs text-slate-400">{estimatedWords} slov</span>
                   </div>
                   <textarea
                     className="h-28 w-full resize-none rounded-2xl border border-[#d0d9c4] bg-[#fffefb] p-4 text-sm outline-none shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] transition placeholder:text-slate-400 focus:border-lime-300 focus:ring-4 focus:ring-lime-100"
-                    placeholder="NapĹ™. ProÄŤ zateplit stĹ™echu prĂˇvÄ› teÄŹ a co tĂ­m majitel domu reĂˇlnÄ› zĂ­skĂˇ"
+                    placeholder="Např. Proč zateplit střechu právě teď a co tím majitel domu reálně získá"
                     value={contentPrompt}
                     onChange={(e) => setContentPrompt(e.target.value)}
                   />
@@ -1977,28 +1977,28 @@ Piš pro roli: ${resolvedContactLabel}.`
                 <div className="rounded-[22px] border-2 border-[#c7d3b8] border-l-[5px] border-l-[#8fbb1a] bg-white p-4 shadow-[0_10px_22px_rgba(15,23,42,0.05)]">
                   <div className="mb-4 flex items-center gap-2 rounded-xl bg-[#f7faee] px-3 py-2 ring-1 ring-[#e3ebd6]">
                     <div className="h-2.5 w-2.5 rounded-full bg-lime-500" />
-                    <p className="text-sm font-bold text-slate-900">CĂ­lenĂ­ a formĂˇt</p>
+                    <p className="text-sm font-bold text-slate-900">Cílení a formát</p>
                   </div>
 
                   <div className="grid gap-3 sm:grid-cols-2">
-                    <FieldSelect label="CĂ­lovka" value={targetAudience} onChange={setTargetAudience} options={audienceOptions} />
+                    <FieldSelect label="Cílovka" value={targetAudience} onChange={setTargetAudience} options={audienceOptions} />
                     <FieldSelect label="Platforma" value={platform} onChange={setPlatform} options={platformOptions} />
-                    <FieldSelect label="TĂłn" value={tone} onChange={setTone} options={toneOptions} />
-                    <FieldSelect label="DĂ©lka" value={postLength} onChange={setPostLength} options={lengthOptions} />
+                    <FieldSelect label="Tón" value={tone} onChange={setTone} options={toneOptions} />
+                    <FieldSelect label="Délka" value={postLength} onChange={setPostLength} options={lengthOptions} />
                   </div>
 
                   <div className="mt-3">
-                    <FieldSelect label="VĂ˝zva k akci (CTA)" value={cta} onChange={setCta} options={ctaOptions} />
+                    <FieldSelect label="Výzva k akci (CTA)" value={cta} onChange={setCta} options={ctaOptions} />
                   </div>
                 </div>
 
                 <div className="rounded-[22px] border-2 border-[#c7d3b8] border-l-[5px] border-l-[#8fbb1a] bg-white p-4 shadow-[0_10px_22px_rgba(15,23,42,0.05)]">
                   <div className="mb-4 flex items-center gap-2 rounded-xl bg-[#f7faee] px-3 py-2 ring-1 ring-[#e3ebd6]">
                     <div className="h-2.5 w-2.5 rounded-full bg-lime-500" />
-                    <p className="text-sm font-bold text-slate-900">FiremnĂ­ cĂ­lenĂ­ podle IÄŚO</p>
+                    <p className="text-sm font-bold text-slate-900">Firemní cílení podle IČO</p>
                   </div>
                   <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-slate-500">
-                    IÄŚO firmy
+                    IČO firmy
                   </label>
                   <div className="flex gap-2">
                     <input
@@ -2006,7 +2006,7 @@ Piš pro roli: ${resolvedContactLabel}.`
                       onChange={(e) => handleCompanyIcoChange(e.target.value)}
                       inputMode="numeric"
                       maxLength={8}
-                      placeholder="NapĹ™. 12345678"
+                      placeholder="Např. 12345678"
                       className="min-w-0 flex-1 rounded-2xl border border-[#d0d9c4] bg-[#fffefb] px-3 py-3 text-sm text-slate-800 outline-none shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] transition placeholder:text-slate-400 focus:border-lime-300 focus:ring-4 focus:ring-lime-100"
                     />
                     <button
@@ -2021,12 +2021,12 @@ Piš pro roli: ${resolvedContactLabel}.`
                   {companyModeActive && (
                     <>
                     <p className="mt-3 text-xs leading-5 text-slate-500">
-                      DohledanĂˇ firma: <span className="font-semibold text-slate-700">{formatCompanyProfile(companyProfile)}</span>
+                      Dohledaná firma: <span className="font-semibold text-slate-700">{formatCompanyProfile(companyProfile)}</span>
                     </p>
                     <p className="text-xs leading-5 text-slate-500">
-                      DoporuÄŤenĂˇ osoba / funkce k oslovenĂ­:{' '}
+                      Doporučená osoba / funkce k oslovení:{' '}
                       <span className="font-semibold text-slate-700">
-                        {formatRecommendedContact(companyProfile) || 'vedenĂ­ spoleÄŤnosti'}
+                        {formatRecommendedContact(companyProfile) || 'vedení společnosti'}
                       </span>
                     </p>
                     </>
@@ -2040,48 +2040,48 @@ Piš pro roli: ${resolvedContactLabel}.`
                 <div className="rounded-xl bg-lime-100 p-2 text-lime-700">
                   <Settings2 className="h-5 w-5" />
                 </div>
-                <h2 className="text-lg font-bold">NastavenĂ­ vĂ˝stupu</h2>
+                <h2 className="text-lg font-bold">Nastavení výstupu</h2>
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2">
                 <ToggleCard
                   checked={useBrandContext}
                   onChange={setUseBrandContext}
-                  title="PouĹľĂ­vat firemnĂ­ data"
-                  description="ZapojĂ­ fakta o ĂşsporĂˇch, kvalitÄ›, realizacĂ­ch a dotacĂ­ch."
+                  title="Používat firemní data"
+                  description="Zapojí fakta o úsporách, kvalitě, realizacích a dotacích."
                 />
                 <ToggleCard
                   checked={useKnowledgeBase}
                   onChange={setUseKnowledgeBase}
-                  title="PouĹľĂ­t znalostnĂ­ databĂˇzi"
-                  description="DoplnĂ­ do promptu relevantnĂ­ ovÄ›Ĺ™enĂ© poznatky podle tĂ©matu a cĂ­lovky."
+                  title="Použít znalostní databázi"
+                  description="Doplní do promptu relevantní ověřené poznatky podle tématu a cílovky."
                 />
                 <ToggleCard
                   checked={strictClaims}
                   onChange={setStrictClaims}
-                  title="DrĹľet se ovÄ›Ĺ™enĂ˝ch tvrzenĂ­"
-                  description="OmezĂ­ vymĂ˝ĹˇlenĂ­ ÄŤĂ­sel a marketingovĂ˝ch pĹ™ehĂˇnÄ›nĂ­."
+                  title="Držet se ověřených tvrzení"
+                  description="Omezí vymýšlení čísel a marketingových přehánění."
                 />
                 <ToggleCard
                   checked={includeEmojis}
                   onChange={setIncludeEmojis}
-                  title="PouĹľĂ­t emoji"
-                  description="VhodnĂ© hlavnÄ› pro Facebook a Instagram."
+                  title="Použít emoji"
+                  description="Vhodné hlavně pro Facebook a Instagram."
                 />
                 <div className="sm:col-span-2">
                   <ToggleCard
                     checked={includeVisual}
                     onChange={setIncludeVisual}
-                    title="Navrhnout vizuĂˇl"
-                    description="PĹ™idĂˇ konkrĂ©tnĂ­ doporuÄŤenĂ­ k fotce nebo grafice."
+                    title="Navrhnout vizuál"
+                    description="Přidá konkrétní doporučení k fotce nebo grafice."
                   />
                 </div>
                 <div className="sm:col-span-2">
                   <ToggleCard
                     checked={includeHashtags}
                     onChange={setIncludeHashtags}
-                    title="PĹ™idat hashtagy"
-                    description="Na konci vĂ˝stupu doplnĂ­ 5 relevantnĂ­ch hashtagĹŻ."
+                    title="Přidat hashtagy"
+                    description="Na konci výstupu doplní 5 relevantních hashtagů."
                   />
                 </div>
               </div>
@@ -2089,9 +2089,9 @@ Piš pro roli: ${resolvedContactLabel}.`
               <div className="mt-4 rounded-[22px] border-2 border-[#c7d3b8] border-l-[5px] border-l-[#8fbb1a] bg-white p-4 shadow-[0_10px_22px_rgba(15,23,42,0.05)]">
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <p className="text-sm font-semibold text-slate-900">ReĹľim obrĂˇzku</p>
+                    <p className="text-sm font-semibold text-slate-900">Režim obrázku</p>
                     <p className="mt-1 text-xs text-slate-500">
-                      Pro vÄ›rnÄ›jĹˇĂ­ vĂ˝stupy doporuÄŤuju reĂˇlnou fotku s AI Ăşpravou.
+                      Pro věrnější výstupy doporučuju reálnou fotku s AI úpravou.
                     </p>
                   </div>
                 </div>
@@ -2134,9 +2134,9 @@ Piš pro roli: ${resolvedContactLabel}.`
                       <div className="mb-4">
                         <div className="flex items-center justify-between gap-3">
                           <div>
-                            <p className="text-sm font-semibold text-slate-900">FiremnĂ­ galerie</p>
+                            <p className="text-sm font-semibold text-slate-900">Firemní galerie</p>
                             <p className="mt-1 text-xs text-slate-500">
-                              Vyber fotku ze sloĹľky `src/assets/Foto` a pouĹľij ji jako zĂˇklad pro AI Ăşpravu.
+                              Vyber fotku ze složky `src/assets/Foto` a použij ji jako základ pro AI úpravu.
                             </p>
                           </div>
                           <button
@@ -2180,9 +2180,9 @@ Piš pro roli: ${resolvedContactLabel}.`
 
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div>
-                        <p className="text-sm font-semibold text-slate-900">PodkladovĂˇ firemnĂ­ fotka</p>
+                        <p className="text-sm font-semibold text-slate-900">Podkladová firemní fotka</p>
                         <p className="mt-1 text-xs text-slate-500">
-                          Nahraj reĂˇlnou fotku realizace, kterou mĂˇ AI upravit pro sociĂˇlnĂ­ sĂ­tÄ›.
+                          Nahraj reálnou fotku realizace, kterou má AI upravit pro sociální sítě.
                         </p>
                       </div>
                       <input
@@ -2236,14 +2236,14 @@ Piš pro roli: ${resolvedContactLabel}.`
                   <div>
                     <p className="text-sm font-semibold text-slate-900">Pozice loga</p>
                     <p className="mt-1 text-xs text-slate-500">
-                      Brand badge se vklĂˇdĂˇ aĹľ po vygenerovĂˇnĂ­ obrĂˇzku, zcela nezĂˇvisle na AI.
+                      Brand badge se vkládá až po vygenerování obrázku, zcela nezávisle na AI.
                     </p>
                   </div>
 
                   <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
                     {[
-                      ['top-left', 'Vlevo nahoĹ™e'],
-                      ['top-right', 'Vpravo nahoĹ™e'],
+                      ['top-left', 'Vlevo nahoře'],
+                      ['top-right', 'Vpravo nahoře'],
                       ['bottom-left', 'Vlevo dole'],
                       ['bottom-right', 'Vpravo dole'],
                     ].map(([value, label]) => (
@@ -2520,7 +2520,7 @@ Piš pro roli: ${resolvedContactLabel}.`
                               onClick={handleDownloadFlyer}
                               className="rounded-lg border border-slate-700/90 bg-slate-950/82 px-2.5 py-1.5 text-xs font-medium text-slate-200 transition hover:border-slate-500 hover:text-white"
                             >
-                              StĂˇhnout letĂˇk
+                              Stáhnout leták
                             </button>
                           )}
                         </div>
@@ -2530,7 +2530,7 @@ Piš pro roli: ${resolvedContactLabel}.`
                         <input
                           value={flyerTitle}
                           onChange={(e) => setFlyerTitle(e.target.value)}
-                          placeholder="Nadpis letĂˇku"
+                          placeholder="Nadpis letáku"
                           className="rounded-xl border border-slate-700/90 bg-[#0b1220] px-3 py-3 text-sm font-semibold text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-lime-400 focus:ring-4 focus:ring-lime-500/10"
                         />
 
@@ -2557,19 +2557,19 @@ Piš pro roli: ${resolvedContactLabel}.`
                       <textarea
                         value={flyerText}
                         onChange={(e) => setFlyerText(e.target.value)}
-                        placeholder="Sem mĹŻĹľeĹˇ ruÄŤnÄ› upravit nebo nechat AI navrhnout text letĂˇku."
+                        placeholder="Sem můžeš ručně upravit nebo nechat AI navrhnout text letáku."
                         className="min-h-[160px] w-full rounded-xl border border-slate-700/90 bg-[#0b1220] p-3 text-sm leading-7 text-slate-200 outline-none transition placeholder:text-slate-500 focus:border-lime-400 focus:ring-4 focus:ring-lime-500/10"
                       />
 
                       <div className="mt-4 rounded-xl border border-lime-300/20 bg-slate-950/20 p-3 text-xs leading-6 text-lime-50/85">
-                        LetĂˇk se sklĂˇdĂˇ z vygenerovanĂ© fotografie, textu vĂ˝Ĺˇe a firemnĂ­ch kontaktĹŻ. NejlĂ©pe funguje s krĂˇtkĂ˝m nadpisem a nÄ›kolika struÄŤnĂ˝mi benefitovĂ˝mi vÄ›tami.
+                        Leták se skládá z vygenerované fotografie, textu výše a firemních kontaktů. Nejlépe funguje s krátkým nadpisem a několika stručnými benefitovými větami.
                       </div>
 
                       {flyerImage && (
                         <div className="mt-4 overflow-hidden rounded-xl border border-lime-300/20">
                           <img
                             src={flyerImage}
-                            alt="NĂˇhled letĂˇku"
+                            alt="Náhled letáku"
                             className="h-auto w-full"
                           />
                         </div>
@@ -2582,13 +2582,13 @@ Piš pro roli: ${resolvedContactLabel}.`
                   <div className="rounded-full border border-slate-800 bg-slate-900 p-5">
                     <MessageCircle className="h-10 w-10 text-slate-700" />
                   </div>
-                  <h3 className="mt-5 text-lg font-semibold text-slate-200">ZatĂ­m nenĂ­ co zobrazit</h3>
+                  <h3 className="mt-5 text-lg font-semibold text-slate-200">Zatím není co zobrazit</h3>
                   <p className="mt-2 max-w-md text-sm leading-6 text-slate-500">
-                    VyplĹte vlevo tĂ©ma, zvolte parametry a spusĹĄte generovĂˇnĂ­. VĂ˝stup se zobrazĂ­ pĹ™ehlednÄ› po sekcĂ­ch.
+                    Vyplňte vlevo téma, zvolte parametry a spusťte generování. Výstup se zobrazí přehledně po sekcích.
                   </p>
                   <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-slate-800 bg-slate-900 px-4 py-2 text-xs text-slate-400">
                     <ChevronRight className="h-4 w-4 text-lime-400" />
-                    ZaÄŤnÄ›te zadĂˇnĂ­m tĂ©matu
+                    Začněte zadáním tématu
                   </div>
                 </div>
               )}
