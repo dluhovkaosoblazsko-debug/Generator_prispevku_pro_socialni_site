@@ -161,8 +161,8 @@ const companyPhotoLibrary = Object.entries(companyPhotoModules).map(([path, url]
 }));
 
 const flyerTemplates = [
-  { id: 'classic', label: 'KlasickĂ˝' },
-  { id: 'split', label: 'RozdÄ›lenĂ˝' },
+  { id: 'classic', label: 'Klasický' },
+  { id: 'split', label: 'Rozdělený' },
   { id: 'focus', label: 'Benefit' },
 ];
 
@@ -174,7 +174,7 @@ function loadImage(src) {
   return new Promise((resolve, reject) => {
     const image = new Image();
     image.onload = () => resolve(image);
-    image.onerror = () => reject(new Error(`NepodaĹ™ilo se naÄŤĂ­st obrĂˇzek: ${src}`));
+    image.onerror = () => reject(new Error(`Nepodařilo se načíst obrázek: ${src}`));
     image.src = src;
   });
 }
@@ -183,7 +183,7 @@ function fileToDataUrl(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(String(reader.result || ''));
-    reader.onerror = () => reject(new Error('NepodaĹ™ilo se naÄŤĂ­st vybranou fotku.'));
+    reader.onerror = () => reject(new Error('Nepodařilo se načíst vybranou fotku.'));
     reader.readAsDataURL(file);
   });
 }
@@ -192,7 +192,7 @@ function blobToDataUrl(blob) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(String(reader.result || ''));
-    reader.onerror = () => reject(new Error('NepodaĹ™ilo se pĹ™evĂ©st obrĂˇzek.'));
+    reader.onerror = () => reject(new Error('Nepodařilo se převést obrázek.'));
     reader.readAsDataURL(blob);
   });
 }
@@ -200,7 +200,7 @@ function blobToDataUrl(blob) {
 function extractJsonPayload(text) {
   if (!text) return null;
 
-  const fencedMatch = text.match(/```json\s*([\s\S]*?)```/i);
+  const fencedMatch = text.match(/```json\s*([\s\S]*)```/i);
   const raw = fencedMatch ? fencedMatch[1].trim() : text.trim();
 
   try {
@@ -230,11 +230,11 @@ function serializeGeneratedContent({ main, visual, hashtags }) {
   const sections = [];
 
   if (main) {
-    sections.push(`[HLAVNĂŤ TEXT]\n${main}`);
+    sections.push(`[HLAVNÍ TEXT]\n${main}`);
   }
 
   if (visual) {
-    sections.push(`[NĂVRH VIZUĂLU]\n${visual}`);
+    sections.push(`[NÁVRH VIZUÁLU]\n${visual}`);
   }
 
   if (hashtags) {
@@ -270,22 +270,22 @@ function normalizeIco(value) {
 }
 
 function formatCompanyProfile(company) {
-  if (!company?.name) return '';
+  if (!company.name) return '';
 
   return [
     company.name,
     company.legalForm,
     company.industry,
     company.address,
-    company.ico ? `IÄŚO ${company.ico}` : '',
+    company.ico ? `IČO ${company.ico}` : '',
   ]
     .filter(Boolean)
-    .join(' Â· ');
+    .join(' · ');
 }
 
 function formatRecommendedContact(company) {
-  const recommended = company?.recommendedContact;
-  if (!recommended?.label) return '';
+  const recommended = company.recommendedContact;
+  if (!recommended.label) return '';
   return recommended.label;
 }
 
@@ -374,11 +374,11 @@ function evaluateGeneratedContent({ main, visual, hashtags }, options) {
   const ctaNormalized = (options.cta || '').toLowerCase();
 
   if (!normalizedMain) {
-    issues.push('HlavnĂ­ text chybĂ­.');
+    issues.push('Hlavní text chybí.');
   }
 
   if (normalizedMain && hookCandidates.length < 45) {
-    issues.push('Ăšvod je velmi krĂˇtkĂ˝ a nemusĂ­ dostateÄŤnÄ› zaujmout.');
+    issues.push('Úvod je velmi krátký a nemusí dostatečně zaujmout.');
   }
 
   if (
@@ -386,31 +386,31 @@ function evaluateGeneratedContent({ main, visual, hashtags }, options) {
     ctaNormalized &&
     !normalizedMain.toLowerCase().includes(ctaNormalized.slice(0, Math.max(10, ctaNormalized.length - 8)))
   ) {
-    issues.push('Text nepĹŻsobĂ­, Ĺľe opravdu konÄŤĂ­ zvolenou vĂ˝zvou k akci.');
+    issues.push('Text nepůsobí, že opravdu končí zvolenou výzvou k akci.');
   }
 
   if (options.includeVisual && !visual.trim()) {
-    issues.push('ChybĂ­ nĂˇvrh vizuĂˇlu.');
+    issues.push('Chybí návrh vizuálu.');
   }
 
   if (options.includeHashtags && hashtagList.length !== 5) {
-    issues.push('HashtagĹŻ nenĂ­ pĹ™esnÄ› 5.');
+    issues.push('Hashtagů není přesně 5.');
   }
 
-  if (options.strictClaims && /\b(100 %|garantovan|nejlepĹˇĂ­|bezkonkurenÄŤnĂ­)\b/i.test(normalizedMain)) {
-    issues.push('Text obsahuje silnĂ© marketingovĂ© tvrzenĂ­, kterĂ© mĹŻĹľe bĂ˝t potĹ™eba ovÄ›Ĺ™it.');
+  if (options.strictClaims && /\b(100 %|garantovan|nejlepší|bezkonkurenční)\b/i.test(normalizedMain)) {
+    issues.push('Text obsahuje silné marketingové tvrzení, které může být potřeba ověřit.');
   }
 
-  if (options.postLength.startsWith('KrĂˇtkĂ˝') && words > 110) {
-    issues.push('KrĂˇtkĂˇ varianta je pĹ™Ă­liĹˇ dlouhĂˇ.');
+  if (options.postLength.startsWith('Krátký') && words > 110) {
+    issues.push('Krátká varianta je příliš dlouhá.');
   }
 
-  if (options.postLength.startsWith('StĹ™ednĂ­') && (words < 100 || words > 210)) {
-    issues.push('StĹ™ednĂ­ varianta je mimo doporuÄŤenĂ˝ rozsah.');
+  if (options.postLength.startsWith('Střední') && (words < 100 || words > 210)) {
+    issues.push('Střední varianta je mimo doporučený rozsah.');
   }
 
-  if (options.postLength.startsWith('DlouhĂ˝') && words < 170) {
-    issues.push('DlouhĂˇ varianta je zatĂ­m spĂ­Ĺˇ struÄŤnĂˇ.');
+  if (options.postLength.startsWith('Dlouhý') && words < 170) {
+    issues.push('Dlouhá varianta je zatím spíš stručná.');
   }
 
   return {
@@ -424,20 +424,20 @@ function parseGeneratedContent(text) {
     return { main: '', visual: '', hashtags: '' };
   }
 
-  const mainMatch = text.match(/\[HLAVNĂŤ TEXT\]\s*:?[\s\S]*?(?=\[NĂVRH VIZUĂLU\]|\[HASHTAGY\]|$)/i);
-  const visualMatch = text.match(/\[NĂVRH VIZUĂLU\]\s*:?[\s\S]*?(?=\[HASHTAGY\]|$)/i);
-  const hashtagsMatch = text.match(/\[HASHTAGY\]\s*:?[\s\S]*$/i);
+  const mainMatch = text.match(/\[HLAVNÍ TEXT\]\s*:?[\s\S]*?(?=\[NÁVRH VIZUÁLU\]|\[HASHTAGY\]|$)/i);
+  const visualMatch = text.match(/\[NÁVRH VIZUÁLU\]\s*:?[\s\S]*?(?=\[HASHTAGY\]|$)/i);
+  const hashtagsMatch = text.match(/\[HASHTAGY\]\s*:[\s\S]*$/i);
 
   let main = text.trim();
   let visual = '';
   let hashtags = '';
 
   if (mainMatch) {
-    main = mainMatch[0].replace(/\[HLAVNĂŤ TEXT\]\s*:?/i, '').trim();
+    main = mainMatch[0].replace(/\[HLAVNÍ TEXT\]\s*:?/i, '').trim();
   }
 
   if (visualMatch) {
-    visual = visualMatch[0].replace(/\[NĂVRH VIZUĂLU\]\s*:?/i, '').trim();
+    visual = visualMatch[0].replace(/\[NÁVRH VIZUÁLU\]\s*:?/i, '').trim();
   }
 
   if (hashtagsMatch) {
@@ -461,7 +461,7 @@ function getRelevantKnowledgeEntries(contentPrompt, targetAudience) {
   const normalizedPrompt = (contentPrompt || '').toLowerCase();
 
   return knowledgeBase.filter((entry) => {
-    const audienceMatch = !entry.audiences?.length || entry.audiences.includes(targetAudience);
+    const audienceMatch = !entry.audiences.length || entry.audiences.includes(targetAudience);
     const keywordMatch =
       !normalizedPrompt ||
       entry.keywords.some((keyword) => normalizedPrompt.includes(keyword.toLowerCase()));
@@ -625,7 +625,7 @@ export default function App() {
       const raw = localStorage.getItem(sourceImageStorageKey);
       if (!raw) return;
       const parsedSourceImage = JSON.parse(raw);
-      if (parsedSourceImage?.dataUrl) {
+      if (parsedSourceImage.dataUrl) {
         setSourceImageDataUrl(parsedSourceImage.dataUrl);
         setSourceImageName(parsedSourceImage.name || 'firemni-fotka');
       }
@@ -856,7 +856,7 @@ Telefon: ${companyContact.phone}`.trim();
     if (!text) return;
 
     try {
-      if (navigator?.clipboard?.writeText) {
+      if (navigator.clipboard.writeText) {
         await navigator.clipboard.writeText(text);
       } else {
         const textArea = document.createElement('textarea');
@@ -903,7 +903,7 @@ Telefon: ${companyContact.phone}`.trim();
       const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
-        throw new Error(data?.error || 'NepodaĹ™ilo se dohledat firmu podle IÄŚO.');
+        throw new Error(data.error || 'NepodaĹ™ilo se dohledat firmu podle IÄŚO.');
       }
 
       setCompanyProfile(data);
@@ -1120,7 +1120,7 @@ Telefon: ${companyContact.phone}`.trim();
       for (let i = 0; i < 3; i += 1) {
         try {
           const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/${currentModel}:generateContent?key=${apiKey}`,
+            `https://generativelanguage.googleapis.com/v1beta/models/${currentModel}:generateContentkey=${apiKey}`,
             {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -1145,7 +1145,7 @@ Telefon: ${companyContact.phone}`.trim();
           const data = await response.json();
 
           if (!response.ok) {
-            const apiMessage = data?.error?.message || `HTTP ${response.status}`;
+            const apiMessage = data.error.message || `HTTP ${response.status}`;
 
             if (response.status === 503) {
               throw new Error(`Model ${currentModel} je momentĂˇlnÄ› pĹ™etĂ­ĹľenĂ˝.`);
@@ -1161,7 +1161,7 @@ Telefon: ${companyContact.phone}`.trim();
           const resultText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
           if (!resultText) {
-            throw new Error(`Model ${currentModel} vrĂˇtil prĂˇzdnou odpovÄ›ÄŹ.`);
+            throw new Error(`Model ${currentModel} vrátil prázdnou odpověď.`);
           }
 
           setLoading(false);
@@ -1202,7 +1202,7 @@ ${visualPrompt}`;
       temperature: 0.2,
     });
 
-    return translated?.trim() || visualPrompt;
+    return translated.trim() || visualPrompt;
   };
 
   const handleSuggestFlyerText = async () => {
@@ -1269,7 +1269,7 @@ Telefon: ${companyContact.phone}`;
 
       if (result) {
         const payload = extractJsonPayload(result);
-        if (payload?.title || payload?.body) {
+        if (payload.title || payload.body) {
           setFlyerTitle(String(payload.title || '').trim());
           setFlyerText(String(payload.body || '').trim());
         } else {
@@ -1481,12 +1481,12 @@ Telefon: ${companyContact.phone}`;
     const visualPrompt = parsed.visual || contentPrompt;
 
     if (!visualPrompt.trim()) {
-      setImageError('NejdĹ™Ă­v je potĹ™eba mĂ­t nĂˇvrh vizuĂˇlu nebo aspoĹ vyplnÄ›nĂ© tĂ©ma pĹ™Ă­spÄ›vku.');
+      setImageError('Nejdřív je potřeba mít návrh vizuálu nebo aspoň vyplněné téma příspěvku.');
       return;
     }
 
     if (imageMode === 'edit' && !sourceImageDataUrl) {
-      setImageError('Pro reĹľim reĂˇlnĂ© fotky nejdĹ™Ă­v nahrajte firemnĂ­ fotografii.');
+      setImageError('Pro režim reálné fotky nejdřív nahrajte firemní fotografii.');
       return;
     }
 
@@ -1500,10 +1500,10 @@ Telefon: ${companyContact.phone}`;
           ? {
               imageDataUrl: sourceImageDataUrl,
               fileName: sourceImageName || 'firemni-fotka.png',
-              prompt: `Uprav pĹ™iloĹľenou reĂˇlnou fotografii pro marketingovĂ˝ pĹ™Ă­spÄ›vek firmy ChytrĂˇ pÄ›na. Zachovej hlavnĂ­ scĂ©nu, konstrukci, proporce i vÄ›rohodnost. VylepĹˇi svÄ›tlo, ÄŤistotu kompozice, barevnost a celkovĂ˝ profesionĂˇlnĂ­ dojem pro sociĂˇlnĂ­ sĂ­tÄ›. Bez jakĂ©hokoli textu v obrĂˇzku, bez nĂˇpisĹŻ, bez titulkĹŻ, bez typografie, bez loga, bez watermarku, bez pĂ­smen a bez ÄŤĂ­sel. ${visualPrompt}`,
+              prompt: `Uprav přiloženou reálnou fotografii pro marketingový příspěvek firmy Chytrá pěna. Zachovej hlavní scénu, konstrukci, proporce i věrohodnost. Vylepši světlo, čistotu kompozice, barevnost a celkový profesionální dojem pro sociální sítě. Bez jakéhokoli textu v obrázku, bez nápisů, bez titulků, bez typografie, bez loga, bez watermarku, bez písmen a bez čísel. ${visualPrompt}`,
             }
           : {
-              prompt: `RealistickĂ˝ marketingovĂ˝ vizuĂˇl pro firmu ChytrĂˇ pÄ›na. ProfesionĂˇlnĂ­ fotografie vhodnĂˇ pro sociĂˇlnĂ­ sĂ­tÄ›. Bez jakĂ©hokoli textu v obrĂˇzku, bez nĂˇpisĹŻ, bez titulkĹŻ, bez typografie, bez loga, bez watermarku, bez pĂ­smen a bez ÄŤĂ­sel. ${visualPrompt}`,
+              prompt: `Realistický marketingový vizuál pro firmu Chytrá pěna. Profesionální fotografie vhodná pro sociální sítě. Bez jakéhokoli textu v obrázku, bez nápisů, bez titulků, bez typografie, bez loga, bez watermarku, bez písmen a bez čísel. ${visualPrompt}`,
             };
 
       const response = await fetch(endpoint, {
@@ -1525,15 +1525,15 @@ Telefon: ${companyContact.phone}`;
             : payload?.error || payload?.message;
 
         if (response.status === 401) {
-          throw new Error('OpenAI API klĂ­ÄŤ je neplatnĂ˝ nebo chybĂ­. Zkontrolujte OPENAI_API_KEY v .env a restartujte dev server.');
+          throw new Error('OpenAI API klíč je neplatný nebo chybí. Zkontrolujte OPENAI_API_KEY v .env a restartujte dev server.');
         }
 
         if (response.status === 429) {
-          throw new Error('Byl pĹ™ekroÄŤen limit OpenAI API nebo doĹˇel kredit. Zkontrolujte billing a limity u OpenAI.');
+          throw new Error('Byl překročen limit OpenAI API nebo došel kredit. Zkontrolujte billing a limity u OpenAI.');
         }
 
         if (response.status === 400) {
-          throw new Error(message || 'OpenAI odmĂ­tlo poĹľadavek. Zkuste upravit prompt nebo nastavenĂ­ obrĂˇzku.');
+          throw new Error(message || 'OpenAI odmítlo požadavek. Zkuste upravit prompt nebo nastavení obrázku.');
         }
 
         throw new Error(message || `HTTP ${response.status}`);
@@ -1769,7 +1769,7 @@ Piš pro roli: ${resolvedContactLabel}.`
   };
 
   const handleAddTemplate = () => {
-    setPromptTemplates((current) => [...current, 'NovĂˇ rychlĂˇ Ĺˇablona']);
+    setPromptTemplates((current) => [...current, 'Nová rychlá šablona']);
     setTemplateEditorOpen(true);
   };
 
@@ -1782,7 +1782,7 @@ Piš pro roli: ${resolvedContactLabel}.`
   };
 
   const handleOpenSourceImagePicker = () => {
-    fileInputRef.current?.click();
+    fileInputRef.current.click();
   };
 
   const handleSourceImageSelected = async (event) => {
@@ -1798,7 +1798,7 @@ Piš pro roli: ${resolvedContactLabel}.`
       setCompanyGalleryOpen(false);
       setImageError('');
     } catch (err) {
-      setImageError(err.message || 'NepodaĹ™ilo se naÄŤĂ­st vybranou fotku.');
+      setImageError(err.message || 'Nepodařilo se načíst vybranou fotku.');
     } finally {
       event.target.value = '';
     }
@@ -1823,7 +1823,7 @@ Piš pro roli: ${resolvedContactLabel}.`
       setCompanyGalleryOpen(false);
       setImageError('');
     } catch {
-      setImageError('NepodaĹ™ilo se naÄŤĂ­st firemnĂ­ fotku z galerie.');
+      setImageError('Nepodařilo se načíst firemní fotku z galerie.');
     }
   };
 
@@ -1903,7 +1903,7 @@ Piš pro roli: ${resolvedContactLabel}.`
                       onClick={() => setTemplateEditorOpen((current) => !current)}
                       className="rounded-full border border-[#cad3bc] bg-[#fbfaf6] px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-lime-300 hover:bg-lime-50 hover:text-lime-700"
                     >
-                      {templateEditorOpen ? 'SkrĂ˝t sprĂˇvu' : 'Spravovat Ĺˇablony'}
+                      {templateEditorOpen ? 'Skrýt správu' : 'Spravovat šablony'}
                     </button>
                   </div>
 
@@ -1968,7 +1968,7 @@ Piš pro roli: ${resolvedContactLabel}.`
                   </div>
                   <textarea
                     className="h-28 w-full resize-none rounded-2xl border border-[#d0d9c4] bg-[#fffefb] p-4 text-sm outline-none shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] transition placeholder:text-slate-400 focus:border-lime-300 focus:ring-4 focus:ring-lime-100"
-                    placeholder="NapĹ™. ProÄŤ zateplit stĹ™echu prĂˇvÄ› teÄŹ a co tĂ­m majitel domu reĂˇlnÄ› zĂ­skĂˇ?"
+                    placeholder="NapĹ™. ProÄŤ zateplit stĹ™echu prĂˇvÄ› teÄŹ a co tĂ­m majitel domu reĂˇlnÄ› zĂ­skĂˇ"
                     value={contentPrompt}
                     onChange={(e) => setContentPrompt(e.target.value)}
                   />
@@ -2015,7 +2015,7 @@ Piš pro roli: ${resolvedContactLabel}.`
                       disabled={companyLookupLoading || !normalizedCompanyIco}
                       className="rounded-2xl border border-[#d0d9c4] bg-[#fffefb] px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-lime-300 hover:bg-lime-50 hover:text-lime-700 disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      {companyLookupLoading ? 'NaÄŤĂ­tĂˇmâ€¦' : 'Dohledat'}
+                      {companyLookupLoading ? 'Načítám…' : 'Dohledat'}
                     </button>
                   </div>
                   {companyModeActive && (
@@ -2103,12 +2103,13 @@ Piš pro roli: ${resolvedContactLabel}.`
                     className={classNames(
                       'rounded-2xl border px-4 py-3 text-left transition',
                       imageMode === 'edit'
-                        ? 'border-lime-400 bg-gradient-to-br from-lime-50 to-[#eef8d8] text-lime-900 shadow-[0_10px_22px_rgba(122,169,10,0.14)]'
+                        ?
+                        'border-lime-400 bg-gradient-to-br from-lime-50 to-[#eef8d8] text-lime-900 shadow-[0_10px_22px_rgba(122,169,10,0.14)]'
                         : 'border-[#d0d9c4] bg-[#fffefb] text-slate-600 hover:border-lime-300 hover:bg-[#fcfdf8]'
                     )}
                   >
-                    <div className="font-semibold">ReĂˇlnĂˇ fotka + AI Ăşprava</div>
-                    <div className="mt-1 text-xs">ZachovĂˇ skuteÄŤnou realizaci a jen ji vizuĂˇlnÄ› doladĂ­.</div>
+                    <div className="font-semibold">Reálná fotka + AI úprava</div>
+                    <div className="mt-1 text-xs">Zachová skutečnou realizaci a jen ji vizuálně doladí.</div>
                   </button>
 
                   <button
@@ -2117,12 +2118,13 @@ Piš pro roli: ${resolvedContactLabel}.`
                     className={classNames(
                       'rounded-2xl border px-4 py-3 text-left transition',
                       imageMode === 'generate'
-                        ? 'border-lime-400 bg-gradient-to-br from-lime-50 to-[#eef8d8] text-lime-900 shadow-[0_10px_22px_rgba(122,169,10,0.14)]'
+                        ?
+                        'border-lime-400 bg-gradient-to-br from-lime-50 to-[#eef8d8] text-lime-900 shadow-[0_10px_22px_rgba(122,169,10,0.14)]'
                         : 'border-[#d0d9c4] bg-[#fffefb] text-slate-600 hover:border-lime-300 hover:bg-[#fcfdf8]'
                     )}
                   >
                     <div className="font-semibold">AI generace od nuly</div>
-                    <div className="mt-1 text-xs">PouĹľije pouze textovĂ˝ popis bez podkladovĂ© fotky.</div>
+                    <div className="mt-1 text-xs">Použije pouze textový popis bez podkladové fotky.</div>
                   </button>
                 </div>
 
@@ -2142,7 +2144,7 @@ Piš pro roli: ${resolvedContactLabel}.`
                             onClick={() => setCompanyGalleryOpen((current) => !current)}
                             className="rounded-xl border border-[#d3dbc8] bg-[#fbfaf6] px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-lime-300 hover:bg-lime-50 hover:text-lime-700"
                           >
-                            {companyGalleryOpen ? 'SkrĂ˝t galerii' : 'OtevĹ™Ă­t galerii'}
+                            {companyGalleryOpen ? 'Skrýt galerii' : 'Otevřít galerii'}
                           </button>
                         </div>
 
@@ -2156,7 +2158,8 @@ Piš pro roli: ${resolvedContactLabel}.`
                                 className={classNames(
                                   'overflow-hidden rounded-2xl border text-left transition',
                                   selectedCompanyPhotoId === photo.id
-                                    ? 'border-lime-300 bg-lime-50 ring-2 ring-lime-200'
+                                    ?
+                                    'border-lime-300 bg-lime-50 ring-2 ring-lime-200'
                                     : 'border-[#d0d9c4] bg-white hover:border-lime-300'
                                 )}
                               >
@@ -2195,7 +2198,7 @@ Piš pro roli: ${resolvedContactLabel}.`
                         className="inline-flex items-center gap-2 rounded-xl border border-[#d0d9c4] bg-[#fbfaf6] px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-lime-300 hover:bg-lime-50 hover:text-lime-700"
                       >
                         <Upload className="h-4 w-4" />
-                        {sourceImageDataUrl ? 'VymÄ›nit fotku' : 'NahrĂˇt fotku'}
+                        {sourceImageDataUrl ? 'Vyměnit fotku' : 'Nahrát fotku'}
                       </button>
                     </div>
 
@@ -2203,13 +2206,13 @@ Piš pro roli: ${resolvedContactLabel}.`
                       <div className="mt-4 flex gap-4 rounded-2xl border border-[#d0d9c4] bg-[#fbfaf6] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]">
                         <img
                           src={sourceImageDataUrl}
-                          alt="VybranĂˇ firemnĂ­ fotka"
+                          alt="Vybraná firemní fotka"
                           className="h-24 w-24 rounded-xl object-cover"
                         />
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-sm font-semibold text-slate-900">{sourceImageName}</p>
                           <p className="mt-1 text-xs leading-5 text-slate-500">
-                            Tato fotka bude pouĹľita jako reĂˇlnĂ˝ zĂˇklad a AI upravĂ­ hlavnÄ› svÄ›tlo, kompozici a marketingovĂ˝ dojem.
+                            Tato fotka bude použita jako reálný základ a AI upraví hlavně světlo, kompozici a marketingový dojem.
                           </p>
                           <button
                             type="button"
@@ -2223,7 +2226,7 @@ Piš pro roli: ${resolvedContactLabel}.`
                       </div>
                     ) : (
                       <div className="mt-4 rounded-2xl border border-dashed border-[#d0d9c4] bg-[#fbfaf6] p-4 text-sm text-slate-500">
-                        ZatĂ­m nenĂ­ vybranĂˇ ĹľĂˇdnĂˇ firemnĂ­ fotka.
+                        Zatím není vybraná žádná firemní fotka.
                       </div>
                     )}
                   </div>
@@ -2251,7 +2254,8 @@ Piš pro roli: ${resolvedContactLabel}.`
                         className={classNames(
                           'rounded-xl border px-3 py-2 text-xs font-semibold transition',
                           logoPosition === value
-                            ? 'border-lime-200 bg-lime-50 text-lime-700'
+                            ?
+                            'border-lime-200 bg-lime-50 text-lime-700'
                             : 'border-slate-200 bg-slate-50 text-slate-600 hover:border-lime-200'
                         )}
                       >
@@ -2270,7 +2274,7 @@ Piš pro roli: ${resolvedContactLabel}.`
                 className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#7aa90a] to-[#6d9808] px-5 py-3.5 font-bold text-white shadow-[0_14px_30px_rgba(122,169,10,0.28)] transition hover:from-[#6f9d08] hover:to-[#648b07] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {loading ? <RefreshCw className="h-5 w-5 animate-spin" /> : <Sparkles className="h-5 w-5" />}
-                Vygenerovat pĹ™Ă­spÄ›vek
+                Vygenerovat příspěvek
               </button>
 
               <button
@@ -2293,11 +2297,11 @@ Piš pro roli: ${resolvedContactLabel}.`
               <div className="mb-4 flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
                   <History className="h-5 w-5 text-lime-500" />
-                  <h2 className="text-lg font-bold">Historie nĂˇvrhĹŻ</h2>
+                  <h2 className="text-lg font-bold">Historie návrhů</h2>
                 </div>
                 {historyItems.length > 0 && (
                   <span className="rounded-full border border-[#d7ded0] bg-[#f7f7f2] px-3 py-1 text-xs font-semibold text-slate-500">
-                    {Math.min(historyItems.length, 12)} poloĹľek
+                    {Math.min(historyItems.length, 12)} položek
                   </span>
                 )}
               </div>
@@ -2315,7 +2319,7 @@ Piš pro roli: ${resolvedContactLabel}.`
                         <div className="min-w-0">
                           <p className="line-clamp-2 text-sm font-semibold text-slate-900">{item.contentPrompt}</p>
                           <p className="mt-1 text-xs text-slate-500">
-                            {item.targetAudience} Â· {item.platform}
+                            {item.targetAudience} · {item.platform}
                           </p>
                         </div>
                         <span className="shrink-0 text-xs text-slate-400">
@@ -2323,14 +2327,14 @@ Piš pro roli: ${resolvedContactLabel}.`
                         </span>
                       </div>
                       <p className="mt-3 line-clamp-2 text-sm text-slate-600">
-                        {parseGeneratedContent(item.generatedContent).main || 'Bez nĂˇhledu textu.'}
+                        {parseGeneratedContent(item.generatedContent).main || 'Bez náhledu textu.'}
                       </p>
                     </button>
                   ))}
                 </div>
               ) : (
                 <div className="rounded-2xl border border-dashed border-[#d7ded0] bg-[#fbfaf6] p-4 text-sm text-slate-500">
-                  Po prvnĂ­m ĂşspÄ›ĹˇnĂ©m generovĂˇnĂ­ se sem uloĹľĂ­ poslednĂ­ nĂˇvrhy pro rychlĂ© vrĂˇcenĂ­.
+                  Po prvním úspěšném generování se sem uloží poslední návrhy pro rychlé vrácení.
                 </div>
               )}
             </div>
@@ -2339,8 +2343,8 @@ Piš pro roli: ${resolvedContactLabel}.`
           <section className="flex min-h-[640px] flex-col rounded-[30px] border border-[#4f6178] bg-gradient-to-b from-[#58697f] via-[#4d5f76] to-[#42546a] shadow-[0_24px_54px_rgba(15,23,42,0.24)]">
             <div className="flex items-center justify-between border-b border-slate-700/80 bg-slate-900/12 px-6 py-4">
               <div>
-                <p className="text-xs uppercase tracking-[0.22em] text-slate-300/70">VĂ˝stup pro sĂ­tÄ›</p>
-                <p className="mt-1 text-sm text-slate-200/85">HotovĂ˝ text, nĂˇvrh vizuĂˇlu a hashtagy</p>
+                <p className="text-xs uppercase tracking-[0.22em] text-slate-300/70">Výstup pro sítě</p>
+                <p className="mt-1 text-sm text-slate-200/85">Hotový text, návrh vizuálu a hashtagy</p>
               </div>
 
               {generatedContent && (
@@ -2357,7 +2361,7 @@ Piš pro roli: ${resolvedContactLabel}.`
                     className="inline-flex items-center gap-2 rounded-xl border border-slate-700/90 bg-slate-950/80 px-3 py-2 text-sm text-slate-200 transition hover:border-slate-500 hover:bg-slate-900 hover:text-white"
                   >
                     {copied ? <Check className="h-4 w-4 text-emerald-400" /> : <ClipboardPaste className="h-4 w-4" />}
-                    {copied ? 'ZkopĂ­rovĂˇno' : 'KopĂ­rovat vĹˇe'}
+                    {copied ? 'Zkopírováno' : 'Kopírovat vše'}
                   </button>
                 </div>
               )}
@@ -2370,17 +2374,17 @@ Piš pro roli: ${resolvedContactLabel}.`
                     <RefreshCw className="h-8 w-8 animate-spin text-lime-400" />
                   </div>
                   <div>
-                    <p className="font-medium text-slate-200">Generuji pĹ™Ă­spÄ›vek za Chytrou pÄ›nuâ€¦</p>
-                    <p className="mt-1 text-sm text-slate-500">LadĂ­m strukturu, tĂłn i CTA.</p>
+                    <p className="font-medium text-slate-200">Generuji příspěvek za Chytrou pěnu…</p>
+                    <p className="mt-1 text-sm text-slate-500">Ladím strukturu, tón i CTA.</p>
                   </div>
                 </div>
               ) : generatedContent ? (
                 <div className="space-y-5">
                   <ContentCard
                     icon={<FileText className="h-4 w-4" />}
-                    title="HlavnĂ­ text"
+                    title="Hlavní text"
                     tone="default"
-                    actions={<MiniCopyButton text={parsed.main} onCopy={copyToClipboard} label="KopĂ­rovat text" />}
+                    actions={<MiniCopyButton text={parsed.main} onCopy={copyToClipboard} label="Kopírovat text" />}
                   >
                     <textarea
                       ref={mainTextAreaRef}
@@ -2402,14 +2406,14 @@ Piš pro roli: ${resolvedContactLabel}.`
                   {parsed.visual && (
                     <ContentCard
                       icon={<ImageIcon className="h-4 w-4" />}
-                      title="DoporuÄŤenĂ˝ vizuĂˇl"
+                      title="Doporučený vizuál"
                       tone="brand"
                       actions={
                         <div className="flex flex-wrap gap-2">
                           <MiniCopyButton
                             text={parsed.visual}
                             onCopy={copyToClipboard}
-                            label="KopĂ­rovat vizuĂˇl"
+                            label="Kopírovat vizuál"
                           />
                           <button
                             onClick={handleGenerateImage}
@@ -2417,10 +2421,10 @@ Piš pro roli: ${resolvedContactLabel}.`
                             className="rounded-lg border border-lime-300/30 bg-lime-500/20 px-2.5 py-1.5 text-xs font-medium text-lime-50 hover:bg-lime-500/30 disabled:opacity-50"
                           >
                             {imageLoading
-                              ? 'ZpracovĂˇvĂˇmâ€¦'
+                              ? 'Zpracovávám…'
                               : imageMode === 'edit'
-                                ? 'Upravit reĂˇlnou fotku'
-                                : 'VytvoĹ™it obrĂˇzek'}
+                                ? 'Upravit reálnou fotku'
+                                : 'Vytvořit obrázek'}
                           </button>
                         </div>
                       }
@@ -2430,18 +2434,18 @@ Piš pro roli: ${resolvedContactLabel}.`
                       {imageMode === 'edit' && sourceImageDataUrl && (
                         <div className="mt-4 rounded-xl border border-lime-300/25 bg-[#0f172a]/26 p-3">
                           <p className="text-xs font-semibold uppercase tracking-wide text-lime-100/80">
-                            PodkladovĂˇ fotka
+                            Podkladová fotka
                           </p>
                           <div className="mt-3 flex gap-3">
                             <img
                               src={sourceImageDataUrl}
-                              alt="PodkladovĂˇ firemnĂ­ fotka"
+                              alt="Podkladová firemní fotka"
                               className="h-20 w-20 rounded-xl object-cover"
                             />
                             <div className="text-xs leading-5 text-lime-50/85">
-                              <p className="font-semibold text-lime-50">{sourceImageName || 'VybranĂˇ fotka'}</p>
+                              <p className="font-semibold text-lime-50">{sourceImageName || 'Vybraná fotka'}</p>
                               <p className="mt-1">
-                                AI zachovĂˇ hlavnĂ­ scĂ©nu a upravĂ­ hlavnÄ› svÄ›tlo, kompozici a prezentaci pro sociĂˇlnĂ­ sĂ­tÄ›.
+                                AI zachová hlavní scénu a upraví hlavně světlo, kompozici a prezentaci pro sociální sítě.
                               </p>
                             </div>
                           </div>
@@ -2456,7 +2460,7 @@ Piš pro roli: ${resolvedContactLabel}.`
                         <div className="mt-4 overflow-hidden rounded-xl border border-lime-300/20">
                           <img
                             src={generatedImage}
-                            alt="AI nĂˇvrh obrĂˇzku"
+                            alt="AI návrh obrázku"
                             className="h-auto w-full"
                           />
                         </div>
@@ -2469,7 +2473,7 @@ Piš pro roli: ${resolvedContactLabel}.`
                       icon={<Hash className="h-4 w-4" />}
                       title="Hashtagy"
                       tone="slate"
-                      actions={<MiniCopyButton text={parsed.hashtags} onCopy={copyToClipboard} label="KopĂ­rovat hashtagy" />}
+                      actions={<MiniCopyButton text={parsed.hashtags} onCopy={copyToClipboard} label="Kopírovat hashtagy" />}
                     >
                       <div className="flex flex-wrap gap-2">
                         {parsed.hashtags
@@ -2490,7 +2494,7 @@ Piš pro roli: ${resolvedContactLabel}.`
                   {(generatedImage || flyerImage) && (
                     <ContentCard
                       icon={<Download className="h-4 w-4" />}
-                      title="LetĂˇk"
+                      title="Leták"
                       tone="brand"
                       actions={
                         <div className="flex flex-wrap gap-2">
@@ -2500,7 +2504,7 @@ Piš pro roli: ${resolvedContactLabel}.`
                             disabled={flyerTextLoading}
                             className="rounded-lg border border-lime-300/35 bg-lime-500/22 px-2.5 py-1.5 text-xs font-medium text-lime-50 hover:bg-lime-500/34 disabled:opacity-50"
                           >
-                            {flyerTextLoading ? 'Navrhujiâ€¦' : 'Navrhnout text letĂˇku'}
+                            {flyerTextLoading ? 'Navrhuji…' : 'Navrhnout text letáku'}
                           </button>
                           <button
                             type="button"
@@ -2508,7 +2512,7 @@ Piš pro roli: ${resolvedContactLabel}.`
                             disabled={flyerLoading || !generatedImage}
                             className="rounded-lg border border-lime-300/35 bg-lime-500/22 px-2.5 py-1.5 text-xs font-medium text-lime-50 hover:bg-lime-500/34 disabled:opacity-50"
                           >
-                            {flyerLoading ? 'Generujiâ€¦' : 'Vygenerovat letĂˇk'}
+                            {flyerLoading ? 'Generuji…' : 'Vygenerovat leták'}
                           </button>
                           {flyerImage && (
                             <button
@@ -2539,7 +2543,8 @@ Piš pro roli: ${resolvedContactLabel}.`
                               className={classNames(
                                 'rounded-xl border px-2 py-2 text-xs font-semibold transition',
                                 flyerTemplate === template.id
-                                  ? 'border-lime-300/35 bg-lime-500/22 text-lime-50'
+                                  ?
+                                  'border-lime-300/35 bg-lime-500/22 text-lime-50'
                                   : 'border-slate-700/90 bg-slate-950/82 text-slate-300 hover:border-slate-500 hover:text-white'
                               )}
                             >
@@ -2620,7 +2625,8 @@ function ToggleCard({ checked, onChange, title, description }) {
       className={classNames(
         'w-full rounded-[20px] border px-4 py-3 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.75)] transition',
         checked
-          ? 'border-lime-300 bg-lime-50 shadow-[0_12px_24px_rgba(122,169,10,0.12)]'
+          ?
+          'border-lime-300 bg-lime-50 shadow-[0_12px_24px_rgba(122,169,10,0.12)]'
           : 'border-[#ccd5c0] bg-white hover:border-lime-300 hover:bg-[#fcfdf8]'
       )}
     >
