@@ -1777,14 +1777,16 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
       <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-[480px_minmax(0,1fr)]">
           <section className="space-y-5">
-            <div className="rounded-[28px] border border-[#aebe97] bg-[#f8f8f1] p-5 shadow-[0_20px_44px_rgba(15,23,42,0.09)]">
-              <div className="mb-5 flex items-center gap-2 border-b border-[#d9e1cb] pb-4">
-                <Lightbulb className="h-5 w-5 text-lime-500" />
+            <div className="rounded-[28px] border-2 border-[#98ad79] bg-[#f7f7ee] p-5 shadow-[0_22px_48px_rgba(15,23,42,0.10)]">
+              <div className="mb-5 flex items-center gap-3 rounded-2xl bg-gradient-to-r from-lime-50 to-[#f4f8e8] px-4 py-3 ring-1 ring-[#d7e1c6]">
+                <div className="rounded-xl bg-lime-100 p-2 text-lime-700">
+                  <Lightbulb className="h-5 w-5" />
+                </div>
                 <h2 className="text-lg font-bold">Zadání příspěvku</h2>
               </div>
 
               <div className="space-y-5">
-                <div className="rounded-[22px] border border-[#cfd8c2] bg-white p-4 shadow-[0_8px_18px_rgba(15,23,42,0.04)]">
+                <div className="rounded-[22px] border-2 border-[#c7d3b8] bg-white p-4 shadow-[0_10px_22px_rgba(15,23,42,0.05)]">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="flex items-center gap-2">
                       <Target className="h-4 w-4 text-lime-500" />
@@ -1794,7 +1796,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                     <button
                       type="button"
                       onClick={() => setTemplateEditorOpen((current) => !current)}
-                    className="rounded-full border border-[#cad3bc] bg-[#fbfaf6] px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-lime-300 hover:bg-lime-50 hover:text-lime-700"
+                      className="rounded-full border border-[#cad3bc] bg-[#fbfaf6] px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-lime-300 hover:bg-lime-50 hover:text-lime-700"
                     >
                       {templateEditorOpen ? 'Skrýt správu' : 'Spravovat šablony'}
                     </button>
@@ -1852,7 +1854,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                   )}
                 </div>
 
-                <div className="rounded-[22px] border border-[#cfd8c2] bg-white p-4 shadow-[0_8px_18px_rgba(15,23,42,0.04)]">
+                <div className="rounded-[22px] border-2 border-[#c7d3b8] bg-white p-4 shadow-[0_10px_22px_rgba(15,23,42,0.05)]">
                   <div className="mb-1 flex items-center justify-between">
                     <label className="block text-xs font-bold uppercase tracking-wide text-slate-500">
                       Téma / hlavní myšlenka
@@ -1867,10 +1869,10 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                   />
                 </div>
 
-                <div className="rounded-[22px] border border-[#cfd8c2] bg-white p-4 shadow-[0_8px_18px_rgba(15,23,42,0.04)]">
-                  <div className="mb-4 flex items-center gap-2 border-b border-[#edf1e7] pb-3">
+                <div className="rounded-[22px] border-2 border-[#c7d3b8] bg-white p-4 shadow-[0_10px_22px_rgba(15,23,42,0.05)]">
+                  <div className="mb-4 flex items-center gap-2 rounded-xl bg-[#f7faee] px-3 py-2 ring-1 ring-[#e3ebd6]">
                     <div className="h-2.5 w-2.5 rounded-full bg-lime-500" />
-                    <p className="text-sm font-semibold text-slate-900">Cílení a formát</p>
+                    <p className="text-sm font-bold text-slate-900">Cílení a formát</p>
                   </div>
 
                   <div className="grid gap-3 sm:grid-cols-2">
@@ -1885,10 +1887,10 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                   </div>
                 </div>
 
-                <div className="rounded-[22px] border border-[#cfd8c2] bg-white p-4 shadow-[0_8px_18px_rgba(15,23,42,0.04)]">
-                  <div className="mb-4 flex items-center gap-2 border-b border-[#edf1e7] pb-3">
+                <div className="rounded-[22px] border-2 border-[#c7d3b8] bg-white p-4 shadow-[0_10px_22px_rgba(15,23,42,0.05)]">
+                  <div className="mb-4 flex items-center gap-2 rounded-xl bg-[#f7faee] px-3 py-2 ring-1 ring-[#e3ebd6]">
                     <div className="h-2.5 w-2.5 rounded-full bg-lime-500" />
-                    <p className="text-sm font-semibold text-slate-900">Firemní cílení podle IČO</p>
+                    <p className="text-sm font-bold text-slate-900">Firemní cílení podle IČO</p>
                   </div>
                   <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-slate-500">
                     IČO firmy
@@ -1928,9 +1930,11 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
               </div>
             </div>
 
-            <div className="rounded-[28px] border border-[#aebe97] bg-[#f8f8f1] p-5 shadow-[0_20px_44px_rgba(15,23,42,0.09)]">
-              <div className="mb-4 flex items-center gap-2 border-b border-[#d9e1cb] pb-4">
-                <Settings2 className="h-5 w-5 text-lime-500" />
+            <div className="rounded-[28px] border-2 border-[#98ad79] bg-[#f7f7ee] p-5 shadow-[0_22px_48px_rgba(15,23,42,0.10)]">
+              <div className="mb-4 flex items-center gap-3 rounded-2xl bg-gradient-to-r from-lime-50 to-[#f4f8e8] px-4 py-3 ring-1 ring-[#d7e1c6]">
+                <div className="rounded-xl bg-lime-100 p-2 text-lime-700">
+                  <Settings2 className="h-5 w-5" />
+                </div>
                 <h2 className="text-lg font-bold">Nastavení výstupu</h2>
               </div>
 
@@ -1977,7 +1981,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                 </div>
               </div>
 
-              <div className="mt-4 rounded-[22px] border border-[#cfd8c2] bg-white p-4 shadow-[0_8px_18px_rgba(15,23,42,0.04)]">
+              <div className="mt-4 rounded-[22px] border-2 border-[#c7d3b8] bg-white p-4 shadow-[0_10px_22px_rgba(15,23,42,0.05)]">
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <p className="text-sm font-semibold text-slate-900">Režim obrázku</p>
@@ -1994,8 +1998,8 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                     className={classNames(
                       'rounded-2xl border px-4 py-3 text-left transition',
                       imageMode === 'edit'
-                        ? 'border-lime-300 bg-lime-50 text-lime-800 shadow-[0_8px_18px_rgba(122,169,10,0.10)]'
-                        : 'border-[#d0d9c4] bg-[#fffefb] text-slate-600 hover:border-lime-300'
+                        ? 'border-lime-400 bg-gradient-to-br from-lime-50 to-[#eef8d8] text-lime-900 shadow-[0_10px_22px_rgba(122,169,10,0.14)]'
+                        : 'border-[#d0d9c4] bg-[#fffefb] text-slate-600 hover:border-lime-300 hover:bg-[#fcfdf8]'
                     )}
                   >
                     <div className="font-semibold">Reálná fotka + AI úprava</div>
@@ -2008,8 +2012,8 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                     className={classNames(
                       'rounded-2xl border px-4 py-3 text-left transition',
                       imageMode === 'generate'
-                        ? 'border-lime-300 bg-lime-50 text-lime-800 shadow-[0_8px_18px_rgba(122,169,10,0.10)]'
-                        : 'border-[#d0d9c4] bg-[#fffefb] text-slate-600 hover:border-lime-300'
+                        ? 'border-lime-400 bg-gradient-to-br from-lime-50 to-[#eef8d8] text-lime-900 shadow-[0_10px_22px_rgba(122,169,10,0.14)]'
+                        : 'border-[#d0d9c4] bg-[#fffefb] text-slate-600 hover:border-lime-300 hover:bg-[#fcfdf8]'
                     )}
                   >
                     <div className="font-semibold">AI generace od nuly</div>
@@ -2018,7 +2022,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                 </div>
 
                 {imageMode === 'edit' && (
-                  <div className="mt-4 rounded-[22px] border border-[#cfd8c2] bg-white p-4 shadow-[0_8px_18px_rgba(15,23,42,0.04)]">
+                  <div className="mt-4 rounded-[22px] border-2 border-[#c7d3b8] bg-white p-4 shadow-[0_10px_22px_rgba(15,23,42,0.05)]">
                     {companyPhotoLibrary.length > 0 && (
                       <div className="mb-4">
                         <div className="flex items-center justify-between gap-3">
@@ -2120,7 +2124,7 @@ Přizpůsob text tak, aby působil jako nabídka služeb pro tuto firmu a tuto r
                   </div>
                 )}
 
-                <div className="mt-4 rounded-[22px] border border-[#cfd8c2] bg-white p-4 shadow-[0_8px_18px_rgba(15,23,42,0.04)]">
+                <div className="mt-4 rounded-[22px] border-2 border-[#c7d3b8] bg-white p-4 shadow-[0_10px_22px_rgba(15,23,42,0.05)]">
                   <div>
                     <p className="text-sm font-semibold text-slate-900">Pozice loga</p>
                     <p className="mt-1 text-xs text-slate-500">
