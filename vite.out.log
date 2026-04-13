@@ -120,3 +120,5 @@ Re-optimizing dependencies because vite config has changed
 [2m5:57:48[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2mpackage.json[22m
 [2m7:04:19[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.jsx, /src/index.css[22m
 [2m7:04:42[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.jsx, /src/index.css[22m
+[2m7:09:25[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.jsx, /src/index.css[22m
+[2m7:09:36[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2mserver.js[22m
