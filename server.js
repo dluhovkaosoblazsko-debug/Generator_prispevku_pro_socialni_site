@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { InferenceClient } from '@huggingface/inference';
 
 dotenv.config();
 
@@ -14,36 +15,34 @@ const __dirname = path.dirname(__filename);
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
+const hfToken = process.env.VITE_HF_API_KEY;
+
+if (!hfToken) {
+  console.warn('Missing VITE_HF_API_KEY');
+}
+
+const client = new InferenceClient(hfToken);
+
 app.post('/api/generate-image', async (req, res) => {
   try {
     const { prompt } = req.body;
 
-    const response = await fetch(
-      'https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell',
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${process.env.VITE_HF_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          inputs: prompt,
-        }),
-      }
-    );
-
-    if (!response.ok) {
-      const text = await response.text();
-      return res.status(response.status).send(text);
+    if (!prompt?.trim()) {
+      return res.status(400).json({ error: 'Missing prompt' });
     }
 
-    const imageBuffer = Buffer.from(await response.arrayBuffer());
+    const imageBlob = await client.textToImage({
+      model: 'black-forest-labs/FLUX.1-dev',
+      inputs: prompt,
+    });
 
-    res.setHeader('Content-Type', 'image/png');
-    res.send(imageBuffer);
+    const buffer = Buffer.from(await imageBlob.arrayBuffer());
+
+    res.setHeader('Content-Type', imageBlob.type || 'image/png');
+    res.send(buffer);
   } catch (err) {
     res.status(500).json({
-      error: err.message,
+      error: err.message || 'Image generation failed',
     });
   }
 });
