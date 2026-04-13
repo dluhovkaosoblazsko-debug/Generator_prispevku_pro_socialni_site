@@ -168,6 +168,15 @@ function fileToDataUrl(file) {
   });
 }
 
+function blobToDataUrl(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ''));
+    reader.onerror = () => reject(new Error('Nepodařilo se převést obrázek.'));
+    reader.readAsDataURL(blob);
+  });
+}
+
 function extractJsonPayload(text) {
   if (!text) return null;
 
@@ -389,6 +398,7 @@ export default function App() {
   const promptTemplatesStorageKey = 'klara-prompt-templates';
   const sourceImageStorageKey = 'klara-source-image';
   const logoPositionStorageKey = 'klara-logo-position';
+  const draftStorageKey = 'klara-current-draft';
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
@@ -440,6 +450,36 @@ export default function App() {
       }
     } catch {
       // Ignore invalid local templates.
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(draftStorageKey);
+      if (!raw) return;
+      const draft = JSON.parse(raw);
+
+      setContentPrompt(draft.contentPrompt || '');
+      setPlatform(draft.platform || 'Facebook');
+      setTone(draft.tone || 'Důraz na úspory a finance');
+      setTargetAudience(draft.targetAudience || 'Majitelé starších rodinných domů');
+      setPostLength(draft.postLength || 'Střední (150–200 slov)');
+      setCta(draft.cta || 'Získat nezávaznou kalkulaci zdarma');
+      setUseBrandContext(draft.useBrandContext ?? true);
+      setUseKnowledgeBase(draft.useKnowledgeBase ?? true);
+      setIncludeEmojis(draft.includeEmojis ?? true);
+      setIncludeVisual(draft.includeVisual ?? true);
+      setIncludeHashtags(draft.includeHashtags ?? true);
+      setStrictClaims(draft.strictClaims ?? true);
+      setGeneratedContent(draft.generatedContent || '');
+      setGeneratedImage(draft.generatedImage || '');
+      setImageMode(draft.imageMode || 'edit');
+      setLogoPosition(draft.logoPosition || 'bottom-right');
+      setSourceImageDataUrl(draft.sourceImageDataUrl || '');
+      setSourceImageName(draft.sourceImageName || '');
+      setSelectedCompanyPhotoId(draft.selectedCompanyPhotoId || '');
+    } catch {
+      // Ignore invalid local draft.
     }
   }, []);
 
@@ -519,6 +559,57 @@ export default function App() {
       // Ignore localStorage write issues.
     }
   }, [logoPosition]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        draftStorageKey,
+        JSON.stringify({
+          contentPrompt,
+          platform,
+          tone,
+          targetAudience,
+          postLength,
+          cta,
+          useBrandContext,
+          useKnowledgeBase,
+          includeEmojis,
+          includeVisual,
+          includeHashtags,
+          strictClaims,
+          generatedContent,
+          generatedImage,
+          imageMode,
+          logoPosition,
+          sourceImageDataUrl,
+          sourceImageName,
+          selectedCompanyPhotoId,
+        })
+      );
+    } catch {
+      // Ignore localStorage write issues.
+    }
+  }, [
+    contentPrompt,
+    platform,
+    tone,
+    targetAudience,
+    postLength,
+    cta,
+    useBrandContext,
+    useKnowledgeBase,
+    includeEmojis,
+    includeVisual,
+    includeHashtags,
+    strictClaims,
+    generatedContent,
+    generatedImage,
+    imageMode,
+    logoPosition,
+    sourceImageDataUrl,
+    sourceImageName,
+    selectedCompanyPhotoId,
+  ]);
 
   const estimatedWords = useMemo(() => {
     if (!contentPrompt.trim()) return 0;
@@ -772,7 +863,7 @@ Telefon: ${companyContact.phone}`.trim();
         }, 'image/png');
       });
 
-      return URL.createObjectURL(brandedBlob);
+      return await blobToDataUrl(brandedBlob);
     } finally {
       URL.revokeObjectURL(baseImageUrl);
     }
@@ -941,10 +1032,6 @@ ${visualPrompt}`;
         }
 
         throw new Error(message || `HTTP ${response.status}`);
-      }
-
-      if (generatedImage) {
-        URL.revokeObjectURL(generatedImage);
       }
 
       const blob = await response.blob();
@@ -1177,13 +1264,18 @@ Hashtagy: ${includeHashtags ? 'ano' : 'ne'}`;
     setGeneratedImage('');
     setImageError('');
     setError('');
+    try {
+      localStorage.removeItem(draftStorageKey);
+    } catch {
+      // Ignore localStorage write issues.
+    }
   };
 
   return (
     <div className="min-h-screen bg-[#f6f6f1] text-slate-900">
       <header className="sticky top-0 z-20 border-b border-[#6f9f08] bg-gradient-to-r from-[#83b60c] to-[#72a206] shadow-sm">
-        <div className="mx-auto flex h-24 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-4">
+        <div className="mx-auto grid h-28 max-w-7xl grid-cols-[auto_1fr_auto] items-center gap-4 px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center">
             <div className="rounded-2xl border border-white/70 bg-white px-4 py-3 shadow-sm">
               <img
                 src={logoImageUrl}
@@ -1191,43 +1283,21 @@ Hashtagy: ${includeHashtags ? 'ano' : 'ne'}`;
                 className="h-12 w-auto sm:h-14"
               />
             </div>
-            <div className="hidden sm:block">
-              <h1 className="text-sm font-semibold tracking-wide text-white">Generátor příspěvků pro sociální sítě</h1>
-              <p className="text-xs text-lime-50/85">Chytrá pěna Bohemia</p>
-            </div>
           </div>
 
+          <div className="text-center">
+            <h1 className="text-xl font-bold tracking-tight text-white sm:text-2xl">Generátor příspěvků pro sociální sítě</h1>
+            <p className="mt-1 text-sm text-lime-50/90">Chytrá pěna Bohemia s.r.o.</p>
+          </div>
+
+          <div />
         </div>
       </header>
 
       <main className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
-        <div className="mb-5">
-          <div className="rounded-3xl border border-lime-100 bg-gradient-to-r from-lime-500 to-[#6fa800] p-4 text-white shadow-sm">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-              <div className="flex items-start gap-3">
-                <div className="rounded-2xl bg-white/15 p-2">
-                  <Wand2 className="h-5 w-5" />
-                </div>
-                <div>
-                  <h2 className="text-base font-bold sm:text-lg">Chytrý návrh příspěvku během pár kliknutí</h2>
-                  <p className="mt-1 max-w-2xl text-sm text-lime-50/95">
-                    Zadání vlevo, hotový text vpravo. Vizuál, hashtagy, export i ruční úpravy jsou po ruce bez zbytečných kroků.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap gap-2 text-xs font-semibold">
-                <span className="rounded-full bg-white/15 px-3 py-1.5">Gemini pro text</span>
-                <span className="rounded-full bg-white/15 px-3 py-1.5">OpenAI pro obrázek</span>
-                <span className="rounded-full bg-white/15 px-3 py-1.5">DOCX export</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
         <div className="grid grid-cols-1 gap-5 xl:grid-cols-[480px_minmax(0,1fr)]">
           <section className="space-y-5">
-            <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="rounded-3xl border border-[#bcc6b0] bg-[#fbfbf8] p-5 shadow-sm">
               <div className="mb-5 flex items-center gap-2">
                 <Lightbulb className="h-5 w-5 text-lime-500" />
                 <h2 className="text-lg font-bold">Zadání příspěvku</h2>
@@ -1328,7 +1398,7 @@ Hashtagy: ${includeHashtags ? 'ano' : 'ne'}`;
               </div>
             </div>
 
-            <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="rounded-3xl border border-[#bcc6b0] bg-[#fbfbf8] p-5 shadow-sm">
               <div className="mb-4 flex items-center gap-2">
                 <Settings2 className="h-5 w-5 text-lime-500" />
                 <h2 className="text-lg font-bold">Nastavení výstupu</h2>
@@ -1580,7 +1650,7 @@ Hashtagy: ${includeHashtags ? 'ano' : 'ne'}`;
               </div>
             )}
 
-            <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="rounded-3xl border border-[#bcc6b0] bg-[#fbfbf8] p-5 shadow-sm">
               <div className="mb-4 flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
                   <History className="h-5 w-5 text-lime-500" />
