@@ -190,9 +190,17 @@ const defaultOutputMeta = {
   },
 };
 
+const defaultFlyerStructure = {
+  headline: '',
+  subheadline: '',
+  benefits: [],
+  proof: '',
+  cta: '',
+};
+
 const flyerTemplates = [
-  { id: 'classic', label: 'Klasický' },
-  { id: 'split', label: 'Rozdělený' },
+  { id: 'classic', label: 'Magazín' },
+  { id: 'split', label: 'Promo' },
   { id: 'focus', label: 'Benefit' },
 ];
 
@@ -386,6 +394,232 @@ function drawWrappedCanvasText(context, text, x, y, maxWidth, lineHeight) {
   });
 
   return currentY;
+}
+
+function drawRoundedRect(context, x, y, width, height, radius, fillStyle, strokeStyle = '', lineWidth = 0) {
+  context.save();
+  context.beginPath();
+  context.roundRect(x, y, width, height, radius);
+  if (fillStyle) {
+    context.fillStyle = fillStyle;
+    context.fill();
+  }
+  if (strokeStyle && lineWidth > 0) {
+    context.strokeStyle = strokeStyle;
+    context.lineWidth = lineWidth;
+    context.stroke();
+  }
+  context.restore();
+}
+
+function splitFlyerCopy(text, fallbackCta = 'Získejte nezávaznou kalkulaci zdarma.') {
+  const normalized = String(text || '')
+    .replace(/\r/g, '')
+    .trim();
+
+  if (!normalized) {
+    return {
+      intro: '',
+      bullets: [],
+      cta: fallbackCta,
+    };
+  }
+
+  const paragraphLines = normalized
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  let segments = [];
+
+  if (paragraphLines.length >= 3) {
+    segments = paragraphLines;
+  } else {
+    segments = normalized
+      .split(/(?<=[.!?])\s+/)
+      .map((line) => line.trim())
+      .filter(Boolean);
+  }
+
+  const intro = segments[0] || '';
+  const bullets = segments.slice(1, 4);
+  const cta = segments[4] || segments[segments.length - 1] || fallbackCta;
+
+  return {
+    intro,
+    bullets: bullets.length ? bullets : segments.slice(0, 3),
+    cta,
+  };
+}
+
+function normalizeFlyerPayload(payload, fallbackCta = 'Získejte nezávaznou kalkulaci zdarma.') {
+  if (!payload || typeof payload !== 'object') {
+    return { ...defaultFlyerStructure, cta: fallbackCta };
+  }
+
+  const benefits = Array.isArray(payload.benefits)
+    ? payload.benefits.map((item) => String(item || '').trim()).filter(Boolean).slice(0, 3)
+    : [];
+
+  return {
+    headline: String(payload.headline || payload.title || '').trim(),
+    subheadline: String(payload.subheadline || '').trim(),
+    benefits,
+    proof: String(payload.proof || '').trim(),
+    cta: String(payload.cta || '').trim() || fallbackCta,
+  };
+}
+
+function buildFlyerEditableText(structure) {
+  const parts = [];
+
+  if (structure.subheadline) {
+    parts.push(structure.subheadline);
+  }
+
+  if (Array.isArray(structure.benefits) && structure.benefits.length) {
+    parts.push(...structure.benefits);
+  }
+
+  if (structure.proof) {
+    parts.push(structure.proof);
+  }
+
+  if (structure.cta) {
+    parts.push(structure.cta);
+  }
+
+  return parts.filter(Boolean).join('\n');
+}
+
+function buildVisualBrief({
+  visualPrompt,
+  platform,
+  targetAudience,
+  imageMode,
+  companyProfile,
+  selectedVisualHints,
+  selectedProducts,
+  selectedProofPoints,
+  selectedPainPoints,
+  selectedNegativeHints,
+}) {
+  const audienceDirectives = {
+    'Majitelé starších rodinných domů': [
+      'scéna má působit civilně, důvěryhodně a jako reálný český rodinný dům',
+      'zvýrazni komfort bydlení, teplo domova, kvalitu provedení a omezení tepelných ztrát',
+      'vhodné jsou útulné, čisté a realistické záběry střechy, podkroví nebo detailu realizace',
+    ],
+    'Lidé plánující novostavbu': [
+      'scéna má působit jako kvalitní novostavba nebo rozestavěný objekt s profesionálním provedením',
+      'zdůrazni preciznost, správné řešení už od začátku a čistotu konstrukce',
+      'vhodné jsou přesné detaily skladby, řemeslná kvalita a technická čistota bez vizuálního chaosu',
+    ],
+    'SVJ a bytová družstva': [
+      'scéna má působit profesionálně a systematicky, vhodná pro správu bytových domů',
+      'zobraz bytový dům, střechu domu, fasádu nebo technicky důvěryhodný detail realizace',
+      'vizuál má komunikovat rozsah, stabilitu, spolehlivost a dlouhodobý přínos',
+    ],
+    'Firmy (haly a sklady)': [
+      'scéna má působit věcně, obchodně a provozně relevantně',
+      'zobraz halu, sklad, průmyslový objekt, střechu haly nebo technický detail izolace',
+      'zdůrazni efektivitu, provozní kvalitu, rychlost realizace a omezení ztrát',
+    ],
+  };
+
+  const platformDirectives = {
+    Facebook: [
+      'kompozice má být snadno čitelná i v feedu',
+      'jeden hlavní motiv, jasný fokus, přirozené barvy',
+    ],
+    Instagram: [
+      'vizuál má být výraznější, estetičtější a s čistou kompozicí',
+      'ponech dost negativního prostoru pro případný headline v postprodukci',
+    ],
+    LinkedIn: [
+      'vizuál má působit profesionálně, věcně a důvěryhodně',
+      'méně emoce, více kvalita realizace, technická čistota a business relevance',
+    ],
+  };
+
+  const companyDirectives = companyProfile?.name
+    ? [
+        `vizuál má odpovídat typu organizace: ${companyProfile.name}`,
+        companyProfile.industry ? `obor firmy: ${companyProfile.industry}` : '',
+        'nepůsobit jako generická reklama pro domácnosti, ale jako relevantní řešení pro daný typ objektu',
+      ].filter(Boolean)
+    : [];
+
+  const blocks = [
+    `Hlavní motiv: ${visualPrompt || ''}`,
+    '',
+    'Cílení podle publika:',
+    ...(audienceDirectives[targetAudience] || []),
+    '',
+    'Cílení podle platformy:',
+    ...(platformDirectives[platform] || []),
+    '',
+    ...(companyDirectives.length ? ['Firemní kontext:', ...companyDirectives, ''] : []),
+    'Produktové vazby:',
+    selectedProducts || '- bez konkrétní produktové vazby',
+    '',
+    'Vizuální hinty:',
+    selectedVisualHints || '- bez doplňkových hintů',
+    '',
+    'Pain points, které může vizuál nepřímo naznačit:',
+    selectedPainPoints || '- bez doplňkových pain points',
+    '',
+    'Důvěryhodnost / proof:',
+    selectedProofPoints || '- bez proof points',
+    '',
+    'Čemu se vyhnout:',
+    selectedNegativeHints || '- bez speciálních varování',
+    '',
+    `Režim obrázku: ${imageMode === 'edit' ? 'upravit reálnou fotku' : 'vygenerovat nový realistický vizuál'}`,
+  ];
+
+  return blocks.filter(Boolean).join('\n');
+}
+
+function drawFlyerBulletCards(context, bullets, x, startY, width, options = {}) {
+  const accent = options.accent || '#79aa0a';
+  const cardFill = options.cardFill || '#ffffff';
+  const cardStroke = options.cardStroke || '#dce4cf';
+  const textColor = options.textColor || '#1e293b';
+  const iconFill = options.iconFill || 'rgba(121,170,10,0.15)';
+  const maxItems = options.maxItems || 3;
+  const list = bullets.filter(Boolean).slice(0, maxItems);
+
+  let currentY = startY;
+
+  list.forEach((bullet, index) => {
+    context.font = '600 24px "Segoe UI", Arial, sans-serif';
+    const lines = wrapCanvasText(context, bullet, width - 124);
+    const textHeight = Math.max(1, lines.length) * 31;
+    const cardHeight = Math.max(108, textHeight + 50);
+    drawRoundedRect(context, x, currentY, width, cardHeight, 26, cardFill, cardStroke, 2);
+    drawRoundedRect(context, x + 22, currentY + 24, 58, 58, 18, iconFill);
+    context.fillStyle = accent;
+    context.font = '700 28px "Segoe UI", Arial, sans-serif';
+    context.textAlign = 'center';
+    context.fillText(String(index + 1), x + 51, currentY + 61);
+
+    context.textAlign = 'left';
+    context.fillStyle = textColor;
+    context.font = '600 24px "Segoe UI", Arial, sans-serif';
+    drawWrappedCanvasText(context, bullet, x + 102, currentY + 42, width - 124, 31);
+    currentY += cardHeight + 18;
+  });
+
+  return currentY;
+}
+
+function drawFlyerCtaBand(context, text, x, y, width, accent = '#79aa0a') {
+  drawRoundedRect(context, x, y, width, 110, 28, accent);
+  context.fillStyle = '#ffffff';
+  context.textAlign = 'left';
+  context.font = '700 28px "Segoe UI", Arial, sans-serif';
+  drawWrappedCanvasText(context, text, x + 30, y + 42, width - 60, 34);
 }
 
 function evaluateGeneratedContent({ main, visual, hashtags }, options) {
@@ -593,6 +827,7 @@ export default function App() {
   const [generatedImage, setGeneratedImage] = useState('');
   const [flyerTitle, setFlyerTitle] = useState('');
   const [flyerText, setFlyerText] = useState('');
+  const [flyerStructure, setFlyerStructure] = useState(defaultFlyerStructure);
   const [flyerImage, setFlyerImage] = useState('');
   const [imageLoading, setImageLoading] = useState(false);
   const [flyerLoading, setFlyerLoading] = useState(false);
@@ -662,6 +897,7 @@ export default function App() {
       setGeneratedImage(draft.generatedImage || '');
       setFlyerTitle(draft.flyerTitle || '');
       setFlyerText(draft.flyerText || '');
+      setFlyerStructure({ ...defaultFlyerStructure, ...(draft.flyerStructure || {}) });
       setFlyerImage(draft.flyerImage || '');
       setImageMode(draft.imageMode || 'edit');
       setLogoPosition(draft.logoPosition || 'bottom-right');
@@ -778,6 +1014,7 @@ export default function App() {
           generatedImage,
           flyerTitle,
           flyerText,
+          flyerStructure,
           flyerImage,
           imageMode,
           logoPosition,
@@ -813,6 +1050,7 @@ export default function App() {
     generatedImage,
     flyerTitle,
     flyerText,
+    flyerStructure,
     flyerImage,
     imageMode,
     logoPosition,
@@ -1094,8 +1332,8 @@ Telefon: ${companyContact.phone}`.trim();
       context.drawImage(baseImage, 0, 0, canvas.width, canvas.height);
 
       const outerPadding = Math.max(24, Math.round(canvas.width * 0.028));
-      const badgeWidth = Math.max(340, Math.round(canvas.width * 0.34));
-      const badgeHeight = Math.max(98, Math.round(canvas.height * 0.12));
+      const badgeWidth = Math.max(240, Math.round(canvas.width * 0.24));
+      const badgeHeight = Math.max(82, Math.round(canvas.height * 0.09));
       const positionMap = {
         'top-left': { x: outerPadding, y: outerPadding },
         'top-right': { x: canvas.width - badgeWidth - outerPadding, y: outerPadding },
@@ -1105,7 +1343,38 @@ Telefon: ${companyContact.phone}`.trim();
           y: canvas.height - badgeHeight - outerPadding,
         },
       };
-      const resolvedPosition = positionMap[logoPosition] || positionMap['bottom-right'];
+      const scoreArea = (x, y, width, height) => {
+        const safeX = Math.max(0, Math.min(canvas.width - width, Math.round(x)));
+        const safeY = Math.max(0, Math.min(canvas.height - height, Math.round(y)));
+        const imageData = context.getImageData(safeX, safeY, Math.max(1, Math.round(width)), Math.max(1, Math.round(height))).data;
+        let sum = 0;
+        let sumSq = 0;
+
+        for (let i = 0; i < imageData.length; i += 4) {
+          const luminance = imageData[i] * 0.2126 + imageData[i + 1] * 0.7152 + imageData[i + 2] * 0.0722;
+          sum += luminance;
+          sumSq += luminance * luminance;
+        }
+
+        const count = imageData.length / 4 || 1;
+        const mean = sum / count;
+        const variance = Math.max(0, sumSq / count - mean * mean);
+        const stdDev = Math.sqrt(variance);
+        return stdDev;
+      };
+
+      const scoredPositions = Object.entries(positionMap).map(([key, value]) => ({
+        key,
+        ...value,
+        score: scoreArea(value.x, value.y, badgeWidth, badgeHeight),
+      }));
+
+      const preferredPosition = scoredPositions.find((item) => item.key === logoPosition) || scoredPositions.find((item) => item.key === 'bottom-right');
+      const quietestPosition = [...scoredPositions].sort((a, b) => a.score - b.score)[0];
+      const resolvedPosition =
+        preferredPosition && quietestPosition && preferredPosition.score > 52 && quietestPosition.score + 8 < preferredPosition.score
+          ? quietestPosition
+          : preferredPosition;
       const badgeX = resolvedPosition.x;
       const badgeY = resolvedPosition.y;
       const badgeRadius = Math.round(badgeHeight * 0.26);
@@ -1287,24 +1556,29 @@ ${visualPrompt}`;
     try {
       const systemPrompt = `Jsi seniorní copywriter pro firmu Chytrá pěna.
 
-Tvým úkolem je vytvořit krátký text na leták v češtině.
+Tvým úkolem je vytvořit poutavý text na marketingový leták v češtině.
 
 ${messagingExamples.flyer}
 
 Vrať pouze čistý JSON bez markdownu a bez vysvětlení v tomto tvaru:
 {
-  "title": "krátký silný nadpis",
-  "body": "stručný text letáku"
+  "headline": "krátký benefitový nadpis",
+  "subheadline": "1 krátká vysvětlující věta",
+  "benefits": ["bod 1", "bod 2", "bod 3"],
+  "proof": "krátký důvěryhodný důkaz nebo argument",
+  "cta": "krátká výzva k akci"
 }
 
 Pravidla:
 - Vycházej pouze z dodaného hlavního textu, znalostních vodítek a firemních kontaktů.
-- Nadpis má být krátký, úderný a srozumitelný.
-- Tělo textu má být vhodné na jednostránkový leták.
-- Použij 3 až 5 krátkých benefitových vět nebo krátkých odstavců.
-- Zachovej důvěryhodný a profesionální tón.
-- Zakonči krátkou výzvou k akci.
+- Headline má být krátký, úderný a benefitový, ideálně do 6 slov.
+- Subheadline má v 1 větě vysvětlit hlavní přínos.
+- Benefits vrať přesně jako 3 stručné a čitelné body.
+- Proof má být krátký, důvěryhodný a bez přehánění.
+- CTA má být krátké, konkrétní a přirozené.
+- Piš letákově, ne článkově.
 - Nepiš hashtagy.
+- Nepoužívej dlouhé odstavce.
 - Výstup musí být celý česky.`;
 
       const prompt = `Vytvoř text letáku z tohoto podkladu:
@@ -1342,10 +1616,13 @@ Telefon: ${companyContact.phone}`;
 
       if (result) {
         const payload = extractJsonPayload(result);
-        if (payload.title || payload.body) {
-          setFlyerTitle(String(payload.title || '').trim());
-          setFlyerText(String(payload.body || '').trim());
+        if (payload.headline || payload.subheadline || payload.benefits || payload.proof || payload.cta || payload.title || payload.body) {
+          const structuredFlyer = normalizeFlyerPayload(payload, cta);
+          setFlyerStructure(structuredFlyer);
+          setFlyerTitle(structuredFlyer.headline);
+          setFlyerText(buildFlyerEditableText(structuredFlyer));
         } else {
+          setFlyerStructure(defaultFlyerStructure);
           setFlyerText(result.trim());
         }
       }
@@ -1356,14 +1633,14 @@ Telefon: ${companyContact.phone}`;
 
   const handleGenerateFlyer = async () => {
     if (!generatedImage) {
-      setError('NejdĹ™Ă­v je potĹ™eba mĂ­t vygenerovanĂ˝ obrĂˇzek.');
+      setError('Nejdřív je potřeba mít vygenerovaný obrázek.');
       return;
     }
 
-    const flyerHeading = flyerTitle.trim() || contentPrompt.trim() || 'ChytrĂˇ pÄ›na';
+    const flyerHeading = flyerTitle.trim() || flyerStructure.headline || contentPrompt.trim() || 'Chytrá pěna';
     const flyerCopy = flyerText.trim() || parsed.main.trim();
     if (!flyerCopy) {
-      setError('NejdĹ™Ă­v je potĹ™eba mĂ­t text pro letĂˇk.');
+      setError('Nejdřív je potřeba mít text pro leták.');
       return;
     }
 
@@ -1382,7 +1659,7 @@ Telefon: ${companyContact.phone}`;
 
       const context = canvas.getContext('2d');
       if (!context) {
-        throw new Error('Canvas nenĂ­ k dispozici.');
+        throw new Error('Canvas není k dispozici.');
       }
 
       context.imageSmoothingEnabled = true;
@@ -1392,150 +1669,173 @@ Telefon: ${companyContact.phone}`;
 
       const logoWidth = 280;
       const logoHeight = (logoImage.naturalHeight / logoImage.naturalWidth) * logoWidth;
+      const flyerParts = splitFlyerCopy(flyerCopy, cta);
+      const flyerSubheadline = flyerStructure.subheadline || flyerParts.intro || flyerCopy;
+      const benefitItems = flyerStructure.benefits.length ? flyerStructure.benefits : flyerParts.bullets.length ? flyerParts.bullets : [flyerCopy];
+      const proofText = flyerStructure.proof || '';
+      const ctaText = flyerStructure.cta || flyerParts.cta || cta;
 
       if (flyerTemplate === 'classic') {
-        context.fillStyle = '#79aa0a';
-        context.fillRect(0, 0, canvas.width, 136);
-        context.drawImage(logoImage, 70, 28, logoWidth, logoHeight);
-
-        context.fillStyle = '#ffffff';
-        context.font = '700 46px "Segoe UI", Arial, sans-serif';
+        drawRoundedRect(context, 42, 42, canvas.width - 84, canvas.height - 84, 42, '#eef3df', '#cad5b7', 3);
+        drawRoundedRect(context, 70, 70, canvas.width - 140, 122, 30, '#79aa0a');
+        context.drawImage(logoImage, 100, 92, logoWidth, logoHeight);
         context.textAlign = 'right';
-        context.fillText('Firemní leták', canvas.width - 70, 62);
-        context.font = '500 24px "Segoe UI", Arial, sans-serif';
-        context.fillText('Chytrá pěna Bohemia s.r.o.', canvas.width - 70, 100);
-
-        const heroY = 184;
-        const heroHeight = 670;
-        drawImageCover(context, heroImage, 70, heroY, canvas.width - 140, heroHeight, 0.5, 0.42);
-        context.strokeStyle = '#cad3bb';
-        context.lineWidth = 3;
-        context.strokeRect(70, heroY, canvas.width - 140, heroHeight);
-
-        const textCardY = heroY + heroHeight - 60;
         context.fillStyle = '#ffffff';
-        context.shadowColor = 'rgba(15, 23, 42, 0.12)';
-        context.shadowBlur = 24;
-        context.shadowOffsetY = 10;
-        context.fillRect(90, textCardY, canvas.width - 180, 610);
-        context.shadowColor = 'transparent';
-        context.strokeStyle = '#d5dcc8';
-        context.lineWidth = 2;
-        context.strokeRect(90, textCardY, canvas.width - 180, 610);
+        context.font = '800 44px "Segoe UI", Arial, sans-serif';
+        context.fillText(flyerHeading, canvas.width - 100, 128);
+        context.font = '500 24px "Segoe UI", Arial, sans-serif';
+        context.fillText('Chytrá pěna Bohemia s.r.o.', canvas.width - 100, 166);
 
-        const textX = 140;
-        const textWidth = canvas.width - 280;
-        let currentY = textCardY + 78;
-
-        context.fillStyle = '#14213d';
+        const heroX = 70;
+        const heroY = 228;
+        const heroWidth = canvas.width - 140;
+        const heroHeight = 560;
+        drawRoundedRect(context, heroX, heroY, heroWidth, heroHeight, 34, '#ffffff');
+        drawImageCover(context, heroImage, heroX, heroY, heroWidth, heroHeight, 0.5, 0.4);
+        drawRoundedRect(context, heroX + 38, heroY + 34, 420, 176, 28, 'rgba(15,23,42,0.74)');
         context.textAlign = 'left';
-        context.font = '700 38px "Segoe UI", Arial, sans-serif';
-        currentY = drawWrappedCanvasText(context, flyerHeading, textX, currentY, textWidth, 48);
-
-        currentY += 28;
-        context.font = '500 28px "Segoe UI", Arial, sans-serif';
-        context.fillStyle = '#334155';
-        currentY = drawWrappedCanvasText(context, flyerCopy, textX, currentY, textWidth, 40);
-
-        currentY += 36;
-        context.fillStyle = '#79aa0a';
-        context.fillRect(textX, currentY, textWidth, 2);
-        currentY += 42;
-
-        context.fillStyle = '#0f172a';
-        context.font = '700 26px "Segoe UI", Arial, sans-serif';
-        context.fillText('Kontaktujte nás', textX, currentY);
-        currentY += 46;
-
-        context.fillStyle = '#334155';
+        context.fillStyle = '#ffffff';
+        context.font = '800 50px "Segoe UI", Arial, sans-serif';
+        let currentY = drawWrappedCanvasText(context, flyerHeading, heroX + 72, heroY + 98, 350, 58);
+        context.fillStyle = '#dbeafe';
         context.font = '600 24px "Segoe UI", Arial, sans-serif';
-        context.fillText(`Web: ${companyContact.web}`, textX, currentY);
-        currentY += 38;
-        context.fillText(`E-mail: ${companyContact.email}`, textX, currentY);
-        currentY += 38;
-        context.fillText(`Telefon: ${companyContact.phone}`, textX, currentY);
+        drawWrappedCanvasText(context, flyerSubheadline, heroX + 72, currentY + 10, 324, 32);
+
+        drawRoundedRect(context, 90, 748, canvas.width - 180, 460, 34, '#ffffff', '#d5dcc8', 2);
+        context.fillStyle = '#79aa0a';
+        context.font = '700 24px "Segoe UI", Arial, sans-serif';
+        context.fillText('Proč to řešit právě teď', 130, 810);
+        currentY = drawFlyerBulletCards(context, benefitItems, 120, 840, canvas.width - 240, {
+          accent: '#79aa0a',
+          cardFill: '#f8fbf1',
+          cardStroke: '#dce4cf',
+          maxItems: 3,
+        });
+
+        if (proofText) {
+          drawRoundedRect(context, 120, currentY + 6, canvas.width - 240, 96, 26, '#eff6e2', '#dce4cf', 2);
+          context.fillStyle = '#365314';
+          context.font = '700 22px "Segoe UI", Arial, sans-serif';
+          drawWrappedCanvasText(context, proofText, 150, currentY + 42, canvas.width - 300, 28);
+          currentY += 114;
+        }
+
+        drawFlyerCtaBand(context, ctaText, 120, currentY + 8, canvas.width - 240, '#79aa0a');
+
+        drawRoundedRect(context, 120, 1446, canvas.width - 240, 164, 28, '#132033');
+        context.fillStyle = '#ffffff';
+        context.font = '700 24px "Segoe UI", Arial, sans-serif';
+        context.fillText('Kontaktujte nás', 154, 1506);
+        context.font = '600 22px "Segoe UI", Arial, sans-serif';
+        context.fillStyle = '#d5e2f0';
+        context.fillText(`Telefon: ${companyContact.phone}`, 154, 1556);
+        context.fillText(`Web: ${companyContact.web}`, 154, 1594);
       } else if (flyerTemplate === 'split') {
         context.fillStyle = '#ffffff';
         context.fillRect(0, 0, canvas.width, canvas.height);
+        drawRoundedRect(context, 44, 44, canvas.width - 88, canvas.height - 88, 40, '#ffffff', '#dbe3cd', 3);
         context.fillStyle = '#79aa0a';
-        context.fillRect(0, 0, canvas.width, 118);
-        drawImageCover(context, heroImage, 0, 118, 620, canvas.height - 118, 0.45, 0.5);
-        context.drawImage(logoImage, 70, 26, logoWidth, logoHeight);
+        context.fillRect(0, 0, canvas.width, 124);
+        drawImageCover(context, heroImage, 70, 124, 560, canvas.height - 194, 0.45, 0.5);
+        context.drawImage(logoImage, 74, 24, logoWidth, logoHeight);
 
         context.fillStyle = '#f8fafc';
-        context.fillRect(620, 118, 620, canvas.height - 118);
+        context.fillRect(650, 124, 520, canvas.height - 194);
 
-        let currentY = 210;
-        const textX = 680;
-        const textWidth = 480;
+        let currentY = 220;
+        const textX = 708;
+        const textWidth = 404;
         context.fillStyle = '#14213d';
-        context.font = '700 46px "Segoe UI", Arial, sans-serif';
-        currentY = drawWrappedCanvasText(context, flyerHeading, textX, currentY, textWidth, 56);
-        currentY += 20;
-        context.fillStyle = '#334155';
-        context.font = '500 26px "Segoe UI", Arial, sans-serif';
-        currentY = drawWrappedCanvasText(context, flyerCopy, textX, currentY, textWidth, 38);
-        currentY += 40;
-        context.fillStyle = '#79aa0a';
-        context.fillRect(textX, currentY, 180, 6);
-        currentY += 54;
+        context.font = '800 50px "Segoe UI", Arial, sans-serif';
+        currentY = drawWrappedCanvasText(context, flyerHeading, textX, currentY, textWidth, 58);
+        context.fillStyle = '#4b5563';
+        context.font = '600 24px "Segoe UI", Arial, sans-serif';
+        currentY = drawWrappedCanvasText(context, flyerSubheadline, textX, currentY + 22, textWidth, 34);
+        currentY += 24;
+        currentY = drawFlyerBulletCards(context, benefitItems, textX, currentY, textWidth, {
+          accent: '#79aa0a',
+          cardFill: '#ffffff',
+          cardStroke: '#dde5d1',
+          maxItems: 3,
+        });
+        if (proofText) {
+          drawRoundedRect(context, textX, currentY + 8, textWidth, 94, 24, '#edf4de', '#dbe3cd', 2);
+          context.fillStyle = '#365314';
+          context.font = '700 21px "Segoe UI", Arial, sans-serif';
+          drawWrappedCanvasText(context, proofText, textX + 24, currentY + 42, textWidth - 48, 27);
+          currentY += 114;
+        }
+        drawFlyerCtaBand(context, ctaText, textX, currentY + 10, textWidth, '#79aa0a');
+
+        drawRoundedRect(context, textX, 1450, textWidth, 170, 28, '#eef4df', '#dce4cf', 2);
         context.fillStyle = '#0f172a';
         context.font = '700 24px "Segoe UI", Arial, sans-serif';
-        context.fillText(companyContact.web, textX, currentY);
-        currentY += 38;
-        context.font = '600 22px "Segoe UI", Arial, sans-serif';
+        context.fillText(companyContact.phone, textX + 28, 1514);
+        context.font = '600 21px "Segoe UI", Arial, sans-serif';
         context.fillStyle = '#475569';
-        context.fillText(companyContact.email, textX, currentY);
-        currentY += 34;
-        context.fillText(companyContact.phone, textX, currentY);
+        context.fillText(companyContact.web, textX + 28, 1552);
       } else {
         context.fillStyle = '#eef4df';
         context.fillRect(0, 0, canvas.width, canvas.height);
+        drawRoundedRect(context, 50, 50, canvas.width - 100, canvas.height - 100, 40, '#edf4de', '#ced9bd', 3);
         context.fillStyle = '#79aa0a';
         context.fillRect(70, 70, canvas.width - 140, 180);
         context.drawImage(logoImage, 110, 98, logoWidth, logoHeight);
         context.fillStyle = '#ffffff';
         context.textAlign = 'right';
-        context.font = '700 48px "Segoe UI", Arial, sans-serif';
-        context.fillText('Leták', canvas.width - 110, 145);
+        context.font = '800 42px "Segoe UI", Arial, sans-serif';
+        context.fillText(flyerHeading, canvas.width - 110, 145);
         context.font = '500 24px "Segoe UI", Arial, sans-serif';
         context.fillText('Chytrá pěna Bohemia s.r.o.', canvas.width - 110, 188);
 
-        drawImageCover(context, heroImage, 70, 300, canvas.width - 140, 520, 0.5, 0.4);
+        drawImageCover(context, heroImage, 70, 300, canvas.width - 140, 470, 0.5, 0.4);
         context.strokeStyle = '#c8d5b2';
         context.lineWidth = 3;
-        context.strokeRect(70, 300, canvas.width - 140, 520);
+        context.strokeRect(70, 300, canvas.width - 140, 470);
 
-        let currentY = 910;
+        drawRoundedRect(context, 740, 330, 400, 118, 26, 'rgba(255,255,255,0.92)');
+        context.textAlign = 'left';
+        context.fillStyle = '#14213d';
+        context.font = '700 26px "Segoe UI", Arial, sans-serif';
+        context.fillText('Proč se ozvat právě teď', 770, 382);
+        context.fillStyle = '#475569';
+        context.font = '600 18px "Segoe UI", Arial, sans-serif';
+        drawWrappedCanvasText(context, flyerSubheadline, 770, 414, 340, 24);
+
+        let currentY = 842;
         const textX = 100;
         const textWidth = canvas.width - 200;
         context.textAlign = 'left';
         context.fillStyle = '#14213d';
-        context.font = '700 42px "Segoe UI", Arial, sans-serif';
+        context.font = '800 44px "Segoe UI", Arial, sans-serif';
         currentY = drawWrappedCanvasText(context, flyerHeading, textX, currentY, textWidth, 52);
-        currentY += 24;
-        context.fillStyle = '#334155';
-        context.font = '500 27px "Segoe UI", Arial, sans-serif';
-        currentY = drawWrappedCanvasText(context, flyerCopy, textX, currentY, textWidth, 39);
-        currentY += 36;
+        currentY += 22;
+        currentY = drawFlyerBulletCards(context, benefitItems, textX, currentY, textWidth, {
+          accent: '#79aa0a',
+          cardFill: '#ffffff',
+          cardStroke: '#d5dcc8',
+          maxItems: 3,
+        });
+        if (proofText) {
+          drawRoundedRect(context, textX, currentY + 8, textWidth, 96, 24, '#f9fbf4', '#d5dcc8', 2);
+          context.fillStyle = '#365314';
+          context.font = '700 22px "Segoe UI", Arial, sans-serif';
+          drawWrappedCanvasText(context, proofText, textX + 24, currentY + 42, textWidth - 48, 28);
+          currentY += 116;
+        }
+        drawFlyerCtaBand(context, ctaText, textX, currentY + 8, textWidth, '#79aa0a');
 
-        context.fillStyle = '#ffffff';
-        context.fillRect(70, 1460, canvas.width - 140, 170);
-        context.strokeStyle = '#d5dcc8';
-        context.lineWidth = 2;
-        context.strokeRect(70, 1460, canvas.width - 140, 170);
-
+        drawRoundedRect(context, 70, 1470, canvas.width - 140, 144, 26, '#ffffff', '#d5dcc8', 2);
         context.fillStyle = '#0f172a';
         context.font = '700 24px "Segoe UI", Arial, sans-serif';
-        context.fillText(`Web: ${companyContact.web}`, 110, 1530);
-        context.fillText(`E-mail: ${companyContact.email}`, 110, 1572);
-        context.fillText(`Telefon: ${companyContact.phone}`, 110, 1614);
+        context.fillText(`Telefon: ${companyContact.phone}`, 110, 1532);
+        context.fillText(`Web: ${companyContact.web}`, 110, 1570);
       }
 
       const flyerDataUrl = canvas.toDataURL('image/png');
       setFlyerImage(flyerDataUrl);
     } catch (err) {
-      setError(`NepodaĹ™ilo se vytvoĹ™it letĂˇk: ${err.message}`);
+      setError(`Nepodařilo se vytvořit leták: ${err.message}`);
     } finally {
       setFlyerLoading(false);
     }
@@ -1567,16 +1867,57 @@ Telefon: ${companyContact.phone}`;
     setImageError('');
 
     try {
+      const visualBrief = buildVisualBrief({
+        visualPrompt,
+        platform,
+        targetAudience,
+        imageMode,
+        companyProfile,
+        selectedVisualHints,
+        selectedProducts,
+        selectedProofPoints,
+        selectedPainPoints,
+        selectedNegativeHints,
+      });
+
       const endpoint = imageMode === 'edit' ? '/api/edit-image' : '/api/generate-image';
       const requestBody =
         imageMode === 'edit'
           ? {
               imageDataUrl: sourceImageDataUrl,
               fileName: sourceImageName || 'firemni-fotka.png',
-              prompt: `Uprav přiloženou reálnou fotografii pro marketingový příspěvek firmy Chytrá pěna. Zachovej hlavní scénu, konstrukci, proporce i věrohodnost. Vylepši světlo, čistotu kompozice, barevnost a celkový profesionální dojem pro sociální sítě. Bez jakéhokoli textu v obrázku, bez nápisů, bez titulků, bez typografie, bez loga, bez watermarku, bez písmen a bez čísel. ${visualPrompt}`,
+              prompt: `Uprav přiloženou reálnou fotografii pro marketingový vizuál značky Chytrá pěna.
+
+Zachovej skutečnou scénu, konstrukci, proporce a věrohodnost.
+Nevytvářej ilustraci ani render. Výsledek musí působit jako reálná profesionální fotografie.
+
+MARKETINGOVÝ A VIZUÁLNÍ BRIEF:
+${visualBrief}
+
+POVINNÁ PRAVIDLA:
+- zvýrazni hlavní objekt a odstraň vizuální chaos
+- zlepši světlo, lokální kontrast, barevnost a čistotu kompozice
+- vizuál má působit důvěryhodně, profesionálně a relevantně pro zadané publikum
+- pokud je relevantní, ukaž detail kvalitního provedení izolace nebo konstrukce
+- ponech přirozený prostor pro pozdější umístění loga nebo titulku
+- bez textu v obrázku, bez loga, bez watermarku, bez ikon, bez čísel`,
             }
           : {
-              prompt: `Realistický marketingový vizuál pro firmu Chytrá pěna. Profesionální fotografie vhodná pro sociální sítě. Bez jakéhokoli textu v obrázku, bez nápisů, bez titulků, bez typografie, bez loga, bez watermarku, bez písmen a bez čísel. ${visualPrompt}`,
+              prompt: `Vytvoř realistický marketingový vizuál pro značku Chytrá pěna.
+
+Výstup musí působit jako skutečná profesionální fotografie vhodná pro sociální sítě a leták.
+Ne ilustrace, ne 3D render, ne stockově přehnaná scéna.
+
+MARKETINGOVÝ A VIZUÁLNÍ BRIEF:
+${visualBrief}
+
+POVINNÁ PRAVIDLA:
+- jeden jasný hlavní motiv
+- čistá profesionální kompozice
+- realistické světlo a materiály
+- důvěryhodné české prostředí, pokud dává smysl
+- vizuál má odpovídat typu objektu a cílové skupině
+- bez textu v obrázku, bez loga, bez watermarku, bez ikon, bez čísel`,
             };
 
       const response = await fetch(endpoint, {
@@ -1640,6 +1981,7 @@ Telefon: ${companyContact.phone}`;
     setGeneratedImage('');
     setFlyerTitle('');
     setFlyerText('');
+    setFlyerStructure(defaultFlyerStructure);
     setFlyerImage('');
     setImageError('');
   };
@@ -1678,116 +2020,199 @@ Speciální režim psaní:
       : `Přímé cílení na konkrétní firmu:
 - ne`;
 
-    const systemPrompt = `Jsi seniorní copywriter pro firmu Chytrá pěna.
+    const systemPrompt = `Jsi seniorní copywriter pro značku Chytrá pěna Bohemia s.r.o.
+Piš pouze česky.
 
-Tvoje role:
-Píšeš česky kvalitní marketingové texty o zateplení, úsporách energií a PUR izolaci.
+HLAVNÍ PRIORITY (od nejdůležitější):
+1. Faktická opatrnost a důvěryhodnost
+2. Relevance k tématu, cílové skupině a platformě
+3. Praktická užitečnost a srozumitelnost
+4. Přesvědčivost bez přehánění
+5. Přesné dodržení JSON formátu
 
-Režim výstupu:
-- ${contentMode}
+CO MÁŠ VYTVOŘIT:
+- Pokud je zadaná konkrétní firma: personalizované obchodní oslovení / nabídku služeb.
+- Pokud firma zadaná není: marketingový příspěvek pro sociální sítě.
 
-Kontext značky:
+KONTEXT ZNAČKY:
 ${useBrandContext ? brandContext : '- Používej pouze informace ze zadání.'}
 
-Znalostní databáze:
+ZNALOSTNÍ DATABÁZE:
 ${buildKnowledgeContext(selectedKnowledgeEntries)}
 
-Marketingový briefing pro cílovou skupinu:
+MARKETINGOVÝ BRIEFING PRO CÍLOVOU SKUPINU:
 ${audienceBriefs[targetAudience] || ''}
 
-Pravidla pro platformu:
+PRAVIDLA PRO PLATFORMU:
 ${platformBriefs[platform] || ''}
 
-Firemní cílení podle IČO:
+FIREMNÍ CÍLENÍ PODLE IČO:
 ${companyPromptBlock}
 
-Hlavní pain points:
+HLAVNÍ PAIN POINTS:
 ${selectedPainPoints}
 
-Doporučené benefitové argumenty:
+DOPORUČENÉ BENEFITOVÉ ARGUMENTY:
 ${selectedBenefitClaims}
 
-Důkazní body:
+DŮKAZNÍ BODY:
 ${selectedProofPoints}
 
-Produktové vazby:
+PRODUKTOVÉ VAZBY:
 ${selectedProducts}
 
-Tónové vodítko z databáze:
+TÓNOVÁ VODÍTKA:
 ${selectedToneHints}
 
-Vodítka pro CTA z databáze:
+VODÍTKA PRO CTA:
 ${selectedCtaHints}
 
-Vodítka pro vizuál z databáze:
+VODÍTKA PRO VIZUÁL:
 ${selectedVisualHints}
 
-Čemu se vyhnout:
+ČEMU SE VYHNOUT:
 ${selectedNegativeHints}
 
-Příklad směru psaní:
+PŘÍKLAD SMĚRU PSANÍ:
 ${resolvedCompanyProfile?.name ? messagingExamples.company : messagingExamples.social}
 
-Parametry:
+PARAMETRY VÝSTUPU:
+- Režim: ${contentMode}
 - Platforma: ${platform}
 - Tón: ${tone}
 - Cílová skupina: ${targetAudience}
 - Délka: ${postLength}
 - CTA: ${cta}
-
-Pravidla psaní:
-- Piš přirozeně, srozumitelně a bez výplňových frází.
-- Text musí být konkrétní a užitečný pro cílovou skupinu.
-- Začni silným háčkem nebo pojmenováním problému.
-- Použij logiku PAS: problém -> důsledek -> řešení.
-- Neopakuj stejnou myšlenku různými slovy.
-- Nepiš obecné reklamní fráze bez obsahu.
-- Nevymýšlej konkrétní čísla, srovnání ani technické sliby, pokud nejsou v zadání nebo v kontextu.
+- Návrh vizuálu: ${includeVisual ? 'ano' : 'ne'}
+- Hashtagy: ${includeHashtags ? 'ano' : 'ne'}
+- ${includeEmojis ? 'Emoji můžeš použít střídmě a jen pokud se hodí k platformě.' : 'Nepoužívej emoji.'}
 - ${strictClaims ? 'Drž se pouze ověřených tvrzení.' : 'Můžeš psát kreativněji, ale stále relevantně.'}
-- ${includeEmojis ? 'Emoji používej střídmě a jen pokud se hodí k platformě.' : 'Nepoužívej emoji.'}
 
-Pravidla podle délky:
-- ${getLengthRule(postLength)}
+OBECNÁ PRAVIDLA:
+- Používej jen informace ze zadání a z poskytnutého kontextu.
+- Pokud si nejsi jistý faktem, nepřidávej ho. Nahraď ho opatrnou formulací.
+- Nevymýšlej čísla, garance, srovnání, technické sliby ani interní problémy klienta.
+- Nepoužívej prázdné reklamní fráze.
+- Neopakuj jednu myšlenku více způsoby.
+- Piš konkrétně, stručně a přirozeně.
+- CTA má být přirozené, ne agresivní.
 
-Výstup vrať pouze jako čistý JSON objekt bez markdownu, bez vysvětlení a bez doprovodného textu.
+PRAVIDLA PRO HLAVNÍ TEXT:
+- "mainText" musí začínat krátkým nadpisem na samostatném prvním řádku.
+- Začni nadpisem a následně silným háčkem nebo přesným pojmenováním problému.
+- Pak ukaž praktický dopad problému.
+- Poté nabídni řešení a vysvětli jeho přínos.
+- Nakonec uzavři text jasnou, přirozenou výzvou k akci.
+- Zachovej strukturu: háček -> problém/důsledek -> řešení/přínos -> důvěryhodnost -> CTA.
+- Text musí odpovídat zadané délce.
 
-Použij přesně tuto strukturu:
+PRAVIDLA PRO DÉLKU:
+- Krátký: 60 až 90 slov
+- Střední: 120 až 180 slov
+- Dlouhý: 180 až 260 slov
+
+PRAVIDLA PRO FIREMNÍ OSLOVENÍ:
+- Piš profesionálně, věcně a konkrétně.
+- Vycházej jen z názvu firmy, oboru a role k oslovení.
+- Nepředstírej znalost interní situace firmy.
+- Nepředpokládej konkrétní typ budovy, technologie ani problém firmy, pokud to nevyplývá z dat.
+- Přínosy formuluj vzhledem k provozu, správě objektu, nákladům nebo komfortu, jen pokud to dává smysl.
+
+PRAVIDLA PRO VIZUÁL:
+- Pokud je vyžadován, napiš stručné zadání pro realistický marketingový vizuál.
+- "visualPrompt" musí být napsaný česky.
+- Bez textu v obrázku, bez titulků, bez loga, bez watermarku.
+
+PRAVIDLA PRO HASHTAGY:
+- Pokud jsou vyžadovány, vrať přesně 5 relevantních hashtagů.
+- Hashtagy mají být přirozené, čitelné a tematicky relevantní.
+
+VRAŤ POUZE ČISTÝ JSON:
 {
-  "mainText": "finální text příspěvku",
-  "visualPrompt": "stručné zadání pro generátor obrázku",
+  "mainText": "finální text",
+  "visualPrompt": "stručné zadání vizuálu",
   "hashtags": ["#tag1", "#tag2", "#tag3", "#tag4", "#tag5"]
 }
 
-Pravidla pro JSON:
+PRAVIDLA PRO JSON:
 - "mainText" je vždy povinný neprázdný string.
-- Pokud není vyžadován návrh vizuálu, vrať "visualPrompt": "".
-- Pokud je vyžadován návrh vizuálu, "visualPrompt" musí být vždy napsaný česky.
-- Pokud nejsou vyžadovány hashtagy, vrať "hashtags": [].
-- Pokud jsou hashtagy vyžadovány, vrať přesně 5 relevantních hashtagů.
-- Nevkládej do JSON žádné další klíče.
-- Zachovej češtinu a přirozené formulace.`;
+- Pokud není vizuál požadován, vrať "visualPrompt": "".
+- Pokud hashtagy nejsou požadovány, vrať "hashtags": [].
+- Pokud jsou hashtagy požadovány, vrať pole přesně 5 hashtagů.
+- Nevkládej žádné další klíče.`;
 
-    const prompt = `Téma příspěvku: ${contentPrompt}
+    const prompt = `TYP VÝSTUPU:
+${resolvedCompanyProfile?.name ? 'personalizované obchodní oslovení' : 'příspěvek na sociální sítě'}
 
-${resolvedCompanyProfile?.name ? `Zadané IČO firmy: ${resolvedCompanyProfile.ico}
-Název firmy: ${resolvedCompanyProfile.name}
-Doporučená role k oslovení: ${resolvedContactLabel}` : 'IČO firmy není zadáno.'}
+TÉMA:
+${contentPrompt}
 
-Vytvoř ${resolvedCompanyProfile?.name ? 'personalizované oslovení / nabídku služeb' : 'příspěvek pro zadanou cílovou skupinu'}.
-Zaměř se na praktický přínos pro čtenáře.
-Zakonči text konkrétní výzvou k akci: ${cta}
+PARAMETRY:
+- Platforma: ${platform}
+- Tón: ${tone}
+- Cílová skupina: ${targetAudience}
+- Délka: ${postLength}
+- CTA: ${cta}
+- Emoji: ${includeEmojis ? 'ano, střídmě' : 'ne'}
+- Návrh vizuálu: ${includeVisual ? 'ano' : 'ne'}
+- Hashtagy: ${includeHashtags ? 'ano' : 'ne'}
+- Pouze ověřená tvrzení: ${strictClaims ? 'ano' : 'ne'}
 
-Návrh vizuálu: ${includeVisual ? 'ano' : 'ne'}
-Hashtagy: ${includeHashtags ? 'ano' : 'ne'}`;
+PRAVIDLA DÉLKY:
+- Krátký: 60 až 90 slov
+- Střední: 120 až 180 slov
+- Dlouhý: 180 až 260 slov
 
-    const promptWithCompanyContacting = resolvedCompanyProfile?.name
-      ? `${prompt}
+KONTEXT ZNAČKY:
+${useBrandContext ? brandContext : '- Používej pouze informace ze zadání.'}
 
-Text má působit tak, že Chytrá pěna oslovuje tuto firmu profesionálně a konkrétně.
-Piš pro roli: ${resolvedContactLabel}.`
-      : prompt;
+ZNALOSTNÍ DATABÁZE:
+${buildKnowledgeContext(selectedKnowledgeEntries)}
 
-    const result = await generateWithGemini(promptWithCompanyContacting, systemPrompt, {
+BRIEFING PRO CÍLOVKU:
+${audienceBriefs[targetAudience] || '-'}
+
+PRAVIDLA PLATFORMY:
+${platformBriefs[platform] || '-'}
+
+FIREMNÍ CÍLENÍ:
+${companyPromptBlock}
+
+PAIN POINTS:
+${selectedPainPoints}
+
+BENEFITY:
+${selectedBenefitClaims}
+
+DŮKAZNÍ BODY:
+${selectedProofPoints}
+
+PRODUKTOVÉ VAZBY:
+${selectedProducts}
+
+TÓNOVÁ VODÍTKA:
+${selectedToneHints}
+
+VODÍTKA PRO CTA:
+${selectedCtaHints}
+
+VODÍTKA PRO VIZUÁL:
+${selectedVisualHints}
+
+ČEMU SE VYHNOUT:
+${selectedNegativeHints}
+
+SMĚR PSANÍ:
+${resolvedCompanyProfile?.name ? messagingExamples.company : messagingExamples.social}
+
+DŮLEŽITÉ:
+- Závěr textu má přirozeně směřovat k CTA: "${cta}".
+- Pokud chybí jistota, preferuj opatrnější formulaci.
+- Nepředpokládej konkrétní problém, budovu ani technologii firmy, pokud to nevyplývá z dat.
+- Nevysvětluj postup.
+- Vrať jen JSON.`;
+
+    const result = await generateWithGemini(prompt, systemPrompt, {
       expectJson: true,
       temperature: 0.45,
       modelsToTry: [contentPrimaryModel, contentFallbackModel],
@@ -1824,7 +2249,9 @@ Piš pro roli: ${resolvedContactLabel}.`
       ]);
       setChatInput('');
       setGeneratedImage('');
+      setFlyerTitle('');
       setFlyerText('');
+      setFlyerStructure(defaultFlyerStructure);
       setFlyerImage('');
       setImageError('');
       setHistoryItems((current) => [
@@ -1999,6 +2426,7 @@ Uprav výstup podle dodatečného pokynu uživatele.`;
       }));
       setRevisionPrompt('');
       setGeneratedImage('');
+      setFlyerStructure(defaultFlyerStructure);
       setFlyerImage('');
       setImageError('');
     } finally {
@@ -2235,6 +2663,15 @@ Zpracuj poslední uživatelskou zprávu.`;
           },
         }));
         setGeneratedImage('');
+        setFlyerStructure((current) => ({
+          ...current,
+          ...(typeof payload.updatedFlyerTitle === 'string' && payload.updatedFlyerTitle.trim()
+            ? { headline: payload.updatedFlyerTitle.trim() }
+            : {}),
+          ...(typeof payload.updatedFlyerText === 'string' && payload.updatedFlyerText.trim()
+            ? { subheadline: payload.updatedFlyerText.trim() }
+            : {}),
+        }));
         setFlyerImage('');
         setImageError('');
 
@@ -2366,6 +2803,7 @@ Zpracuj poslední uživatelskou zprávu.`;
     setGeneratedImage('');
     setFlyerTitle('');
     setFlyerText('');
+    setFlyerStructure(defaultFlyerStructure);
     setFlyerImage('');
     setImageError('');
     setError('');
@@ -3128,7 +3566,14 @@ Zpracuj poslední uživatelskou zprávu.`;
                       <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_220px]">
                         <input
                           value={flyerTitle}
-                          onChange={(e) => setFlyerTitle(e.target.value)}
+                          onChange={(e) => {
+                            const nextValue = e.target.value;
+                            setFlyerTitle(nextValue);
+                            setFlyerStructure((current) => ({
+                              ...current,
+                              headline: nextValue,
+                            }));
+                          }}
                           placeholder="Nadpis letáku"
                           className="rounded-xl border border-slate-700/90 bg-[#0b1220] px-3 py-3 text-sm font-semibold text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-lime-400 focus:ring-4 focus:ring-lime-500/10"
                         />
@@ -3155,7 +3600,16 @@ Zpracuj poslední uživatelskou zprávu.`;
 
                       <textarea
                         value={flyerText}
-                        onChange={(e) => setFlyerText(e.target.value)}
+                        onChange={(e) => {
+                          setFlyerText(e.target.value);
+                          setFlyerStructure((current) => ({
+                            ...current,
+                            subheadline: '',
+                            benefits: [],
+                            proof: '',
+                            cta: current.cta,
+                          }));
+                        }}
                         placeholder="Sem můžeš ručně upravit nebo nechat AI navrhnout text letáku."
                         className="min-h-[160px] w-full rounded-xl border border-slate-700/90 bg-[#0b1220] p-3 text-sm leading-7 text-slate-200 outline-none transition placeholder:text-slate-500 focus:border-lime-400 focus:ring-4 focus:ring-lime-500/10"
                       />
