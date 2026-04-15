@@ -5,9 +5,9 @@
     "keywords": ["úspora", "úspory", "náklady", "vytápění", "energie", "účty", "návratnost", "šetřit"],
     "audiences": ["Majitelé starších rodinných domů", "SVJ a bytová družstva", "Firmy (haly a sklady)"],
     "facts": [
-      "PUR izolace pomáhá výrazně snižovat tepelné ztráty a tím i náklady na vytápění.",
+      "PUR izolace pomáhá výrazně snižovat tepelné ztráty a tím i náklady na vytápění nebo chlazení.",
       "Úspora až 70 % nákladů na vytápění se má používat jen jako firemní claim, ne jako univerzální slib pro každého.",
-      "Návratnost investice 5–8 let uváděj jen jako orientační firemní údaj, ne jako garanci."
+      "Návratnost investice 5–8 let uváděj jen jako orientační firemní údaj, ne jako garanci výsledku."
     ],
     "painPoints": [
       "Vysoké účty za vytápění nebo chlazení.",
@@ -124,7 +124,7 @@
     "keywords": ["životnost", "kvalita", "německá", "záruka", "spolehlivost", "dlouhodobě"],
     "audiences": ["Majitelé starších rodinných domů", "Lidé plánující novostavbu", "SVJ a bytová družstva", "Firmy (haly a sklady)"],
     "facts": [
-      "Životnost 30+ let a záruka 5 let na práci jsou firemní důvěryhodnostní argumenty.",
+      "Životnost přes 30 let a záruka 5 let na práci jsou firemní důvěryhodnostní argumenty.",
       "Používej je střídmě, spíš jako podporu rozhodnutí než jako agresivní prodejní claim."
     ],
     "painPoints": [
@@ -163,7 +163,7 @@
     "keywords": ["dotace", "nová zelená úsporám", "podpora", "příspěvek", "oprav dům po babičce"],
     "audiences": ["Majitelé starších rodinných domů", "Lidé plánující novostavbu", "SVJ a bytová družstva"],
     "facts": [
-      "Firma pomáhá s dotacemi Nová zelená úsporám.",
+      "Firma pomáhá s orientací v dotačních programech Nová zelená úsporám.",
       "U dotací používej praktický a důvěryhodný tón, ne příslib automatického schválení."
     ],
     "painPoints": [
@@ -238,11 +238,11 @@
   {
     "id": "b2b",
     "title": "Provoz a firmy",
-    "keywords": ["hala", "sklad", "firma", "provoz", "výroba", "logistika", "objekt", "administrativa"],
+    "keywords": ["hala", "sklad", "firma", "provoz", "výroba", "logistika", "objekt", "administrativa", "škola", "svj"],
     "audiences": ["Firmy (haly a sklady)", "SVJ a bytová družstva"],
     "facts": [
       "Pro firmy je důležitější efektivita provozu, termíny a omezení ztrát než emotivní jazyk.",
-      "Texty pro haly a sklady mají být věcnější a obchodnější než pro rodinné domy."
+      "Texty pro haly, sklady, školy nebo bytové domy mají být věcnější a obchodnější než pro rodinné domy."
     ],
     "painPoints": [
       "Rostoucí provozní náklady na vytápění nebo chlazení.",
@@ -251,7 +251,7 @@
     ],
     "benefitClaims": [
       "Zdůrazni dopad na provozní efektivitu, stabilitu prostředí a rozumnou návratnost.",
-      "U SVJ nebo škol mluv o komfortu uživatelů a odpovědném hospodaření."
+      "U SVJ, škol nebo správců budov mluv o komfortu uživatelů a odpovědném hospodaření."
     ],
     "proofPoints": [
       "Opírej se o praktické přínosy pro provoz, správu budovy a dlouhodobé náklady.",
@@ -270,7 +270,7 @@
       "Kompozice má podporovat dojem výkonu, řádu a provozní efektivity."
     ],
     "negativeHints": [
-      "Nepoužívej rodinně-emotivní jazyk tam, kde se hodí profesionální tón.",
+      "Nepoužívej rodinně emotivní jazyk tam, kde se hodí profesionální tón.",
       "Nevymýšlej konkrétní interní problémy firmy, pokud nejsou známé."
     ],
     "applicableProducts": ["EKO H 200", "EKO S 500"]
@@ -281,7 +281,7 @@
     "keywords": ["podkroví", "krov", "měkká pěna", "otevřená struktura", "zvuk", "interiér"],
     "audiences": ["Majitelé starších rodinných domů", "Lidé plánující novostavbu"],
     "facts": [
-      "Měkká PUR pěna s otevřenou buněčnou strukturou se hodí hlavně pro podkroví, krovy a interiérové konstrukce.",
+      "Měkká PUR pěna EKO S 500 s otevřenou buněčnou strukturou se hodí hlavně pro podkroví, krovy a interiérové konstrukce.",
       "Je vhodná tam, kde kromě tepelné izolace hraje roli i akustický komfort."
     ],
     "painPoints": [
@@ -320,7 +320,7 @@
     "keywords": ["fasáda", "základy", "hala", "sklad", "polotvrdá pěna", "uzavřená struktura", "vlhkost"],
     "audiences": ["Firmy (haly a sklady)", "SVJ a bytová družstva", "Majitelé starších rodinných domů"],
     "facts": [
-      "Polotvrdá pěna s uzavřenou buněčnou strukturou se hodí pro náročnější aplikace, kde je důležitá vyšší odolnost a práce s vlhkostí.",
+      "Polotvrdá pěna EKO H 200 s uzavřenou buněčnou strukturou se hodí pro náročnější aplikace, kde je důležitá vyšší odolnost a práce s vlhkostí.",
       "Je vhodná například pro fasády, základy nebo větší technické a provozní objekty."
     ],
     "painPoints": [
@@ -352,5 +352,84 @@
       "Nepoužívej nepodložené absolutní sliby o odolnosti."
     ],
     "applicableProducts": ["EKO H 200"]
+  },
+  {
+    "id": "website-references",
+    "title": "Reference, zkušenost a důvěryhodnost z webu",
+    "keywords": ["reference", "realizace", "zkušenosti", "9000", "německá kvalita", "distributor", "bohemia"],
+    "audiences": ["Majitelé starších rodinných domů", "Lidé plánující novostavbu", "SVJ a bytová družstva", "Firmy (haly a sklady)"],
+    "facts": [
+      "Na webu firma vystupuje jako specialista na stříkanou PUR izolaci s více než 9 000 realizacemi.",
+      "Web pracuje s motivem německé kvality a dlouhodobé zkušenosti v oboru.",
+      "Tyto argumenty používej jako důvěryhodnostní oporu, ne jako samoúčelnou sebechválu."
+    ],
+    "painPoints": [
+      "Zákazník si není jistý, komu může svěřit střechu, podkroví nebo větší objekt.",
+      "Obava z nekvalitního provedení a špatného dodavatele."
+    ],
+    "benefitClaims": [
+      "Zdůrazni zkušenost, počet realizací a stabilitu firmy jako podporu důvěry.",
+      "Spoj kvalitu provedení s jistotou správného rozhodnutí."
+    ],
+    "proofPoints": [
+      "Můžeš opřít text o zkušenost, počet realizací, německou kvalitu a dlouhodobou životnost řešení.",
+      "Udržuj formulace věcné a poradenské."
+    ],
+    "toneHints": [
+      "Piš sebejistě, ale ne přehnaně.",
+      "Důvěru stav na konkrétních opěrných bodech, ne na velkých sloganech."
+    ],
+    "ctaHints": [
+      "CTA může zvát k ověření konkrétní realizace, konzultaci nebo kalkulaci.",
+      "Výzva má těžit z dojmu, že klient jedná se zkušeným partnerem."
+    ],
+    "visualHints": [
+      "Vizuál může ukazovat hotovou realizaci, čistě provedenou střechu nebo profesionální detail aplikace.",
+      "Působ profesionálně, realisticky a bez AI kýče."
+    ],
+    "negativeHints": [
+      "Nepřeháněj reference tak, aby text zněl jako prázdná sebechvála.",
+      "Nevymýšlej nové certifikace nebo ocenění, která nejsou v datech."
+    ],
+    "applicableProducts": ["EKO S 500", "EKO H 200"]
+  },
+  {
+    "id": "website-applications",
+    "title": "Použití z webu: střechy, podkroví, podlahy, fasády a haly",
+    "keywords": ["střechy", "podkroví", "stěny", "stropy", "podlahy", "základy", "fasáda", "hala", "nádrže", "kontejnery"],
+    "audiences": ["Majitelé starších rodinných domů", "Lidé plánující novostavbu", "SVJ a bytová družstva", "Firmy (haly a sklady)"],
+    "facts": [
+      "Web firmy ukazuje široké použití stříkané PUR izolace: střechy, podkroví, stěny, stropy, podlahy, základy, provětrávané fasády i průmyslové haly.",
+      "Pro marketing je důležité přizpůsobit argumenty typu objektu, ne používat stejný text pro všechny případy."
+    ],
+    "painPoints": [
+      "Klient neví, jestli je řešení vhodné právě pro jeho typ stavby nebo provozu.",
+      "Potřeba odlišit argumentaci pro rodinný dům, bytový dům a firemní objekt."
+    ],
+    "benefitClaims": [
+      "Přizpůsobuj text konkrétnímu typu konstrukce nebo objektu.",
+      "Ukaž, že řešení není jen pro podkroví, ale i pro další části budovy a provozní objekty."
+    ],
+    "proofPoints": [
+      "Opírej se o šíři použití a praktickou vhodnost pro různé typy objektů.",
+      "Vždy udrž konkrétní vazbu mezi tématem a danou konstrukcí."
+    ],
+    "toneHints": [
+      "Piš konkrétně podle typu objektu a potřeby klienta.",
+      "Vyhýbej se příliš obecnému sdělení bez vazby na konkrétní použití."
+    ],
+    "ctaHints": [
+      "CTA může zvát ke konzultaci konkrétní střechy, podkroví, haly nebo jiné části objektu.",
+      "Pomoz čtenáři udělat první krok vůči jeho vlastní stavbě."
+    ],
+    "visualHints": [
+      "Vizuál má odpovídat typu použití: podkroví, střecha, hala, fasáda nebo detail konstrukce.",
+      "Vyhni se univerzálnímu obrázku, který se nehodí ke konkrétnímu tématu."
+    ],
+    "negativeHints": [
+      "Nepiš obecný text bez vazby na konkrétní typ stavby.",
+      "Neslučuj rodinné a průmyslové argumenty do jednoho nevěrohodného sdělení."
+    ],
+    "applicableProducts": ["EKO S 500", "EKO H 200"]
   }
 ]

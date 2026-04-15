@@ -41,7 +41,10 @@ Klíčové výhody a firemní argumenty:
 - Zateplení rodinného domu do 200 m² za 1 den podávej jako orientační firemní údaj.
 - Silná témata značky: omezení tepelných mostů, utěsnění konstrukce, rychlost realizace a dlouhodobá funkčnost.
 - Důvěryhodnost podpoř argumenty jako počet realizací, zkušenost, kvalita provedení a pomoc s dotacemi.
+- Web firmy staví komunikaci také na německé kvalitě, více než 9 000 realizacích a širokém použití pro střechy, podkroví, podlahy, fasády i haly.
 - Když si nejsi jistý přesností tvrzení, zvol raději opatrnější a poradenskou formulaci.`;
+
+const compactBrandContext = `Chytrá pěna Bohemia s.r.o. je specialista na stříkanou PUR izolaci. Piš stručně, česky, prakticky a důvěryhodně. Opírej se hlavně o úspory, omezení tepelných mostů, rychlost realizace a zkušenost firmy.`;
 
 const defaultPromptTemplates = [
   'Proč zateplit střechu ještě před další topnou sezonou',
@@ -513,6 +516,20 @@ function buildProductSection(entries) {
   }
 
   return products.map((product) => `- ${product}`).join('\n');
+}
+
+function buildCompactKnowledgeContext(entries) {
+  if (!entries.length) {
+    return '- Bez doplňkového znalostního bloku.';
+  }
+
+  return entries
+    .slice(0, 3)
+    .map((entry) => {
+      const fact = entry.facts?.[0];
+      return fact ? `- ${entry.title}: ${fact}` : `- ${entry.title}`;
+    })
+    .join('\n');
 }
 
 export default function App() {
@@ -1129,13 +1146,15 @@ Telefon: ${companyContact.phone}`.trim();
     }
     setError('');
 
-    const modelsToTry = [primaryModel, fallbackModel];
+    const modelsToTry = options.modelsToTry || [primaryModel, fallbackModel];
+    const maxAttempts = options.maxAttempts ?? 3;
+    const initialRetryDelayMs = options.initialRetryDelayMs ?? 900;
     let lastError = 'NeznĂˇmĂˇ chyba';
 
     for (const currentModel of modelsToTry) {
-      let delay = 900;
+      let delay = initialRetryDelayMs;
 
-      for (let i = 0; i < 3; i += 1) {
+      for (let i = 0; i < maxAttempts; i += 1) {
         try {
           const response = await fetch(
             `https://generativelanguage.googleapis.com/v1beta/models/${currentModel}:generateContent?key=${apiKey}`,
@@ -1153,7 +1172,8 @@ Telefon: ${companyContact.phone}`.trim();
                 ],
                 generationConfig: {
                   temperature: options.temperature ?? 0.5,
-                  topP: 0.9,
+                  topP: options.topP ?? 0.9,
+                  ...(options.maxOutputTokens ? { maxOutputTokens: options.maxOutputTokens } : {}),
                   ...(options.expectJson ? { responseMimeType: 'application/json' } : {}),
                 },
               }),
@@ -1189,7 +1209,7 @@ Telefon: ${companyContact.phone}`.trim();
         } catch (err) {
           lastError = err.message;
 
-          const isLastAttemptForThisModel = i === 2;
+          const isLastAttemptForThisModel = i === maxAttempts - 1;
           if (!isLastAttemptForThisModel) {
             await new Promise((resolve) => setTimeout(resolve, delay));
             delay *= 2;
@@ -1809,10 +1829,10 @@ Tvůj úkol:
 - vrátit výsledek pouze jako čistý JSON bez markdownu a bez komentářů
 
 Kontext značky:
-${useBrandContext ? brandContext : '- Používej pouze informace ze zadání.'}
+${useBrandContext ? compactBrandContext : '- Používej pouze informace ze zadání.'}
 
 Znalostní databáze:
-${buildKnowledgeContext(selectedKnowledgeEntries)}
+${buildCompactKnowledgeContext(selectedKnowledgeEntries)}
 
 Marketingový briefing pro cílovou skupinu:
 ${audienceBriefs[targetAudience] || ''}
@@ -1897,6 +1917,9 @@ Uprav výstup podle dodatečného pokynu uživatele.`;
         expectJson: true,
         temperature: 0.35,
         useGlobalLoading: false,
+        modelsToTry: [primaryModel],
+        maxAttempts: 1,
+        maxOutputTokens: 900,
       });
 
       if (!result) return;
@@ -1963,10 +1986,10 @@ Tvoje role:
 - pokud uživatel nechce nic přepisovat, jen stručně odpověz a obsah nech beze změny
 
 Kontext značky:
-${useBrandContext ? brandContext : '- Používej pouze informace ze zadání.'}
+${useBrandContext ? compactBrandContext : '- Používej pouze informace ze zadání.'}
 
 Znalostní databáze:
-${buildKnowledgeContext(selectedKnowledgeEntries)}
+${buildCompactKnowledgeContext(selectedKnowledgeEntries)}
 
 Marketingový briefing pro cílovou skupinu:
 ${audienceBriefs[targetAudience] || ''}
@@ -2030,7 +2053,7 @@ Aktuální text letáku:
 ${flyerText || '-'}
 
 Dosavadní konverzace:
-${nextMessages.map((message) => `${message.role === 'user' ? 'Uživatel' : 'AI'}: ${message.content}`).join('\n')}
+${nextMessages.slice(-6).map((message) => `${message.role === 'user' ? 'Uživatel' : 'AI'}: ${message.content}`).join('\n')}
 
 Zpracuj poslední uživatelskou zprávu.`;
 
@@ -2038,6 +2061,10 @@ Zpracuj poslední uživatelskou zprávu.`;
         expectJson: true,
         temperature: 0.35,
         useGlobalLoading: false,
+        modelsToTry: [primaryModel],
+        maxAttempts: 1,
+        maxOutputTokens: 1000,
+        topP: 0.8,
       });
 
       if (!result) return;
