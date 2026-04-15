@@ -211,6 +211,7 @@ app.post('/api/chat-assistant', async (req, res) => {
       currentFlyerTitle = '',
       currentFlyerText = '',
       userExplicitlyRequestsEdit = false,
+      chatMode = 'chat',
     } = req.body || {};
 
     if (!systemPrompt || !prompt) {
@@ -275,34 +276,51 @@ app.post('/api/chat-assistant', async (req, res) => {
         ? payload.reply.trim()
         : userExplicitlyRequestsEdit
           ? 'Úpravu jsem zpracoval.'
-          : 'Tady je moje odpověď.';
+          : chatMode === 'advice'
+            ? 'Tady je moje doporučení.'
+            : 'Tady je moje odpověď.';
 
-    const applyChanges = Boolean(userExplicitlyRequestsEdit && payload.applyChanges);
+    const normalizedUpdatedMainText =
+      typeof payload.updatedMainText === 'string' && payload.updatedMainText.trim()
+        ? payload.updatedMainText.trim()
+        : currentMainText;
+    const normalizedUpdatedVisualPrompt =
+      typeof payload.updatedVisualPrompt === 'string'
+        ? payload.updatedVisualPrompt.trim()
+        : currentVisualPrompt;
+    const normalizedUpdatedHashtags = Array.isArray(payload.updatedHashtags)
+      ? payload.updatedHashtags.filter(Boolean)
+      : String(currentHashtags || '')
+          .split(/\s+/)
+          .filter(Boolean);
+    const normalizedUpdatedFlyerTitle =
+      typeof payload.updatedFlyerTitle === 'string' && payload.updatedFlyerTitle.trim()
+        ? payload.updatedFlyerTitle.trim()
+        : currentFlyerTitle;
+    const normalizedUpdatedFlyerText =
+      typeof payload.updatedFlyerText === 'string' && payload.updatedFlyerText.trim()
+        ? payload.updatedFlyerText.trim()
+        : currentFlyerText;
+
+    const hasMaterialChanges =
+      normalizedUpdatedMainText !== currentMainText ||
+      normalizedUpdatedVisualPrompt !== currentVisualPrompt ||
+      normalizedUpdatedHashtags.join(' ') !== String(currentHashtags || '').trim() ||
+      normalizedUpdatedFlyerTitle !== currentFlyerTitle ||
+      normalizedUpdatedFlyerText !== currentFlyerText;
+
+    const applyChanges = Boolean(userExplicitlyRequestsEdit && payload.applyChanges && hasMaterialChanges);
 
     return res.json({
+      provider: 'OpenAI GPT',
+      model,
       reply,
       applyChanges,
-      updatedMainText:
-        applyChanges && typeof payload.updatedMainText === 'string' && payload.updatedMainText.trim()
-          ? payload.updatedMainText.trim()
-          : currentMainText,
-      updatedVisualPrompt:
-        typeof payload.updatedVisualPrompt === 'string'
-          ? payload.updatedVisualPrompt.trim()
-          : currentVisualPrompt,
-      updatedHashtags: Array.isArray(payload.updatedHashtags)
-        ? payload.updatedHashtags.filter(Boolean)
-        : String(currentHashtags || '')
-            .split(/\s+/)
-            .filter(Boolean),
-      updatedFlyerTitle:
-        typeof payload.updatedFlyerTitle === 'string' && payload.updatedFlyerTitle.trim()
-          ? payload.updatedFlyerTitle.trim()
-          : currentFlyerTitle,
-      updatedFlyerText:
-        typeof payload.updatedFlyerText === 'string' && payload.updatedFlyerText.trim()
-          ? payload.updatedFlyerText.trim()
-          : currentFlyerText,
+      updatedMainText: normalizedUpdatedMainText,
+      updatedVisualPrompt: normalizedUpdatedVisualPrompt,
+      updatedHashtags: normalizedUpdatedHashtags,
+      updatedFlyerTitle: normalizedUpdatedFlyerTitle,
+      updatedFlyerText: normalizedUpdatedFlyerText,
     });
   } catch (err) {
     return res.status(500).json({

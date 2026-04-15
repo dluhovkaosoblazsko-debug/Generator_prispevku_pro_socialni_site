@@ -8,6 +8,7 @@ export default defineConfig(({ mode }) => {
   const openAiImageModel = env.OPENAI_IMAGE_MODEL || 'gpt-image-1';
   const openAiImageQuality = env.OPENAI_IMAGE_QUALITY || 'medium';
   const openAiImageSize = env.OPENAI_IMAGE_SIZE || '1024x1024';
+  const openAiChatModel = env.OPENAI_CHAT_MODEL || 'gpt-4.1-mini';
 
   const readJsonBody = async (req) => {
     let rawBody = '';
@@ -152,6 +153,136 @@ export default defineConfig(({ mode }) => {
         } catch (error) {
           sendJson(res, 500, {
             error: error?.message || 'Image edit failed',
+          });
+        }
+      });
+
+      server.middlewares.use('/api/chat-assistant', async (req, res) => {
+        if (req.method !== 'POST') {
+          sendJson(res, 405, { error: 'Method Not Allowed' });
+          return;
+        }
+
+        if (!openAiApiKey) {
+          sendJson(res, 500, { error: 'Missing OPENAI_API_KEY' });
+          return;
+        }
+
+        try {
+          const body = await readJsonBody(req);
+
+          if (!body.systemPrompt || !body.prompt) {
+            sendJson(res, 400, { error: 'Missing chat prompt.' });
+            return;
+          }
+
+          const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${openAiApiKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              model: openAiChatModel,
+              temperature: 0.35,
+              response_format: {
+                type: 'json_object',
+              },
+              messages: [
+                {
+                  role: 'system',
+                  content: body.systemPrompt,
+                },
+                {
+                  role: 'user',
+                  content: body.prompt,
+                },
+              ],
+            }),
+          });
+
+          const payload = await response.json().catch(() => ({}));
+
+          if (!response.ok) {
+            sendJson(res, response.status, {
+              error: payload?.error?.message || 'OpenAI chat API error',
+            });
+            return;
+          }
+
+          const content = payload?.choices?.[0]?.message?.content;
+
+          if (!content) {
+            sendJson(res, 502, { error: 'OpenAI chat did not return content.' });
+            return;
+          }
+
+          let parsedPayload = {};
+
+          try {
+            parsedPayload = JSON.parse(content);
+          } catch {
+            parsedPayload = {};
+          }
+
+          const reply =
+            typeof parsedPayload.reply === 'string' && parsedPayload.reply.trim()
+              ? parsedPayload.reply.trim()
+              : body.userExplicitlyRequestsEdit
+                ? 'Úpravu jsem zpracoval.'
+                : body.chatMode === 'advice'
+                  ? 'Tady je moje doporučení.'
+                  : 'Tady je moje odpověď.';
+
+          const normalizedUpdatedMainText =
+            typeof parsedPayload.updatedMainText === 'string' && parsedPayload.updatedMainText.trim()
+              ? parsedPayload.updatedMainText.trim()
+              : body.currentMainText || '';
+          const normalizedUpdatedVisualPrompt =
+            typeof parsedPayload.updatedVisualPrompt === 'string'
+              ? parsedPayload.updatedVisualPrompt.trim()
+              : body.currentVisualPrompt || '';
+          const normalizedUpdatedHashtags = Array.isArray(parsedPayload.updatedHashtags)
+            ? parsedPayload.updatedHashtags.filter(Boolean)
+            : String(body.currentHashtags || '')
+                .split(/\s+/)
+                .filter(Boolean);
+          const normalizedUpdatedFlyerTitle =
+            typeof parsedPayload.updatedFlyerTitle === 'string' &&
+            parsedPayload.updatedFlyerTitle.trim()
+              ? parsedPayload.updatedFlyerTitle.trim()
+              : body.currentFlyerTitle || '';
+          const normalizedUpdatedFlyerText =
+            typeof parsedPayload.updatedFlyerText === 'string' &&
+            parsedPayload.updatedFlyerText.trim()
+              ? parsedPayload.updatedFlyerText.trim()
+              : body.currentFlyerText || '';
+
+          const hasMaterialChanges =
+            normalizedUpdatedMainText !== (body.currentMainText || '') ||
+            normalizedUpdatedVisualPrompt !== (body.currentVisualPrompt || '') ||
+            normalizedUpdatedHashtags.join(' ') !== String(body.currentHashtags || '').trim() ||
+            normalizedUpdatedFlyerTitle !== (body.currentFlyerTitle || '') ||
+            normalizedUpdatedFlyerText !== (body.currentFlyerText || '');
+
+          const applyChanges = Boolean(
+            body.userExplicitlyRequestsEdit && parsedPayload.applyChanges && hasMaterialChanges
+          );
+
+          sendJson(res, 200, {
+            provider: 'OpenAI GPT',
+            model: openAiChatModel,
+            reply,
+            applyChanges,
+            updatedMainText: normalizedUpdatedMainText,
+            updatedVisualPrompt: normalizedUpdatedVisualPrompt,
+            updatedHashtags: normalizedUpdatedHashtags,
+            updatedFlyerTitle: normalizedUpdatedFlyerTitle,
+            updatedFlyerText: normalizedUpdatedFlyerText,
+          });
+        } catch (error) {
+          sendJson(res, 500, {
+            error: error?.message || 'Chat request failed',
           });
         }
       });

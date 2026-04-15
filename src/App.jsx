@@ -179,6 +179,17 @@ const companyPhotoLibrary = Object.entries(companyPhotoModules).map(([path, url]
   url,
 }));
 
+const defaultOutputMeta = {
+  content: {
+    provider: '',
+    model: '',
+  },
+  chat: {
+    provider: '',
+    model: '',
+  },
+};
+
 const flyerTemplates = [
   { id: 'classic', label: 'Klasický' },
   { id: 'split', label: 'Rozdělený' },
@@ -573,6 +584,7 @@ export default function App() {
   const [postLength, setPostLength] = useState('Střední (150–200 slov)');
   const [cta, setCta] = useState('Získat nezávaznou kalkulaci zdarma');
   const [generatedContent, setGeneratedContent] = useState('');
+  const [outputMeta, setOutputMeta] = useState(defaultOutputMeta);
   const [revisionPrompt, setRevisionPrompt] = useState('');
   const [revisionLoading, setRevisionLoading] = useState(false);
   const [chatMessages, setChatMessages] = useState([]);
@@ -643,6 +655,7 @@ export default function App() {
       setIncludeHashtags(draft.includeHashtags ?? true);
       setStrictClaims(draft.strictClaims ?? true);
       setGeneratedContent(draft.generatedContent || '');
+      setOutputMeta(draft.outputMeta || defaultOutputMeta);
       setRevisionPrompt(draft.revisionPrompt || '');
       setChatMessages(Array.isArray(draft.chatMessages) ? draft.chatMessages : []);
       setChatInput(draft.chatInput || '');
@@ -758,6 +771,7 @@ export default function App() {
           includeHashtags,
           strictClaims,
           generatedContent,
+          outputMeta,
           revisionPrompt,
           chatMessages,
           chatInput,
@@ -792,6 +806,7 @@ export default function App() {
     includeHashtags,
     strictClaims,
     generatedContent,
+    outputMeta,
     revisionPrompt,
     chatMessages,
     chatInput,
@@ -1618,6 +1633,7 @@ Telefon: ${companyContact.phone}`;
     setPostLength(item.postLength || 'Střední (150–200 slov)');
     setCta(item.cta || 'Získat nezávaznou kalkulaci zdarma');
     setGeneratedContent(item.generatedContent || '');
+    setOutputMeta(item.outputMeta || defaultOutputMeta);
     setRevisionPrompt('');
     setChatMessages([]);
     setChatInput('');
@@ -1791,6 +1807,13 @@ Piš pro roli: ${resolvedContactLabel}.`
 
       const serializedContent = serializeGeneratedContent(structuredPayload);
       setGeneratedContent(serializedContent);
+      setOutputMeta((current) => ({
+        ...current,
+        content: {
+          provider: 'Google Gemini',
+          model: contentPrimaryModel,
+        },
+      }));
       setRevisionPrompt('');
       setChatMessages([
         {
@@ -1817,6 +1840,13 @@ Piš pro roli: ${resolvedContactLabel}.`
           postLength,
           cta,
           generatedContent: serializedContent,
+          outputMeta: {
+            ...defaultOutputMeta,
+            content: {
+              provider: 'Google Gemini',
+              model: contentPrimaryModel,
+            },
+          },
         },
         ...current,
       ]);
@@ -1960,6 +1990,13 @@ Uprav výstup podle dodatečného pokynu uživatele.`;
       }
 
       setGeneratedContent(serializeGeneratedContent(structuredPayload));
+      setOutputMeta((current) => ({
+        ...current,
+        chat: {
+          provider: 'Google Gemini',
+          model: primaryModel,
+        },
+      }));
       setRevisionPrompt('');
       setGeneratedImage('');
       setFlyerImage('');
@@ -1987,8 +2024,12 @@ Uprav výstup podle dodatečného pokynu uživatele.`;
     };
 
     const explicitEditIntentPattern =
-      /\b(uprav|upravit|přepiš|prepis|přeformuluj|zreviduj|zkr[aá]t|prodluž|rozšiř|dop[lňn]|zm[eě]ň|přidej|odeber|předělej|vylepši|pouprav)\b/i;
+      /\b(uprav|upravit|přepiš|prepis|přeformuluj|zreviduj|zkr[aá]t|prodluž|rozšiř|dop[lňn]|zm[eě]ň|předělej|pouprav)\b/i;
+    const advisoryIntentPattern =
+      /\b(navrhni|doporuč|doporučení|co bys zlepšil|co zlepšit|vylepšení|zhodnoť|okomentuj|posuď|názor)\b/i;
     const userExplicitlyRequestsEdit = explicitEditIntentPattern.test(userMessage.content);
+    const userRequestsAdvice = advisoryIntentPattern.test(userMessage.content);
+    const chatMode = userExplicitlyRequestsEdit ? 'edit' : userRequestsAdvice ? 'advice' : 'chat';
 
     const nextMessages = [...chatMessages, userMessage];
 
@@ -2031,9 +2072,11 @@ ${resolvedCompanyProfile?.name ? `- Název firmy: ${resolvedCompanyProfile.name}
 Pravidla:
 - Odpovídej stručně, přirozeně a prakticky.
 - Nevymýšlej neověřená čísla ani technické sliby.
+- Aktuální režim konverzace: ${chatMode}
 - Ve výchozím stavu jen odpovídej a nic nepřepisuj.
 - "applyChanges": true nastav jen tehdy, když uživatel výslovně žádá přepsání nebo změnu textu, např. uprav, přepiš, zkrať, prodluž, změň, doplň, přidej, odeber, přeformuluj.
 - Pokud je dotaz jen poradenský, vysvětlující nebo hodnoticí, nech "applyChanges": false.
+- Pokud je režim "advice", dej návrh nebo seznam doporučení a rozhodně nepiš, že už byl text upraven.
 - Pokud uživatel žádá úpravu textu, promítni ji do "updatedMainText".
 - Pokud uživatel výslovně neřeší vizuál nebo hashtagy, nech je co nejblíž původní verzi.
 - ${strictClaims ? 'Drž se pouze ověřených tvrzení.' : 'Můžeš psát kreativněji, ale stále relevantně.'}
@@ -2095,6 +2138,7 @@ Zpracuj poslední uživatelskou zprávu.`;
           currentFlyerTitle: flyerTitle,
           currentFlyerText: flyerText,
           userExplicitlyRequestsEdit,
+          chatMode,
         }),
       });
 
@@ -2118,8 +2162,22 @@ Zpracuj poslední uživatelskou zprávu.`;
         ? payload.reply.trim()
         : userExplicitlyRequestsEdit
           ? 'Úpravu jsem zpracoval.'
-          : 'Tady je moje odpověď.';
+          : chatMode === 'advice'
+            ? 'Tady je moje doporučení.'
+            : 'Tady je moje odpověď.';
       const shouldApplyChanges = userExplicitlyRequestsEdit && Boolean(payload.applyChanges);
+      const effectiveReplyText =
+        userExplicitlyRequestsEdit && !shouldApplyChanges
+          ? 'Návrh na úpravu jsem vyhodnotil, ale zatím nevznikla konkrétní změna textu. Zkus prosím přesněji popsat, co chceš přepsat.'
+          : replyText;
+
+      setOutputMeta((current) => ({
+        ...current,
+        chat: {
+          provider: 'OpenAI GPT',
+          model: payload.model || 'OpenAI chat',
+        },
+      }));
 
       if (shouldApplyChanges) {
         const nextStructuredPayload = {
@@ -2145,6 +2203,13 @@ Zpracuj poslední uživatelskou zprávu.`;
         }
 
         setGeneratedContent(serializeGeneratedContent(nextStructuredPayload));
+        setOutputMeta((current) => ({
+          ...current,
+          content: {
+            provider: 'OpenAI GPT',
+            model: payload.model || current.chat.model || 'OpenAI chat',
+          },
+        }));
         setGeneratedImage('');
         setFlyerImage('');
         setImageError('');
@@ -2163,7 +2228,7 @@ Zpracuj poslední uživatelskou zprávu.`;
         {
           id: `${Date.now()}-assistant`,
           role: 'assistant',
-          content: replyText,
+          content: effectiveReplyText,
         },
       ]);
     } catch {
@@ -2752,6 +2817,11 @@ Zpracuj poslední uživatelskou zprávu.`;
                           <p className="mt-1 text-xs text-slate-500">
                             {item.targetAudience} · {item.platform}
                           </p>
+                          {item.outputMeta?.content?.provider && (
+                            <p className="mt-1 text-xs text-slate-400">
+                              {item.outputMeta.content.provider} · {item.outputMeta.content.model}
+                            </p>
+                          )}
                         </div>
                         <span className="shrink-0 text-xs text-slate-400">
                           {new Date(item.createdAt).toLocaleDateString('cs-CZ')}
@@ -2776,6 +2846,20 @@ Zpracuj poslední uživatelskou zprávu.`;
               <div>
                 <p className="text-xs uppercase tracking-[0.22em] text-slate-300/70">Výstup pro sítě</p>
                 <p className="mt-1 text-sm text-slate-200/85">Hotový text, návrh vizuálu a hashtagy</p>
+                {(outputMeta.content.provider || outputMeta.chat.provider) && (
+                  <div className="mt-2 flex flex-wrap gap-2 text-xs">
+                    {outputMeta.content.provider && (
+                      <span className="rounded-full border border-slate-600/80 bg-slate-900/35 px-3 py-1 text-slate-200">
+                        Text: {outputMeta.content.provider} · {outputMeta.content.model}
+                      </span>
+                    )}
+                    {outputMeta.chat.provider && (
+                      <span className="rounded-full border border-slate-600/80 bg-slate-900/35 px-3 py-1 text-slate-200">
+                        Chat: {outputMeta.chat.provider} · {outputMeta.chat.model}
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
 
               {generatedContent && (
