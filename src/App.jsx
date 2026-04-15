@@ -540,6 +540,8 @@ export default function App() {
   const [postLength, setPostLength] = useState('Střední (150–200 slov)');
   const [cta, setCta] = useState('Získat nezávaznou kalkulaci zdarma');
   const [generatedContent, setGeneratedContent] = useState('');
+  const [revisionPrompt, setRevisionPrompt] = useState('');
+  const [revisionLoading, setRevisionLoading] = useState(false);
   const [generatedImage, setGeneratedImage] = useState('');
   const [flyerTitle, setFlyerTitle] = useState('');
   const [flyerText, setFlyerText] = useState('');
@@ -605,6 +607,7 @@ export default function App() {
       setIncludeHashtags(draft.includeHashtags ?? true);
       setStrictClaims(draft.strictClaims ?? true);
       setGeneratedContent(draft.generatedContent || '');
+      setRevisionPrompt(draft.revisionPrompt || '');
       setGeneratedImage(draft.generatedImage || '');
       setFlyerTitle(draft.flyerTitle || '');
       setFlyerText(draft.flyerText || '');
@@ -717,6 +720,7 @@ export default function App() {
           includeHashtags,
           strictClaims,
           generatedContent,
+          revisionPrompt,
           generatedImage,
           flyerTitle,
           flyerText,
@@ -748,6 +752,7 @@ export default function App() {
     includeHashtags,
     strictClaims,
     generatedContent,
+    revisionPrompt,
     generatedImage,
     flyerTitle,
     flyerText,
@@ -1108,7 +1113,11 @@ Telefon: ${companyContact.phone}`.trim();
       return null;
     }
 
-    setLoading(true);
+    const useGlobalLoading = options.useGlobalLoading ?? true;
+
+    if (useGlobalLoading) {
+      setLoading(true);
+    }
     setError('');
 
     const modelsToTry = [primaryModel, fallbackModel];
@@ -1164,7 +1173,9 @@ Telefon: ${companyContact.phone}`.trim();
             throw new Error(`Model ${currentModel} vrátil prázdnou odpověď.`);
           }
 
-          setLoading(false);
+          if (useGlobalLoading) {
+            setLoading(false);
+          }
           return resultText;
         } catch (err) {
           lastError = err.message;
@@ -1178,7 +1189,9 @@ Telefon: ${companyContact.phone}`.trim();
       }
     }
 
-    setLoading(false);
+    if (useGlobalLoading) {
+      setLoading(false);
+    }
     setError(`API chyba: ${lastError}`);
     return null;
   };
@@ -1752,6 +1765,149 @@ Piš pro roli: ${resolvedContactLabel}.`
     }
   };
 
+  const handleReviseContent = async () => {
+    if (!generatedContent.trim() || !revisionPrompt.trim()) return;
+
+    let resolvedCompanyProfile = companyProfile;
+    if (normalizedCompanyIco && !resolvedCompanyProfile?.name) {
+      resolvedCompanyProfile = await lookupCompanyByIco(normalizedCompanyIco);
+      if (!resolvedCompanyProfile) {
+        return;
+      }
+    }
+
+    setRevisionLoading(true);
+    setError('');
+
+    try {
+      const systemPrompt = `Jsi seniorní copywriter pro firmu Chytrá pěna.
+
+Tvůj úkol:
+- upravit už existující český marketingový text podle dodatečného pokynu uživatele
+- zachovat hlavní směr sdělení, pokud uživatel nechce zásadní změnu
+- vrátit výsledek pouze jako čistý JSON bez markdownu a bez komentářů
+
+Kontext značky:
+${useBrandContext ? brandContext : '- Používej pouze informace ze zadání.'}
+
+Znalostní databáze:
+${buildKnowledgeContext(selectedKnowledgeEntries)}
+
+Marketingový briefing pro cílovou skupinu:
+${audienceBriefs[targetAudience] || ''}
+
+Pravidla pro platformu:
+${platformBriefs[platform] || ''}
+
+Hlavní pain points:
+${selectedPainPoints}
+
+Doporučené benefitové argumenty:
+${selectedBenefitClaims}
+
+Důkazní body:
+${selectedProofPoints}
+
+Produktové vazby:
+${selectedProducts}
+
+Tónové vodítko z databáze:
+${selectedToneHints}
+
+Vodítka pro CTA z databáze:
+${selectedCtaHints}
+
+Vodítka pro vizuál z databáze:
+${selectedVisualHints}
+
+Čemu se vyhnout:
+${selectedNegativeHints}
+
+Parametry:
+- Platforma: ${platform}
+- Tón: ${tone}
+- Cílová skupina: ${targetAudience}
+- Délka: ${postLength}
+- CTA: ${cta}
+- Přímé cílení na firmu: ${resolvedCompanyProfile?.name ? 'ano' : 'ne'}
+${resolvedCompanyProfile?.name ? `- Název firmy: ${resolvedCompanyProfile.name}
+- Doporučená role k oslovení: ${resolvedCompanyProfile?.recommendedContact?.label || 'vedení společnosti'}` : ''}
+
+Pravidla revize:
+- Upravuj jen to, co dává smysl podle uživatelova pokynu.
+- Pokud uživatel nezmiňuje vizuál nebo hashtagy, zachovej je co nejblíž původní verzi.
+- Pokud uživatel chce změnit tón, délku nebo CTA, promítni to hlavně do hlavního textu.
+- Zachovej češtinu, přirozenost a srozumitelnost.
+- Nevymýšlej neověřená čísla ani technické sliby.
+- ${strictClaims ? 'Drž se pouze ověřených tvrzení.' : 'Můžeš psát kreativněji, ale stále relevantně.'}
+- ${includeEmojis ? 'Emoji používej střídmě a jen pokud to dává smysl.' : 'Nepoužívej emoji.'}
+
+Použij přesně tuto strukturu:
+{
+  "mainText": "upravený text",
+  "visualPrompt": "upravený nebo zachovaný návrh vizuálu",
+  "hashtags": ["#tag1", "#tag2", "#tag3", "#tag4", "#tag5"]
+}
+
+Pravidla pro JSON:
+- "mainText" je vždy povinný neprázdný string.
+- "visualPrompt" vrať jako string, i kdyby zůstal stejný.
+- "hashtags" vrať jako pole; pokud hashtagy nejsou aktivní, vrať [].
+- Nevkládej další klíče.`;
+
+      const prompt = `Původní zadání:
+${contentPrompt}
+
+Dodatečný pokyn k úpravě:
+${revisionPrompt}
+
+Aktuální hlavní text:
+${parsed.main || '-'}
+
+Aktuální návrh vizuálu:
+${parsed.visual || '-'}
+
+Aktuální hashtagy:
+${parsed.hashtags || '-'}
+
+Uprav výstup podle dodatečného pokynu uživatele.`;
+
+      const result = await generateWithGemini(prompt, systemPrompt, {
+        expectJson: true,
+        temperature: 0.35,
+        useGlobalLoading: false,
+      });
+
+      if (!result) return;
+
+      const structuredPayload =
+        normalizeGeneratedPayload(extractJsonPayload(result)) ||
+        normalizeGeneratedPayload(parseGeneratedContent(result)) || {
+          main: result.trim(),
+          visual: parsed.visual,
+          hashtags: parsed.hashtags,
+        };
+
+      if (!includeVisual) {
+        structuredPayload.visual = '';
+      } else if (looksLikeEnglishVisual(structuredPayload.visual)) {
+        structuredPayload.visual = await translateVisualPromptToCzech(structuredPayload.visual);
+      }
+
+      if (!includeHashtags) {
+        structuredPayload.hashtags = '';
+      }
+
+      setGeneratedContent(serializeGeneratedContent(structuredPayload));
+      setRevisionPrompt('');
+      setGeneratedImage('');
+      setFlyerImage('');
+      setImageError('');
+    } finally {
+      setRevisionLoading(false);
+    }
+  };
+
   const handleMainTextChange = (value) => {
     const updatedContent = serializeGeneratedContent({
       main: value,
@@ -1843,6 +1999,7 @@ Piš pro roli: ${resolvedContactLabel}.`
     setIncludeHashtags(true);
     setStrictClaims(true);
     setGeneratedContent('');
+    setRevisionPrompt('');
     setGeneratedImage('');
     setFlyerTitle('');
     setFlyerText('');
@@ -2392,6 +2549,34 @@ Piš pro roli: ${resolvedContactLabel}.`
                       onChange={(e) => handleMainTextChange(e.target.value)}
                       className="min-h-[240px] w-full overflow-hidden rounded-xl border border-slate-700/90 bg-[#0b1220] p-3 text-sm leading-7 text-slate-100 outline-none transition focus:border-lime-400 focus:ring-4 focus:ring-lime-500/10"
                     />
+
+                    <div className="mt-4 rounded-xl border border-slate-700/90 bg-[#0f172a]/82 p-3">
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                            Dodatečná úprava s AI
+                          </p>
+                          <p className="mt-1 text-xs text-slate-500">
+                            Napiš, co chceš změnit. Třeba zkrátit text, přidat důvěryhodnější tón nebo upravit CTA.
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handleReviseContent}
+                          disabled={revisionLoading || !revisionPrompt.trim()}
+                          className="shrink-0 rounded-xl border border-lime-300/35 bg-lime-500/18 px-3 py-2 text-xs font-semibold text-lime-50 transition hover:bg-lime-500/30 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          {revisionLoading ? 'Upravuji…' : 'Upravit s AI'}
+                        </button>
+                      </div>
+
+                      <textarea
+                        value={revisionPrompt}
+                        onChange={(e) => setRevisionPrompt(e.target.value)}
+                        placeholder="Např. zkrať to na polovinu, udělej text víc pro SVJ, méně reklamně, přidej silnější závěr."
+                        className="mt-3 min-h-[96px] w-full rounded-xl border border-slate-700/90 bg-[#0b1220] p-3 text-sm leading-6 text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-lime-400 focus:ring-4 focus:ring-lime-500/10"
+                      />
+                    </div>
 
                     <div className="mt-4 rounded-xl border border-slate-700/90 bg-[#0f172a]/82 p-3">
                       <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Kontakt</p>
