@@ -867,6 +867,7 @@ export default function App() {
   const [customGalleryItems, setCustomGalleryItems] = useState([]);
   const [galleryLoading, setGalleryLoading] = useState(false);
   const [gallerySaving, setGallerySaving] = useState(false);
+  const [galleryNotice, setGalleryNotice] = useState('');
   const [historyItems, setHistoryItems] = useState([]);
   const [promptTemplates, setPromptTemplates] = useState(defaultPromptTemplates);
   const [templateEditorOpen, setTemplateEditorOpen] = useState(false);
@@ -2914,6 +2915,7 @@ Zpracuj poslední uživatelskou zprávu.`;
 
     setGallerySaving(true);
     setImageError('');
+    setGalleryNotice('');
 
     try {
       const itemName = `ai-vizual-${new Date().toISOString().slice(0, 10)}-${customGalleryItems.length + 1}`;
@@ -2951,7 +2953,14 @@ Zpracuj poslední uživatelskou zprávu.`;
       setSourceImageName(savedItem.name || `${itemName}.png`);
       setImageMode('edit');
       setCompanyGalleryOpen(true);
-      await fetchGalleryItems();
+      setGalleryNotice('Obrázek byl uložen do firemní galerie.');
+
+      try {
+        await fetchGalleryItems();
+      } catch {
+        // Lokální stav už je aktualizovaný, takže selhání refreshu galerie
+        // nemá uživateli maskovat úspěšné uložení obrázku.
+      }
     } catch (err) {
       setImageError(err.message || 'Nepodařilo se uložit obrázek do galerie.');
     } finally {
@@ -3693,6 +3702,10 @@ Zpracuj poslední uživatelskou zprávu.`;
 
                       {imageError && (
                         <p className="mt-3 text-xs text-red-200">{imageError}</p>
+                      )}
+
+                      {galleryNotice && (
+                        <p className="mt-3 text-xs text-lime-200">{galleryNotice}</p>
                       )}
 
                       {generatedImage && (
