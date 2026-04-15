@@ -1969,6 +1969,10 @@ Uprav výstup podle dodatečného pokynu uživatele.`;
       content: chatInput.trim(),
     };
 
+    const explicitEditIntentPattern =
+      /\b(uprav|upravit|přepiš|prepis|přeformuluj|zreviduj|zkr[aá]t|prodluž|rozšiř|dop[lňn]|zm[eě]ň|přidej|odeber|předělej|vylepši|pouprav)\b/i;
+    const userExplicitlyRequestsEdit = explicitEditIntentPattern.test(userMessage.content);
+
     const nextMessages = [...chatMessages, userMessage];
 
     setChatMessages(nextMessages);
@@ -2010,6 +2014,9 @@ ${resolvedCompanyProfile?.name ? `- Název firmy: ${resolvedCompanyProfile.name}
 Pravidla:
 - Odpovídej stručně, přirozeně a prakticky.
 - Nevymýšlej neověřená čísla ani technické sliby.
+- Ve výchozím stavu jen odpovídej a nic nepřepisuj.
+- "applyChanges": true nastav jen tehdy, když uživatel výslovně žádá přepsání nebo změnu textu, např. uprav, přepiš, zkrať, prodluž, změň, doplň, přidej, odeber, přeformuluj.
+- Pokud je dotaz jen poradenský, vysvětlující nebo hodnoticí, nech "applyChanges": false.
 - Pokud uživatel žádá úpravu textu, promítni ji do "updatedMainText".
 - Pokud uživatel výslovně neřeší vizuál nebo hashtagy, nech je co nejblíž původní verzi.
 - ${strictClaims ? 'Drž se pouze ověřených tvrzení.' : 'Můžeš psát kreativněji, ale stále relevantně.'}
@@ -2083,8 +2090,10 @@ Zpracuj poslední uživatelskou zprávu.`;
       const payload = extractJsonPayload(result) || {};
       const replyText = typeof payload.reply === 'string' && payload.reply.trim()
         ? payload.reply.trim()
-        : 'Úpravu jsem zpracoval.';
-      const shouldApplyChanges = Boolean(payload.applyChanges);
+        : userExplicitlyRequestsEdit
+          ? 'Úpravu jsem zpracoval.'
+          : 'Tady je moje odpověď.';
+      const shouldApplyChanges = userExplicitlyRequestsEdit && Boolean(payload.applyChanges);
 
       if (shouldApplyChanges) {
         const nextStructuredPayload = {
