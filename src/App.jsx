@@ -456,7 +456,7 @@ function parseGeneratedContent(text) {
 
   const mainMatch = text.match(/\[HLAVNÍ TEXT\]\s*:?[\s\S]*?(?=\[NÁVRH VIZUÁLU\]|\[HASHTAGY\]|$)/i);
   const visualMatch = text.match(/\[NÁVRH VIZUÁLU\]\s*:?[\s\S]*?(?=\[HASHTAGY\]|$)/i);
-  const hashtagsMatch = text.match(/\[HASHTAGY\]\s*:[\s\S]*$/i);
+  const hashtagsMatch = text.match(/\[HASHTAGY\]\s*:?[\s\S]*$/i);
 
   let main = text.trim();
   let visual = '';
@@ -2023,13 +2023,26 @@ Uprav výstup podle dodatečného pokynu uživatele.`;
       content: chatInput.trim(),
     };
 
+    const normalizedUserMessage = userMessage.content.trim().toLowerCase();
     const explicitEditIntentPattern =
-      /\b(uprav|upravit|přepiš|prepis|přeformuluj|zreviduj|zkr[aá]t|prodluž|rozšiř|dop[lňn]|zm[eě]ň|předělej|pouprav)\b/i;
+      /\b(uprav|upravit|přepiš|prepis|přeformuluj|zreviduj|zkr[aá]t|prodluž|rozšiř|dop[lňn]|zm[eě]ň|předělej|pouprav|proveď|proved|zapracuj|přidej|pridej|odeber|udělej|uprav to|přepiš to|rozpracuj|zjednoduš|zpřesni|zvyrazni|zvýrazni|přitvrď|zjemni)\b/i;
     const advisoryIntentPattern =
       /\b(navrhni|doporuč|doporučení|co bys zlepšil|co zlepšit|vylepšení|zhodnoť|okomentuj|posuď|názor)\b/i;
-    const userExplicitlyRequestsEdit = explicitEditIntentPattern.test(userMessage.content);
-    const userRequestsAdvice = advisoryIntentPattern.test(userMessage.content);
+    const questionLikePattern =
+      /\?|\b(proč|jak|co|můžeš vysvětlit|vysvětli mi|jaký je tvůj názor|co myslíš)\b/i;
+    const contentInstructionPattern =
+      /\b(text|článek|clanek|příspěvek|prispevek|nadpis|titulek|cta|úvod|uvod|závěr|zaver|odstavec|hashtagy|vizuál|vizual)\b/i;
+
+    const userExplicitlyRequestsEdit =
+      explicitEditIntentPattern.test(userMessage.content) ||
+      (!questionLikePattern.test(userMessage.content) &&
+        contentInstructionPattern.test(userMessage.content) &&
+        !advisoryIntentPattern.test(userMessage.content));
+
+    const userRequestsAdvice =
+      advisoryIntentPattern.test(userMessage.content) && !explicitEditIntentPattern.test(userMessage.content);
     const chatMode = userExplicitlyRequestsEdit ? 'edit' : userRequestsAdvice ? 'advice' : 'chat';
+    const userRequestsHeading = /\b(nadpis|titulek|headline)\b/i.test(userMessage.content);
 
     const nextMessages = [...chatMessages, userMessage];
 
@@ -2078,6 +2091,9 @@ Pravidla:
 - Pokud je dotaz jen poradenský, vysvětlující nebo hodnoticí, nech "applyChanges": false.
 - Pokud je režim "advice", dej návrh nebo seznam doporučení a rozhodně nepiš, že už byl text upraven.
 - Pokud uživatel žádá úpravu textu, promítni ji do "updatedMainText".
+- Pokud vracíš "applyChanges": true, musí být "updatedMainText" skutečně přepracovaný a viditelně odlišný od původního textu.
+- Nestačí jen potvrdit změnu slovně; vrať opravdu novou verzi textu.
+- Pokud uživatel žádá přidání nadpisu nebo titulku, vlož krátký samostatný nadpis přímo na začátek "updatedMainText".
 - Pokud uživatel výslovně neřeší vizuál nebo hashtagy, nech je co nejblíž původní verzi.
 - ${strictClaims ? 'Drž se pouze ověřených tvrzení.' : 'Můžeš psát kreativněji, ale stále relevantně.'}
 
@@ -2122,6 +2138,9 @@ ${flyerText || '-'}
 Dosavadní konverzace:
 ${nextMessages.slice(-6).map((message) => `${message.role === 'user' ? 'Uživatel' : 'AI'}: ${message.content}`).join('\n')}
 
+Speciální požadavky:
+- Uživatel chce přidat nadpis: ${userRequestsHeading ? 'ano' : 'ne'}
+
 Zpracuj poslední uživatelskou zprávu.`;
 
       const response = await fetch('/api/chat-assistant', {
@@ -2139,6 +2158,7 @@ Zpracuj poslední uživatelskou zprávu.`;
           currentFlyerText: flyerText,
           userExplicitlyRequestsEdit,
           chatMode,
+          userRequestsHeading,
         }),
       });
 
@@ -2166,8 +2186,12 @@ Zpracuj poslední uživatelskou zprávu.`;
             ? 'Tady je moje doporučení.'
             : 'Tady je moje odpověď.';
       const shouldApplyChanges = userExplicitlyRequestsEdit && Boolean(payload.applyChanges);
+      const mainTextActuallyChanged =
+        typeof payload.updatedMainText === 'string' && payload.updatedMainText.trim() !== parsed.main;
+      const finalShouldApplyChanges =
+        shouldApplyChanges && (!userRequestsHeading || mainTextActuallyChanged);
       const effectiveReplyText =
-        userExplicitlyRequestsEdit && !shouldApplyChanges
+        userExplicitlyRequestsEdit && !finalShouldApplyChanges
           ? 'Návrh na úpravu jsem vyhodnotil, ale zatím nevznikla konkrétní změna textu. Zkus prosím přesněji popsat, co chceš přepsat.'
           : replyText;
 
@@ -2179,7 +2203,7 @@ Zpracuj poslední uživatelskou zprávu.`;
         },
       }));
 
-      if (shouldApplyChanges) {
+      if (finalShouldApplyChanges) {
         const nextStructuredPayload = {
           main: typeof payload.updatedMainText === 'string' && payload.updatedMainText.trim()
             ? payload.updatedMainText.trim()

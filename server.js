@@ -212,6 +212,7 @@ app.post('/api/chat-assistant', async (req, res) => {
       currentFlyerText = '',
       userExplicitlyRequestsEdit = false,
       chatMode = 'chat',
+      userRequestsHeading = false,
     } = req.body || {};
 
     if (!systemPrompt || !prompt) {
