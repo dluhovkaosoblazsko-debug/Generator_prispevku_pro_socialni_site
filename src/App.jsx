@@ -2058,16 +2058,27 @@ ${nextMessages.slice(-6).map((message) => `${message.role === 'user' ? 'Uživate
 Zpracuj poslední uživatelskou zprávu.`;
 
       const result = await generateWithGemini(prompt, systemPrompt, {
-        expectJson: true,
+        expectJson: false,
         temperature: 0.35,
         useGlobalLoading: false,
-        modelsToTry: [primaryModel],
-        maxAttempts: 1,
+        modelsToTry: [primaryModel, fallbackModel],
+        maxAttempts: 2,
+        initialRetryDelayMs: 250,
         maxOutputTokens: 1000,
         topP: 0.8,
       });
 
-      if (!result) return;
+      if (!result) {
+        setChatMessages([
+          ...nextMessages,
+          {
+            id: `${Date.now()}-assistant-error`,
+            role: 'assistant',
+            content: 'Teď jsem neodpověděl korektně. Zkus to prosím ještě jednou, případně pokyn zkrať.',
+          },
+        ]);
+        return;
+      }
 
       const payload = extractJsonPayload(result) || {};
       const replyText = typeof payload.reply === 'string' && payload.reply.trim()
@@ -2118,6 +2129,15 @@ Zpracuj poslední uživatelskou zprávu.`;
           id: `${Date.now()}-assistant`,
           role: 'assistant',
           content: replyText,
+        },
+      ]);
+    } catch {
+      setChatMessages([
+        ...nextMessages,
+        {
+          id: `${Date.now()}-assistant-error`,
+          role: 'assistant',
+          content: 'Odpověď se nepodařilo dokončit. Zkus prosím kratší pokyn nebo dotaz zopakuj.',
         },
       ]);
     } finally {
