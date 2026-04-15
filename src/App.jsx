@@ -542,6 +542,9 @@ export default function App() {
   const [generatedContent, setGeneratedContent] = useState('');
   const [revisionPrompt, setRevisionPrompt] = useState('');
   const [revisionLoading, setRevisionLoading] = useState(false);
+  const [chatMessages, setChatMessages] = useState([]);
+  const [chatInput, setChatInput] = useState('');
+  const [chatLoading, setChatLoading] = useState(false);
   const [generatedImage, setGeneratedImage] = useState('');
   const [flyerTitle, setFlyerTitle] = useState('');
   const [flyerText, setFlyerText] = useState('');
@@ -608,6 +611,8 @@ export default function App() {
       setStrictClaims(draft.strictClaims ?? true);
       setGeneratedContent(draft.generatedContent || '');
       setRevisionPrompt(draft.revisionPrompt || '');
+      setChatMessages(Array.isArray(draft.chatMessages) ? draft.chatMessages : []);
+      setChatInput(draft.chatInput || '');
       setGeneratedImage(draft.generatedImage || '');
       setFlyerTitle(draft.flyerTitle || '');
       setFlyerText(draft.flyerText || '');
@@ -721,6 +726,8 @@ export default function App() {
           strictClaims,
           generatedContent,
           revisionPrompt,
+          chatMessages,
+          chatInput,
           generatedImage,
           flyerTitle,
           flyerText,
@@ -753,6 +760,8 @@ export default function App() {
     strictClaims,
     generatedContent,
     revisionPrompt,
+    chatMessages,
+    chatInput,
     generatedImage,
     flyerTitle,
     flyerText,
@@ -1573,6 +1582,9 @@ Telefon: ${companyContact.phone}`;
     setPostLength(item.postLength || 'Střední (150–200 slov)');
     setCta(item.cta || 'Získat nezávaznou kalkulaci zdarma');
     setGeneratedContent(item.generatedContent || '');
+    setRevisionPrompt('');
+    setChatMessages([]);
+    setChatInput('');
     setGeneratedImage('');
     setFlyerTitle('');
     setFlyerText('');
@@ -1742,6 +1754,15 @@ Piš pro roli: ${resolvedContactLabel}.`
 
       const serializedContent = serializeGeneratedContent(structuredPayload);
       setGeneratedContent(serializedContent);
+      setRevisionPrompt('');
+      setChatMessages([
+        {
+          id: `${Date.now()}-assistant-welcome`,
+          role: 'assistant',
+          content: 'Výstup je hotový. Klidně mi napiš, co chceš upravit, zkrátit nebo vysvětlit.',
+        },
+      ]);
+      setChatInput('');
       setGeneratedImage('');
       setFlyerText('');
       setFlyerImage('');
@@ -1908,6 +1929,175 @@ Uprav výstup podle dodatečného pokynu uživatele.`;
     }
   };
 
+  const handleSendChatMessage = async () => {
+    if (!generatedContent.trim() || !chatInput.trim()) return;
+
+    let resolvedCompanyProfile = companyProfile;
+    if (normalizedCompanyIco && !resolvedCompanyProfile?.name) {
+      resolvedCompanyProfile = await lookupCompanyByIco(normalizedCompanyIco);
+      if (!resolvedCompanyProfile) {
+        return;
+      }
+    }
+
+    const userMessage = {
+      id: `${Date.now()}-user`,
+      role: 'user',
+      content: chatInput.trim(),
+    };
+
+    const nextMessages = [...chatMessages, userMessage];
+
+    setChatMessages(nextMessages);
+    setChatInput('');
+    setChatLoading(true);
+    setError('');
+
+    try {
+      const systemPrompt = `Jsi AI asistent uvnitř aplikace Chytrá pěna Social Hub.
+
+Tvoje role:
+- vedeš krátkou, praktickou konverzaci v češtině
+- odpovídáš na dotazy k aktuálně vygenerovanému obsahu
+- pokud uživatel chce text upravit, můžeš rovnou vrátit upravenou verzi
+- pokud uživatel nechce nic přepisovat, jen stručně odpověz a obsah nech beze změny
+
+Kontext značky:
+${useBrandContext ? brandContext : '- Používej pouze informace ze zadání.'}
+
+Znalostní databáze:
+${buildKnowledgeContext(selectedKnowledgeEntries)}
+
+Marketingový briefing pro cílovou skupinu:
+${audienceBriefs[targetAudience] || ''}
+
+Pravidla pro platformu:
+${platformBriefs[platform] || ''}
+
+Parametry:
+- Platforma: ${platform}
+- Tón: ${tone}
+- Cílová skupina: ${targetAudience}
+- Délka: ${postLength}
+- CTA: ${cta}
+- Přímé cílení na firmu: ${resolvedCompanyProfile?.name ? 'ano' : 'ne'}
+${resolvedCompanyProfile?.name ? `- Název firmy: ${resolvedCompanyProfile.name}
+- Doporučená role k oslovení: ${resolvedCompanyProfile?.recommendedContact?.label || 'vedení společnosti'}` : ''}
+
+Pravidla:
+- Odpovídej stručně, přirozeně a prakticky.
+- Nevymýšlej neověřená čísla ani technické sliby.
+- Pokud uživatel žádá úpravu textu, promítni ji do "updatedMainText".
+- Pokud uživatel výslovně neřeší vizuál nebo hashtagy, nech je co nejblíž původní verzi.
+- ${strictClaims ? 'Drž se pouze ověřených tvrzení.' : 'Můžeš psát kreativněji, ale stále relevantně.'}
+
+Vrať pouze čistý JSON v této struktuře:
+{
+  "reply": "stručná odpověď pro uživatele",
+  "applyChanges": true,
+  "updatedMainText": "upravený nebo původní text",
+  "updatedVisualPrompt": "upravený nebo původní návrh vizuálu",
+  "updatedHashtags": ["#tag1", "#tag2"],
+  "updatedFlyerTitle": "volitelné",
+  "updatedFlyerText": "volitelné"
+}
+
+Pravidla pro JSON:
+- "reply" je vždy povinný string.
+- Pokud se obsah nemá změnit, vrať "applyChanges": false.
+- Pokud je "applyChanges": false, ostatní aktualizační pole můžeš vrátit prázdná.
+- Pokud se má změnit obsah, "updatedMainText" musí být vyplněný.
+- "updatedVisualPrompt" vrať jako string.
+- "updatedHashtags" vrať jako pole.
+- Nevkládej žádné další klíče.`;
+
+      const prompt = `Původní zadání:
+${contentPrompt}
+
+Aktuální hlavní text:
+${parsed.main || '-'}
+
+Aktuální návrh vizuálu:
+${parsed.visual || '-'}
+
+Aktuální hashtagy:
+${parsed.hashtags || '-'}
+
+Aktuální nadpis letáku:
+${flyerTitle || '-'}
+
+Aktuální text letáku:
+${flyerText || '-'}
+
+Dosavadní konverzace:
+${nextMessages.map((message) => `${message.role === 'user' ? 'Uživatel' : 'AI'}: ${message.content}`).join('\n')}
+
+Zpracuj poslední uživatelskou zprávu.`;
+
+      const result = await generateWithGemini(prompt, systemPrompt, {
+        expectJson: true,
+        temperature: 0.35,
+        useGlobalLoading: false,
+      });
+
+      if (!result) return;
+
+      const payload = extractJsonPayload(result) || {};
+      const replyText = typeof payload.reply === 'string' && payload.reply.trim()
+        ? payload.reply.trim()
+        : 'Úpravu jsem zpracoval.';
+      const shouldApplyChanges = Boolean(payload.applyChanges);
+
+      if (shouldApplyChanges) {
+        const nextStructuredPayload = {
+          main: typeof payload.updatedMainText === 'string' && payload.updatedMainText.trim()
+            ? payload.updatedMainText.trim()
+            : parsed.main,
+          visual: typeof payload.updatedVisualPrompt === 'string'
+            ? payload.updatedVisualPrompt.trim()
+            : parsed.visual,
+          hashtags: Array.isArray(payload.updatedHashtags)
+            ? payload.updatedHashtags.filter(Boolean).join(' ')
+            : parsed.hashtags,
+        };
+
+        if (!includeVisual) {
+          nextStructuredPayload.visual = '';
+        } else if (looksLikeEnglishVisual(nextStructuredPayload.visual)) {
+          nextStructuredPayload.visual = await translateVisualPromptToCzech(nextStructuredPayload.visual);
+        }
+
+        if (!includeHashtags) {
+          nextStructuredPayload.hashtags = '';
+        }
+
+        setGeneratedContent(serializeGeneratedContent(nextStructuredPayload));
+        setGeneratedImage('');
+        setFlyerImage('');
+        setImageError('');
+
+        if (typeof payload.updatedFlyerTitle === 'string' && payload.updatedFlyerTitle.trim()) {
+          setFlyerTitle(payload.updatedFlyerTitle.trim());
+        }
+
+        if (typeof payload.updatedFlyerText === 'string' && payload.updatedFlyerText.trim()) {
+          setFlyerText(payload.updatedFlyerText.trim());
+        }
+      }
+
+      setChatMessages([
+        ...nextMessages,
+        {
+          id: `${Date.now()}-assistant`,
+          role: 'assistant',
+          content: replyText,
+        },
+      ]);
+    } finally {
+      setChatLoading(false);
+    }
+  };
+
   const handleMainTextChange = (value) => {
     const updatedContent = serializeGeneratedContent({
       main: value,
@@ -2000,6 +2190,8 @@ Uprav výstup podle dodatečného pokynu uživatele.`;
     setStrictClaims(true);
     setGeneratedContent('');
     setRevisionPrompt('');
+    setChatMessages([]);
+    setChatInput('');
     setGeneratedImage('');
     setFlyerTitle('');
     setFlyerText('');
@@ -2554,28 +2746,60 @@ Uprav výstup podle dodatečného pokynu uživatele.`;
                       <div className="flex items-center justify-between gap-3">
                         <div>
                           <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                            Dodatečná úprava s AI
+                            Chat s AI
                           </p>
                           <p className="mt-1 text-xs text-slate-500">
-                            Napiš, co chceš změnit. Třeba zkrátit text, přidat důvěryhodnější tón nebo upravit CTA.
+                            Můžeš se doptat, chtít úpravy textu nebo si nechat vysvětlit, proč je výstup napsaný právě tak.
                           </p>
                         </div>
                         <button
                           type="button"
                           onClick={handleReviseContent}
                           disabled={revisionLoading || !revisionPrompt.trim()}
-                          className="shrink-0 rounded-xl border border-lime-300/35 bg-lime-500/18 px-3 py-2 text-xs font-semibold text-lime-50 transition hover:bg-lime-500/30 disabled:cursor-not-allowed disabled:opacity-50"
+                          className="shrink-0 rounded-xl border border-slate-700/90 bg-slate-950/80 px-3 py-2 text-xs font-semibold text-slate-200 transition hover:border-slate-500 hover:bg-slate-900 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
                         >
-                          {revisionLoading ? 'Upravuji…' : 'Upravit s AI'}
+                          {revisionLoading ? 'Rychlá úprava…' : 'Rychlá úprava'}
                         </button>
                       </div>
 
+                      {chatMessages.length > 0 && (
+                        <div className="mt-3 space-y-3 rounded-xl border border-slate-700/90 bg-[#0b1220] p-3">
+                          {chatMessages.map((message) => (
+                            <div
+                              key={message.id}
+                              className={classNames(
+                                'max-w-[92%] rounded-2xl px-3 py-2 text-sm leading-6',
+                                message.role === 'user'
+                                  ? 'ml-auto bg-lime-500/18 text-lime-50'
+                                  : 'bg-slate-800 text-slate-200'
+                              )}
+                            >
+                              {message.content}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
                       <textarea
-                        value={revisionPrompt}
-                        onChange={(e) => setRevisionPrompt(e.target.value)}
-                        placeholder="Např. zkrať to na polovinu, udělej text víc pro SVJ, méně reklamně, přidej silnější závěr."
+                        value={chatInput}
+                        onChange={(e) => {
+                          setChatInput(e.target.value);
+                          setRevisionPrompt(e.target.value);
+                        }}
+                        placeholder="Např. zkrať to na polovinu, udělej text víc pro SVJ, vysvětli mi proč je CTA takto formulované…"
                         className="mt-3 min-h-[96px] w-full rounded-xl border border-slate-700/90 bg-[#0b1220] p-3 text-sm leading-6 text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-lime-400 focus:ring-4 focus:ring-lime-500/10"
                       />
+
+                      <div className="mt-3 flex justify-end">
+                        <button
+                          type="button"
+                          onClick={handleSendChatMessage}
+                          disabled={chatLoading || !chatInput.trim()}
+                          className="rounded-xl border border-lime-300/35 bg-lime-500/18 px-3 py-2 text-xs font-semibold text-lime-50 transition hover:bg-lime-500/30 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          {chatLoading ? 'Odpovídám…' : 'Poslat AI'}
+                        </button>
+                      </div>
                     </div>
 
                     <div className="mt-4 rounded-xl border border-slate-700/90 bg-[#0f172a]/82 p-3">
