@@ -2513,7 +2513,9 @@ DŮLEŽITÉ:
   };
 
   const handleReviseContent = async () => {
-    if (!generatedContent.trim() || !revisionPrompt.trim()) return;
+    const effectiveRevisionPrompt = (revisionPrompt || chatInput || '').trim();
+
+    if (!generatedContent.trim() || !effectiveRevisionPrompt) return;
 
     let resolvedCompanyProfile = companyProfile;
     if (normalizedCompanyIco && !resolvedCompanyProfile?.name) {
@@ -2593,7 +2595,7 @@ Vrať přesně tuto strukturu:
 ${contentPrompt}
 
 Dodatečný pokyn k úpravě:
-${revisionPrompt}
+${effectiveRevisionPrompt}
 
 Aktuální hlavní text:
 ${parsed.main || '-'}
@@ -2671,6 +2673,7 @@ Uprav výstup podle dodatečného pokynu uživatele a opravdu proveď změnu hla
         },
       }));
       setRevisionPrompt('');
+      setChatInput('');
       if (visualActuallyChanged) {
         setGeneratedImage('');
         setFlyerImage('');
@@ -3677,7 +3680,7 @@ Zpracuj poslední uživatelskou zprávu.`;
                         <button
                           type="button"
                           onClick={handleReviseContent}
-                          disabled={revisionLoading || !revisionPrompt.trim()}
+                          disabled={revisionLoading || !chatInput.trim()}
                           className="shrink-0 rounded-xl border border-slate-700/90 bg-slate-950/80 px-3 py-2 text-xs font-semibold text-slate-200 transition hover:border-slate-500 hover:bg-slate-900 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           {revisionLoading
