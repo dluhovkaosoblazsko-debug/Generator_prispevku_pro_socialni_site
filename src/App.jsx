@@ -2517,176 +2517,23 @@ DŮLEŽITÉ:
 
     if (!generatedContent.trim() || !effectiveRevisionPrompt) return;
 
-    let resolvedCompanyProfile = companyProfile;
-    if (normalizedCompanyIco && !resolvedCompanyProfile?.name) {
-      resolvedCompanyProfile = await lookupCompanyByIco(normalizedCompanyIco);
-      if (!resolvedCompanyProfile) {
-        return;
-      }
-    }
-
-    setRevisionLoading(true);
-    setError('');
-
-    try {
-      const systemPrompt = `Jsi seniorní copywriter a editor pro značku Chytrá pěna.
-Piš pouze česky.
-
-Tvůj úkol:
-- výrazně vylepšit hlavní text podle pokynu uživatele
-- pokud uživatel nepožaduje změnu vizuálu nebo hashtagů, zachovej je
-- vrátit pouze čistý JSON bez markdownu a bez vysvětlení
-
-Kontext značky:
-${useBrandContext ? compactBrandContext : '- Používej pouze informace ze zadání.'}
-
-Znalostní databáze:
-${buildCompactKnowledgeContext(selectedKnowledgeEntries)}
-
-Marketingový briefing pro cílovou skupinu:
-${audienceBriefs[targetAudience] || ''}
-
-Pravidla pro platformu:
-${platformBriefs[platform] || ''}
-
-Hlavní pain points:
-${selectedPainPoints}
-
-Doporučené benefitové argumenty:
-${selectedBenefitClaims}
-
-Důkazní body:
-${selectedProofPoints}
-
-Produktové vazby:
-${selectedProducts}
-
-Čemu se vyhnout:
-${selectedNegativeHints}
-
-Parametry:
-- Platforma: ${platform}
-- Tón: ${tone}
-- Cílová skupina: ${targetAudience}
-- Délka: ${postLength}
-- CTA: ${cta}
-- Přímé cílení na firmu: ${resolvedCompanyProfile?.name ? 'ano' : 'ne'}
-${resolvedCompanyProfile?.name ? `- Název firmy: ${resolvedCompanyProfile.name}
-- Doporučená role k oslovení: ${resolvedCompanyProfile?.recommendedContact?.label || 'vedení společnosti'}` : ''}
-
-Pravidla:
-- Hlavní priorita je vylepšit hlavní text.
-- Pokud uživatel výslovně nezmiňuje vizuál nebo hashtagy, zachovej je beze změny.
-- Udělej text čitelnější, přesvědčivější a praktičtější.
-- Zachovej důvěryhodnost a nepřeháněj.
-- ${strictClaims ? 'Drž se pouze ověřených tvrzení.' : 'Můžeš psát kreativněji, ale stále relevantně.'}
-- ${includeEmojis ? 'Emoji používej střídmě a jen pokud to dává smysl.' : 'Nepoužívej emoji.'}
-
-Vrať přesně tuto strukturu:
-{
-  "reply": "stručné potvrzení, co jsi zlepšil",
-  "applyChanges": true,
-  "updatedMainText": "nový hlavní text",
-  "updatedVisualPrompt": "zachovaný nebo změněný vizuál",
-  "updatedHashtags": ["#tag1", "#tag2", "#tag3", "#tag4", "#tag5"]
-}`;
-
-      const prompt = `Původní zadání:
-${contentPrompt}
-
-Dodatečný pokyn k úpravě:
-${effectiveRevisionPrompt}
-
-Aktuální hlavní text:
-${parsed.main || '-'}
-
-Aktuální návrh vizuálu:
-${parsed.visual || '-'}
-
-Aktuální hashtagy:
-${parsed.hashtags || '-'}
-
-Uprav výstup podle dodatečného pokynu uživatele a opravdu proveď změnu hlavního textu.`;
-
-      const response = await fetch('/api/chat-assistant', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          systemPrompt,
-          prompt,
-          currentMainText: parsed.main,
-          currentVisualPrompt: parsed.visual,
-          currentHashtags: parsed.hashtags,
-          currentFlyerTitle: flyerTitle,
-          currentFlyerText: flyerText,
-          userExplicitlyRequestsEdit: true,
-          chatMode: 'edit',
-          userRequestsHeading: /\b(nadpis|titulek|headline)\b/i.test(revisionPrompt),
-        }),
-      });
-
-      const payload = await response.json().catch(() => ({}));
-
-      if (!response.ok) {
-        throw new Error(payload?.error || 'Nepodařilo se vylepšit hlavní text.');
-      }
-
-      if (!payload?.applyChanges || !payload?.updatedMainText?.trim()) {
-        throw new Error('GPT zatím nevrátil skutečně upravený hlavní text.');
-      }
-
-      const nextVisualPrompt =
-        includeVisual
-          ? typeof payload.updatedVisualPrompt === 'string'
-            ? payload.updatedVisualPrompt.trim()
-            : parsed.visual
-          : '';
-      const nextHashtags =
-        includeHashtags && Array.isArray(payload.updatedHashtags)
-          ? payload.updatedHashtags.filter(Boolean).join(' ')
-          : includeHashtags
-            ? parsed.hashtags
-            : '';
-
-      const structuredPayload = {
-        main: payload.updatedMainText.trim(),
-        visual: nextVisualPrompt,
-        hashtags: nextHashtags,
-      };
-
-      if (includeVisual && looksLikeEnglishVisual(structuredPayload.visual)) {
-        structuredPayload.visual = await translateVisualPromptToCzech(structuredPayload.visual);
-      }
-
-      const previousVisual = parsed.visual || '';
-      const nextSerializedContent = serializeGeneratedContent(structuredPayload);
-      const visualActuallyChanged = structuredPayload.visual.trim() !== previousVisual.trim();
-
-      setGeneratedContent(nextSerializedContent);
-      setOutputMeta((current) => ({
-        ...current,
-        chat: {
-          provider: payload.provider || 'OpenAI GPT',
-          model: payload.model || current.chat.model || 'gpt-4.1-mini',
-        },
-      }));
-      setRevisionPrompt('');
-      setChatInput('');
-      if (visualActuallyChanged) {
-        setGeneratedImage('');
-        setFlyerImage('');
-        setImageError('');
-      }
-      setFlyerStructure(defaultFlyerStructure);
-    } finally {
-      setRevisionLoading(false);
-    }
+    await handleSendChatMessage({
+      overrideMessage: effectiveRevisionPrompt,
+      forceEdit: true,
+      useRevisionLoading: true,
+    });
   };
 
-  const handleSendChatMessage = async () => {
-    if (!generatedContent.trim() || !chatInput.trim()) return;
+  const handleSendChatMessage = async (options = {}) => {
+    const {
+      overrideMessage = '',
+      forceEdit = false,
+      useRevisionLoading = false,
+    } = options;
+
+    const effectiveChatInput = (overrideMessage || chatInput || '').trim();
+
+    if (!generatedContent.trim() || !effectiveChatInput) return;
 
     let resolvedCompanyProfile = companyProfile;
     if (normalizedCompanyIco && !resolvedCompanyProfile?.name) {
@@ -2699,7 +2546,7 @@ Uprav výstup podle dodatečného pokynu uživatele a opravdu proveď změnu hla
     const userMessage = {
       id: `${Date.now()}-user`,
       role: 'user',
-      content: chatInput.trim(),
+      content: effectiveChatInput,
     };
 
     const normalizedUserMessage = userMessage.content.trim().toLowerCase();
@@ -2713,6 +2560,7 @@ Uprav výstup podle dodatečného pokynu uživatele a opravdu proveď změnu hla
       /\b(text|článek|clanek|příspěvek|prispevek|nadpis|titulek|cta|úvod|uvod|závěr|zaver|odstavec|hashtagy|vizuál|vizual)\b/i;
 
     const userExplicitlyRequestsEdit =
+      forceEdit ||
       explicitEditIntentPattern.test(userMessage.content) ||
       (!questionLikePattern.test(userMessage.content) &&
         contentInstructionPattern.test(userMessage.content) &&
@@ -2720,14 +2568,18 @@ Uprav výstup podle dodatečného pokynu uživatele a opravdu proveď změnu hla
 
     const userRequestsAdvice =
       advisoryIntentPattern.test(userMessage.content) && !explicitEditIntentPattern.test(userMessage.content);
-    const chatMode = userExplicitlyRequestsEdit ? 'edit' : userRequestsAdvice ? 'advice' : 'chat';
+    const chatMode = forceEdit ? 'edit' : userExplicitlyRequestsEdit ? 'edit' : userRequestsAdvice ? 'advice' : 'chat';
     const userRequestsHeading = /\b(nadpis|titulek|headline)\b/i.test(userMessage.content);
 
     const nextMessages = [...chatMessages, userMessage];
 
     setChatMessages(nextMessages);
     setChatInput('');
+    setRevisionPrompt('');
     setChatLoading(true);
+    if (useRevisionLoading) {
+      setRevisionLoading(true);
+    }
     setError('');
 
     try {
@@ -2958,6 +2810,9 @@ Zpracuj poslední uživatelskou zprávu.`;
       ]);
     } finally {
       setChatLoading(false);
+      if (useRevisionLoading) {
+        setRevisionLoading(false);
+      }
     }
   };
 
@@ -3680,7 +3535,7 @@ Zpracuj poslední uživatelskou zprávu.`;
                         <button
                           type="button"
                           onClick={handleReviseContent}
-                          disabled={revisionLoading || !chatInput.trim()}
+                          disabled={revisionLoading}
                           className="shrink-0 rounded-xl border border-slate-700/90 bg-slate-950/80 px-3 py-2 text-xs font-semibold text-slate-200 transition hover:border-slate-500 hover:bg-slate-900 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           {revisionLoading
