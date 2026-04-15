@@ -49,25 +49,47 @@ Klíčové výhody a firemní argumenty:
 const compactBrandContext = `Chytrá pěna Bohemia s.r.o. je specialista na stříkanou PUR izolaci. Piš stručně, česky, prakticky a důvěryhodně. Opírej se hlavně o úspory, omezení tepelných mostů, rychlost realizace a zkušenost firmy.`;
 
 const defaultPromptTemplates = [
-  'Proč zateplit střechu ještě před zimou',
-  'Kolik tepla uniká špatně zateplenou střechou',
-  'Jak PUR izolace snižuje náklady na vytápění',
-  'Nejčastější chyby při zateplení podkroví',
-  'Proč bývá v podkroví v zimě chladno a v létě horko',
-  'Kdy se vyplatí PUR izolace u novostavby',
-  'Je PUR izolace opravdu drahá?',
-  'Proč nestačí jen přidat další vrstvu staré izolace',
-  'Co řeší lidé po první zimě bez kvalitní izolace',
-  'Jak poznat, že dům ztrácí teplo přes střechu',
-  'Tepelné mosty a jejich dopad na účty za energie',
-  'Jak rychle může proběhnout zateplení domu',
-  'Co přináší zateplení domu v praxi',
-  'Před a po zateplení: rozdíl v komfortu a nákladech',
-  'Jakou roli hraje izolace při žádosti o dotaci',
-  'Proč se vyplatí řešit zateplení dřív než začnou mrazy',
-  'Kolik může stát odkládání zateplení o další rok',
-  'Jaké výhody má PUR izolace oproti běžným řešením',
-  'Proč je správná aplikace izolace stejně důležitá jako materiál',
+  `Majitel domu často odkládá zateplení střechy, i když mu přes ni uniká teplo a rostou náklady na vytápění.
+Napiš příspěvek, který vysvětlí:
+- proč se vyplatí řešit zateplení ještě před zimou
+- jak poznat, že teplo uniká právě střechou nebo podkrovím
+- jaké praktické dopady má odkládání o další sezónu
+Zaměř se na úspory, komfort a jednoduchý další krok.`,
+
+  `Mnoho lidí řeší v podkroví v zimě chlad a v létě přehřívání, ale neví přesně proč.
+Napiš příspěvek, který srozumitelně vysvětlí:
+- proč bývá podkroví tepelně nestabilní
+- jakou roli hrají tepelné mosty a netěsnosti
+- proč nestačí jen přidat další vrstvu staré izolace
+Zaměř se na pochopení problému, běžný jazyk a důvěryhodné vysvětlení.`,
+
+  `Lidé často vnímají PUR izolaci jen jako dražší variantu bez jasného srovnání.
+Napiš příspěvek, který vysvětlí:
+- jak PUR izolace pomáhá snižovat náklady na vytápění
+- jaké má výhody oproti běžným řešením
+- proč je důležitá nejen volba materiálu, ale i správná aplikace
+Zaměř se na praktické přínosy, dlouhodobou funkčnost a důvěryhodnost.`,
+
+  `Majitel domu nebo investor zvažuje, kdy dává PUR izolace smysl u novostavby nebo rekonstrukce.
+Napiš příspěvek, který ukáže:
+- kdy se PUR izolace vyplatí u novostavby
+- co přináší zateplení domu v praxi
+- jak rychle může proběhnout realizace
+Zaměř se na prevenci budoucích chyb, rychlost řešení a dlouhodobý efekt.`,
+
+  `Mnoho lidí začne problém s izolací řešit až po první zimě, kdy se projeví vysoké účty a nižší komfort.
+Napiš příspěvek, který popíše:
+- co lidé nejčastěji řeší po první zimě bez kvalitní izolace
+- jak vypadá rozdíl před a po zateplení v komfortu a nákladech
+- proč se vyplatí řešit problém včas, ne až když se naplno projeví
+Zaměř se na reálné životní situace a srozumitelný dopad na domácnost.`,
+
+  `Zateplení není jen o komfortu, ale může souviset i s financemi a dotacemi.
+Napiš příspěvek, který vysvětlí:
+- jakou roli hraje izolace při žádosti o dotaci
+- proč není fér posuzovat cenu izolace bez kontextu úspor a návratnosti
+- jak se rozhodovat prakticky a bez přehnaných očekávání
+Zaměř se na rozumné rozhodování, ekonomický pohled a přirozené CTA.`,
 ];
 
 const audienceOptions = [
@@ -178,6 +200,7 @@ const companyPhotoLibrary = Object.entries(companyPhotoModules).map(([path, url]
   name: path.split('/').pop() || 'firemni-fotka',
   url,
 }));
+const customGalleryStorageKey = 'klara-custom-gallery';
 
 const defaultOutputMeta = {
   content: {
@@ -457,16 +480,18 @@ function normalizeFlyerPayload(payload, fallbackCta = 'Získejte nezávaznou kal
     return { ...defaultFlyerStructure, cta: fallbackCta };
   }
 
-  const benefits = Array.isArray(payload.benefits)
-    ? payload.benefits.map((item) => String(item || '').trim()).filter(Boolean).slice(0, 3)
+  const flyerSource = payload.flyer && typeof payload.flyer === 'object' ? payload.flyer : payload;
+
+  const benefits = Array.isArray(flyerSource.benefits)
+    ? flyerSource.benefits.map((item) => String(item || '').trim()).filter(Boolean).slice(0, 3)
     : [];
 
   return {
-    headline: String(payload.headline || payload.title || '').trim(),
-    subheadline: String(payload.subheadline || '').trim(),
+    headline: String(flyerSource.headline || flyerSource.title || '').trim(),
+    subheadline: String(flyerSource.subheadline || '').trim(),
     benefits,
-    proof: String(payload.proof || '').trim(),
-    cta: String(payload.cta || '').trim() || fallbackCta,
+    proof: String(flyerSource.proof || '').trim(),
+    cta: String(flyerSource.cta || '').trim() || fallbackCta,
   };
 }
 
@@ -830,6 +855,7 @@ export default function App() {
   const [flyerStructure, setFlyerStructure] = useState(defaultFlyerStructure);
   const [flyerImage, setFlyerImage] = useState('');
   const [imageLoading, setImageLoading] = useState(false);
+  const [visualSuggestionLoading, setVisualSuggestionLoading] = useState(false);
   const [flyerLoading, setFlyerLoading] = useState(false);
   const [flyerTextLoading, setFlyerTextLoading] = useState(false);
   const [imageError, setImageError] = useState('');
@@ -839,6 +865,7 @@ export default function App() {
   const [sourceImageDataUrl, setSourceImageDataUrl] = useState('');
   const [sourceImageName, setSourceImageName] = useState('');
   const [selectedCompanyPhotoId, setSelectedCompanyPhotoId] = useState('');
+  const [customGalleryItems, setCustomGalleryItems] = useState([]);
   const [historyItems, setHistoryItems] = useState([]);
   const [promptTemplates, setPromptTemplates] = useState(defaultPromptTemplates);
   const [templateEditorOpen, setTemplateEditorOpen] = useState(false);
@@ -848,6 +875,13 @@ export default function App() {
   const mainTextAreaRef = useRef(null);
 
   const parsed = useMemo(() => parseGeneratedContent(generatedContent), [generatedContent]);
+  const companyGalleryItems = useMemo(
+    () => [
+      ...customGalleryItems,
+      ...companyPhotoLibrary,
+    ],
+    [customGalleryItems]
+  );
 
   useEffect(() => {
     if (!mainTextAreaRef.current) return;
@@ -855,6 +889,19 @@ export default function App() {
     mainTextAreaRef.current.style.height = '0px';
     mainTextAreaRef.current.style.height = `${mainTextAreaRef.current.scrollHeight}px`;
   }, [parsed.main]);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(customGalleryStorageKey);
+      if (!raw) return;
+      const parsedGallery = JSON.parse(raw);
+      if (Array.isArray(parsedGallery)) {
+        setCustomGalleryItems(parsedGallery);
+      }
+    } catch {
+      // Ignore invalid local gallery data.
+    }
+  }, []);
 
   useEffect(() => {
     try {
@@ -986,6 +1033,14 @@ export default function App() {
       // Ignore localStorage write issues.
     }
   }, [logoPosition]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(customGalleryStorageKey, JSON.stringify(customGalleryItems));
+    } catch {
+      // Ignore localStorage write issues.
+    }
+  }, [customGalleryItems]);
 
   useEffect(() => {
     try {
@@ -1554,13 +1609,15 @@ ${visualPrompt}`;
     setError('');
 
     try {
-      const systemPrompt = `Jsi seniorní copywriter pro firmu Chytrá pěna.
+      const systemPrompt = `Jsi seniorní reklamní copywriter a editor letáků pro značku Chytrá pěna.
+Piš pouze česky.
 
-Tvým úkolem je vytvořit poutavý text na marketingový leták v češtině.
+Tvůj úkol:
+- vytvořit nebo výrazně vylepšit text letáku tak, aby byl poutavější, obchodně silnější a lépe čitelný
+- zachovat důvěryhodnost, praktičnost a relevanci k cílové skupině
+- vrátit pouze čistý JSON bez markdownu a bez vysvětlení
 
-${messagingExamples.flyer}
-
-Vrať pouze čistý JSON bez markdownu a bez vysvětlení v tomto tvaru:
+Vrať přesně tuto strukturu:
 {
   "headline": "krátký benefitový nadpis",
   "subheadline": "1 krátká vysvětlující věta",
@@ -1570,35 +1627,47 @@ Vrať pouze čistý JSON bez markdownu a bez vysvětlení v tomto tvaru:
 }
 
 Pravidla:
-- Vycházej pouze z dodaného hlavního textu, znalostních vodítek a firemních kontaktů.
-- Headline má být krátký, úderný a benefitový, ideálně do 6 slov.
-- Subheadline má v 1 větě vysvětlit hlavní přínos.
-- Benefits vrať přesně jako 3 stručné a čitelné body.
-- Proof má být krátký, důvěryhodný a bez přehánění.
-- CTA má být krátké, konkrétní a přirozené.
-- Piš letákově, ne článkově.
-- Nepiš hashtagy.
-- Nepoužívej dlouhé odstavce.
-- Výstup musí být celý česky.`;
+- headline musí být výrazně benefitový, ne generický
+- subheadline má rychle vysvětlit hlavní přínos
+- benefits vrať přesně 3, krátké a dobře skenovatelné
+- proof má dodat důvěryhodnost, ale bez přehánění
+- cta má být krátké, konkrétní a akční
+- text letáku musí být kratší, údernější a poutavější než běžný příspěvek
+- nepiš odstavce jako článek
+- nepoužívej hashtagy
+- nevracej žádné další klíče`;
 
-      const prompt = `Vytvoř text letáku z tohoto podkladu:
+      const prompt = `Úkol:
+Významně vylepši text letáku pro lepší marketingový dopad. Nestačí lehká parafráze. Výstup má být čitelnější, víc benefitový a vhodný pro leták.
 
-Hlavní text:
+Hlavní text příspěvku:
 ${parsed.main}
+
+Aktuální nadpis letáku:
+${flyerTitle || '-'}
+
+Aktuální text letáku:
+${flyerText || '-'}
+
+Platforma:
+${platform}
+
+Cílová skupina:
+${targetAudience}
 
 CTA:
 ${cta}
 
-Důležité pain points:
+Pain points:
 ${selectedPainPoints}
 
-Doporučené benefitové argumenty:
+Benefity:
 ${selectedBenefitClaims}
 
 Důkazní body:
 ${selectedProofPoints}
 
-Preferované produktové vazby:
+Produktové vazby:
 ${selectedProducts}
 
 Čemu se vyhnout:
@@ -1606,28 +1675,152 @@ ${selectedNegativeHints}
 
 Kontakty firmy:
 Web: ${companyContact.web}
-E-mail: ${companyContact.email}
-Telefon: ${companyContact.phone}`;
+Telefon: ${companyContact.phone}
 
-      const result = await generateWithGemini(prompt, systemPrompt, {
-        temperature: 0.4,
-        expectJson: true,
+Požadavek:
+- headline nesmí být generický
+- výstup musí být výrazně lepší než aktuální verze
+- pokud je aktuální verze slabá, klidně ji kompletně přepracuj`;
+
+      const response = await fetch('/api/flyer-assistant', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          systemPrompt,
+          prompt,
+        }),
       });
 
-      if (result) {
-        const payload = extractJsonPayload(result);
-        if (payload.headline || payload.subheadline || payload.benefits || payload.proof || payload.cta || payload.title || payload.body) {
-          const structuredFlyer = normalizeFlyerPayload(payload, cta);
-          setFlyerStructure(structuredFlyer);
-          setFlyerTitle(structuredFlyer.headline);
-          setFlyerText(buildFlyerEditableText(structuredFlyer));
-        } else {
-          setFlyerStructure(defaultFlyerStructure);
-          setFlyerText(result.trim());
-        }
+      const payload = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(payload?.error || 'Nepodařilo se přegenerovat text letáku.');
       }
+
+      const structuredFlyer = normalizeFlyerPayload(payload, cta);
+      setFlyerStructure(structuredFlyer);
+      setFlyerTitle(structuredFlyer.headline);
+      setFlyerText(buildFlyerEditableText(structuredFlyer));
+      setOutputMeta((current) => ({
+        ...current,
+        chat: {
+          provider: payload.provider || 'OpenAI GPT',
+          model: payload.model || current.chat.model || 'gpt-4.1-mini',
+        },
+      }));
     } finally {
       setFlyerTextLoading(false);
+    }
+  };
+
+  const handleSuggestVisualPrompt = async () => {
+    const currentVisualPrompt = (parsed.visual || contentPrompt || '').trim();
+
+    if (!currentVisualPrompt) {
+      setImageError('Nejdřív je potřeba mít text doporučeného vizuálu nebo vyplněné téma.');
+      return;
+    }
+
+    setVisualSuggestionLoading(true);
+    setImageError('');
+
+    try {
+      const visualBrief = buildVisualBrief({
+        visualPrompt: currentVisualPrompt,
+        platform,
+        targetAudience,
+        imageMode,
+        companyProfile,
+        selectedVisualHints,
+        selectedProducts,
+        selectedProofPoints,
+        selectedPainPoints,
+        selectedNegativeHints,
+      });
+
+      const systemPrompt = `Jsi seniorní creative director a reklamní editor vizuálních zadání pro značku Chytrá pěna.
+Piš pouze česky.
+
+Tvůj úkol:
+- navrhnout jinou, výrazně odlišnou a marketingově silnou variantu textu pro generování vizuálu
+- zachovat realističnost, důvěryhodnost a relevanci k cílové skupině
+- vrátit pouze čistý JSON bez markdownu a bez vysvětlení
+
+Vrať přesně tuto strukturu:
+{
+  "visualPrompt": "nové stručné zadání vizuálu"
+}
+
+Pravidla:
+- navrhni jiný úhel pohledu nebo jinou kompozici než v aktuální verzi
+- zachovej realistickou fotografickou logiku, ne ilustraci a ne 3D render
+- vizuál musí být vhodný pro sociální sítě a leták
+- bez textu v obraze, bez loga, bez watermarku, bez ikon, bez čísel
+- výstup musí být stručný, konkrétní a přímo použitelný pro generátor obrázku`;
+
+      const prompt = `Úkol:
+Navrhni jinou variantu textu doporučeného vizuálu.
+
+Aktuální návrh vizuálu:
+${currentVisualPrompt}
+
+Hlavní text příspěvku:
+${parsed.main || '-'}
+
+Marketingový a vizuální brief:
+${visualBrief}
+
+Požadavek:
+- výsledek musí být jiný než aktuální verze
+- nesmí obsahovat text v obraze
+- musí zůstat realistický a důvěryhodný
+- vrať jen JSON`;
+
+      const response = await fetch('/api/visual-assistant', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          systemPrompt,
+          prompt,
+        }),
+      });
+
+      const payload = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(payload?.error || 'Nepodařilo se přegenerovat text vizuálu.');
+      }
+
+      const nextVisualPrompt =
+        typeof payload?.visualPrompt === 'string' ? payload.visualPrompt.trim() : '';
+
+      if (!nextVisualPrompt) {
+        throw new Error('GPT nevrátil nový text vizuálu.');
+      }
+
+      const visualChanged = nextVisualPrompt !== currentVisualPrompt;
+      handleVisualPromptChange(nextVisualPrompt);
+      setOutputMeta((current) => ({
+        ...current,
+        chat: {
+          provider: payload.provider || 'OpenAI GPT',
+          model: payload.model || current.chat.model || 'gpt-4.1-mini',
+        },
+      }));
+
+      if (visualChanged) {
+        setGeneratedImage('');
+        setFlyerImage('');
+        setImageError('');
+      }
+    } catch (err) {
+      setImageError(err.message || 'Nepodařilo se přegenerovat text vizuálu.');
+    } finally {
+      setVisualSuggestionLoading(false);
     }
   };
 
@@ -1678,7 +1871,6 @@ Telefon: ${companyContact.phone}`;
       if (flyerTemplate === 'classic') {
         drawRoundedRect(context, 42, 42, canvas.width - 84, canvas.height - 84, 42, '#eef3df', '#cad5b7', 3);
         drawRoundedRect(context, 70, 70, canvas.width - 140, 122, 30, '#79aa0a');
-        context.drawImage(logoImage, 100, 92, logoWidth, logoHeight);
         context.textAlign = 'right';
         context.fillStyle = '#ffffff';
         context.font = '800 44px "Segoe UI", Arial, sans-serif';
@@ -1730,6 +1922,17 @@ Telefon: ${companyContact.phone}`;
         context.fillStyle = '#d5e2f0';
         context.fillText(`Telefon: ${companyContact.phone}`, 154, 1556);
         context.fillText(`Web: ${companyContact.web}`, 154, 1594);
+
+        const footerLogoWidth = 220;
+        const footerLogoHeight =
+          (logoImage.naturalHeight / logoImage.naturalWidth) * footerLogoWidth;
+        context.drawImage(
+          logoImage,
+          canvas.width - 154 - footerLogoWidth,
+          1512,
+          footerLogoWidth,
+          footerLogoHeight
+        );
       } else if (flyerTemplate === 'split') {
         context.fillStyle = '#ffffff';
         context.fillRect(0, 0, canvas.width, canvas.height);
@@ -1780,7 +1983,6 @@ Telefon: ${companyContact.phone}`;
         drawRoundedRect(context, 50, 50, canvas.width - 100, canvas.height - 100, 40, '#edf4de', '#ced9bd', 3);
         context.fillStyle = '#79aa0a';
         context.fillRect(70, 70, canvas.width - 140, 180);
-        context.drawImage(logoImage, 110, 98, logoWidth, logoHeight);
         context.fillStyle = '#ffffff';
         context.textAlign = 'right';
         context.font = '800 42px "Segoe UI", Arial, sans-serif';
@@ -1830,6 +2032,17 @@ Telefon: ${companyContact.phone}`;
         context.font = '700 24px "Segoe UI", Arial, sans-serif';
         context.fillText(`Telefon: ${companyContact.phone}`, 110, 1532);
         context.fillText(`Web: ${companyContact.web}`, 110, 1570);
+
+        const footerLogoWidth = 220;
+        const footerLogoHeight =
+          (logoImage.naturalHeight / logoImage.naturalWidth) * footerLogoWidth;
+        context.drawImage(
+          logoImage,
+          canvas.width - 110 - footerLogoWidth,
+          1498,
+          footerLogoWidth,
+          footerLogoHeight
+        );
       }
 
       const flyerDataUrl = canvas.toDataURL('image/png');
@@ -1900,7 +2113,8 @@ POVINNÁ PRAVIDLA:
 - vizuál má působit důvěryhodně, profesionálně a relevantně pro zadané publikum
 - pokud je relevantní, ukaž detail kvalitního provedení izolace nebo konstrukce
 - ponech přirozený prostor pro pozdější umístění loga nebo titulku
-- bez textu v obrázku, bez loga, bez watermarku, bez ikon, bez čísel`,
+- obrázek nesmí obsahovat žádný čitelný text nikde v obraze
+- bez textu v obrázku, bez nápisů, bez titulků, bez loga, bez watermarku, bez ikon, bez písmen, bez slov a bez čísel`,
             }
           : {
               prompt: `Vytvoř realistický marketingový vizuál pro značku Chytrá pěna.
@@ -1917,7 +2131,8 @@ POVINNÁ PRAVIDLA:
 - realistické světlo a materiály
 - důvěryhodné české prostředí, pokud dává smysl
 - vizuál má odpovídat typu objektu a cílové skupině
-- bez textu v obrázku, bez loga, bez watermarku, bez ikon, bez čísel`,
+- obrázek nesmí obsahovat žádný čitelný text nikde v obraze
+- bez textu v obrázku, bez nápisů, bez titulků, bez loga, bez watermarku, bez ikon, bez písmen, bez slov a bez čísel`,
             };
 
       const response = await fetch(endpoint, {
@@ -1979,9 +2194,9 @@ POVINNÁ PRAVIDLA:
     setChatMessages([]);
     setChatInput('');
     setGeneratedImage('');
-    setFlyerTitle('');
-    setFlyerText('');
-    setFlyerStructure(defaultFlyerStructure);
+    setFlyerTitle(item.flyerTitle || '');
+    setFlyerText(item.flyerText || '');
+    setFlyerStructure({ ...defaultFlyerStructure, ...(item.flyerStructure || {}) });
     setFlyerImage('');
     setImageError('');
   };
@@ -2131,7 +2346,14 @@ VRAŤ POUZE ČISTÝ JSON:
 {
   "mainText": "finální text",
   "visualPrompt": "stručné zadání vizuálu",
-  "hashtags": ["#tag1", "#tag2", "#tag3", "#tag4", "#tag5"]
+  "hashtags": ["#tag1", "#tag2", "#tag3", "#tag4", "#tag5"],
+  "flyer": {
+    "headline": "krátký benefitový nadpis",
+    "subheadline": "1 krátká vysvětlující věta",
+    "benefits": ["bod 1", "bod 2", "bod 3"],
+    "proof": "krátký důvěryhodný důkaz nebo argument",
+    "cta": "krátká výzva k akci"
+  }
 }
 
 PRAVIDLA PRO JSON:
@@ -2139,6 +2361,8 @@ PRAVIDLA PRO JSON:
 - Pokud není vizuál požadován, vrať "visualPrompt": "".
 - Pokud hashtagy nejsou požadovány, vrať "hashtags": [].
 - Pokud jsou hashtagy požadovány, vrať pole přesně 5 hashtagů.
+- "flyer" vrať vždy jako vyplněný objekt pro letákovou verzi stejného sdělení.
+- Letáková verze musí být kratší, údernější a víc benefitová než hlavní text.
 - Nevkládej žádné další klíče.`;
 
     const prompt = `TYP VÝSTUPU:
@@ -2209,6 +2433,7 @@ DŮLEŽITÉ:
 - Závěr textu má přirozeně směřovat k CTA: "${cta}".
 - Pokud chybí jistota, preferuj opatrnější formulaci.
 - Nepředpokládej konkrétní problém, budovu ani technologii firmy, pokud to nevyplývá z dat.
+- Současně připrav i samostatnou, kratší a poutavější verzi pro leták.
 - Nevysvětluj postup.
 - Vrať jen JSON.`;
 
@@ -2218,13 +2443,17 @@ DŮLEŽITÉ:
       modelsToTry: [contentPrimaryModel, contentFallbackModel],
     });
     if (result) {
+      const rawPayload = extractJsonPayload(result);
       const structuredPayload =
-        normalizeGeneratedPayload(extractJsonPayload(result)) ||
+        normalizeGeneratedPayload(rawPayload) ||
         normalizeGeneratedPayload(parseGeneratedContent(result)) || {
           main: result.trim(),
           visual: '',
           hashtags: '',
         };
+      const nextFlyerStructure = rawPayload
+        ? normalizeFlyerPayload(rawPayload, cta)
+        : normalizeFlyerPayload({}, cta);
 
       if (includeVisual && looksLikeEnglishVisual(structuredPayload.visual)) {
         structuredPayload.visual = await translateVisualPromptToCzech(structuredPayload.visual);
@@ -2249,9 +2478,9 @@ DŮLEŽITÉ:
       ]);
       setChatInput('');
       setGeneratedImage('');
-      setFlyerTitle('');
-      setFlyerText('');
-      setFlyerStructure(defaultFlyerStructure);
+      setFlyerTitle(nextFlyerStructure.headline || structuredPayload.main.split('\n')[0] || '');
+      setFlyerText(buildFlyerEditableText(nextFlyerStructure));
+      setFlyerStructure(nextFlyerStructure);
       setFlyerImage('');
       setImageError('');
       setHistoryItems((current) => [
@@ -2267,6 +2496,9 @@ DŮLEŽITÉ:
           postLength,
           cta,
           generatedContent: serializedContent,
+          flyerTitle: nextFlyerStructure.headline || structuredPayload.main.split('\n')[0] || '',
+          flyerText: buildFlyerEditableText(nextFlyerStructure),
+          flyerStructure: nextFlyerStructure,
           outputMeta: {
             ...defaultOutputMeta,
             content: {
@@ -2295,12 +2527,13 @@ DŮLEŽITÉ:
     setError('');
 
     try {
-      const systemPrompt = `Jsi seniorní copywriter pro firmu Chytrá pěna.
+      const systemPrompt = `Jsi seniorní copywriter a editor pro značku Chytrá pěna.
+Piš pouze česky.
 
 Tvůj úkol:
-- upravit už existující český marketingový text podle dodatečného pokynu uživatele
-- zachovat hlavní směr sdělení, pokud uživatel nechce zásadní změnu
-- vrátit výsledek pouze jako čistý JSON bez markdownu a bez komentářů
+- výrazně vylepšit hlavní text podle pokynu uživatele
+- pokud uživatel nepožaduje změnu vizuálu nebo hashtagů, zachovej je
+- vrátit pouze čistý JSON bez markdownu a bez vysvětlení
 
 Kontext značky:
 ${useBrandContext ? compactBrandContext : '- Používej pouze informace ze zadání.'}
@@ -2326,15 +2559,6 @@ ${selectedProofPoints}
 Produktové vazby:
 ${selectedProducts}
 
-Tónové vodítko z databáze:
-${selectedToneHints}
-
-Vodítka pro CTA z databáze:
-${selectedCtaHints}
-
-Vodítka pro vizuál z databáze:
-${selectedVisualHints}
-
 Čemu se vyhnout:
 ${selectedNegativeHints}
 
@@ -2348,27 +2572,22 @@ Parametry:
 ${resolvedCompanyProfile?.name ? `- Název firmy: ${resolvedCompanyProfile.name}
 - Doporučená role k oslovení: ${resolvedCompanyProfile?.recommendedContact?.label || 'vedení společnosti'}` : ''}
 
-Pravidla revize:
-- Upravuj jen to, co dává smysl podle uživatelova pokynu.
-- Pokud uživatel nezmiňuje vizuál nebo hashtagy, zachovej je co nejblíž původní verzi.
-- Pokud uživatel chce změnit tón, délku nebo CTA, promítni to hlavně do hlavního textu.
-- Zachovej češtinu, přirozenost a srozumitelnost.
-- Nevymýšlej neověřená čísla ani technické sliby.
+Pravidla:
+- Hlavní priorita je vylepšit hlavní text.
+- Pokud uživatel výslovně nezmiňuje vizuál nebo hashtagy, zachovej je beze změny.
+- Udělej text čitelnější, přesvědčivější a praktičtější.
+- Zachovej důvěryhodnost a nepřeháněj.
 - ${strictClaims ? 'Drž se pouze ověřených tvrzení.' : 'Můžeš psát kreativněji, ale stále relevantně.'}
 - ${includeEmojis ? 'Emoji používej střídmě a jen pokud to dává smysl.' : 'Nepoužívej emoji.'}
 
-Použij přesně tuto strukturu:
+Vrať přesně tuto strukturu:
 {
-  "mainText": "upravený text",
-  "visualPrompt": "upravený nebo zachovaný návrh vizuálu",
-  "hashtags": ["#tag1", "#tag2", "#tag3", "#tag4", "#tag5"]
-}
-
-Pravidla pro JSON:
-- "mainText" je vždy povinný neprázdný string.
-- "visualPrompt" vrať jako string, i kdyby zůstal stejný.
-- "hashtags" vrať jako pole; pokud hashtagy nejsou aktivní, vrať [].
-- Nevkládej další klíče.`;
+  "reply": "stručné potvrzení, co jsi zlepšil",
+  "applyChanges": true,
+  "updatedMainText": "nový hlavní text",
+  "updatedVisualPrompt": "zachovaný nebo změněný vizuál",
+  "updatedHashtags": ["#tag1", "#tag2", "#tag3", "#tag4", "#tag5"]
+}`;
 
       const prompt = `Původní zadání:
 ${contentPrompt}
@@ -2385,50 +2604,79 @@ ${parsed.visual || '-'}
 Aktuální hashtagy:
 ${parsed.hashtags || '-'}
 
-Uprav výstup podle dodatečného pokynu uživatele.`;
+Uprav výstup podle dodatečného pokynu uživatele a opravdu proveď změnu hlavního textu.`;
 
-      const result = await generateWithGemini(prompt, systemPrompt, {
-        expectJson: true,
-        temperature: 0.35,
-        useGlobalLoading: false,
-        modelsToTry: [primaryModel],
-        maxAttempts: 1,
-        maxOutputTokens: 900,
+      const response = await fetch('/api/chat-assistant', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          systemPrompt,
+          prompt,
+          currentMainText: parsed.main,
+          currentVisualPrompt: parsed.visual,
+          currentHashtags: parsed.hashtags,
+          currentFlyerTitle: flyerTitle,
+          currentFlyerText: flyerText,
+          userExplicitlyRequestsEdit: true,
+          chatMode: 'edit',
+          userRequestsHeading: /\b(nadpis|titulek|headline)\b/i.test(revisionPrompt),
+        }),
       });
 
-      if (!result) return;
+      const payload = await response.json().catch(() => ({}));
 
-      const structuredPayload =
-        normalizeGeneratedPayload(extractJsonPayload(result)) ||
-        normalizeGeneratedPayload(parseGeneratedContent(result)) || {
-          main: result.trim(),
-          visual: parsed.visual,
-          hashtags: parsed.hashtags,
-        };
+      if (!response.ok) {
+        throw new Error(payload?.error || 'Nepodařilo se vylepšit hlavní text.');
+      }
 
-      if (!includeVisual) {
-        structuredPayload.visual = '';
-      } else if (looksLikeEnglishVisual(structuredPayload.visual)) {
+      if (!payload?.applyChanges || !payload?.updatedMainText?.trim()) {
+        throw new Error('GPT zatím nevrátil skutečně upravený hlavní text.');
+      }
+
+      const nextVisualPrompt =
+        includeVisual
+          ? typeof payload.updatedVisualPrompt === 'string'
+            ? payload.updatedVisualPrompt.trim()
+            : parsed.visual
+          : '';
+      const nextHashtags =
+        includeHashtags && Array.isArray(payload.updatedHashtags)
+          ? payload.updatedHashtags.filter(Boolean).join(' ')
+          : includeHashtags
+            ? parsed.hashtags
+            : '';
+
+      const structuredPayload = {
+        main: payload.updatedMainText.trim(),
+        visual: nextVisualPrompt,
+        hashtags: nextHashtags,
+      };
+
+      if (includeVisual && looksLikeEnglishVisual(structuredPayload.visual)) {
         structuredPayload.visual = await translateVisualPromptToCzech(structuredPayload.visual);
       }
 
-      if (!includeHashtags) {
-        structuredPayload.hashtags = '';
-      }
+      const previousVisual = parsed.visual || '';
+      const nextSerializedContent = serializeGeneratedContent(structuredPayload);
+      const visualActuallyChanged = structuredPayload.visual.trim() !== previousVisual.trim();
 
-      setGeneratedContent(serializeGeneratedContent(structuredPayload));
+      setGeneratedContent(nextSerializedContent);
       setOutputMeta((current) => ({
         ...current,
         chat: {
-          provider: 'Google Gemini',
-          model: primaryModel,
+          provider: payload.provider || 'OpenAI GPT',
+          model: payload.model || current.chat.model || 'gpt-4.1-mini',
         },
       }));
       setRevisionPrompt('');
-      setGeneratedImage('');
+      if (visualActuallyChanged) {
+        setGeneratedImage('');
+        setFlyerImage('');
+        setImageError('');
+      }
       setFlyerStructure(defaultFlyerStructure);
-      setFlyerImage('');
-      setImageError('');
     } finally {
       setRevisionLoading(false);
     }
@@ -2654,6 +2902,9 @@ Zpracuj poslední uživatelskou zprávu.`;
           nextStructuredPayload.hashtags = '';
         }
 
+        const visualActuallyChanged =
+          nextStructuredPayload.visual.trim() !== (parsed.visual || '').trim();
+
         setGeneratedContent(serializeGeneratedContent(nextStructuredPayload));
         setOutputMeta((current) => ({
           ...current,
@@ -2662,7 +2913,11 @@ Zpracuj poslední uživatelskou zprávu.`;
             model: payload.model || current.chat.model || 'OpenAI chat',
           },
         }));
-        setGeneratedImage('');
+        if (visualActuallyChanged) {
+          setGeneratedImage('');
+          setFlyerImage('');
+          setImageError('');
+        }
         setFlyerStructure((current) => ({
           ...current,
           ...(typeof payload.updatedFlyerTitle === 'string' && payload.updatedFlyerTitle.trim()
@@ -2672,9 +2927,6 @@ Zpracuj poslední uživatelskou zprávu.`;
             ? { subheadline: payload.updatedFlyerText.trim() }
             : {}),
         }));
-        setFlyerImage('');
-        setImageError('');
-
         if (typeof payload.updatedFlyerTitle === 'string' && payload.updatedFlyerTitle.trim()) {
           setFlyerTitle(payload.updatedFlyerTitle.trim());
         }
@@ -2710,6 +2962,16 @@ Zpracuj poslední uživatelskou zprávu.`;
     const updatedContent = serializeGeneratedContent({
       main: value,
       visual: parsed.visual,
+      hashtags: parsed.hashtags,
+    });
+
+    setGeneratedContent(updatedContent);
+  };
+
+  const handleVisualPromptChange = (value) => {
+    const updatedContent = serializeGeneratedContent({
+      main: parsed.main,
+      visual: value,
       hashtags: parsed.hashtags,
     });
 
@@ -2766,10 +3028,14 @@ Zpracuj poslední uživatelskou zprávu.`;
 
   const handleSelectCompanyPhoto = async (photo) => {
     try {
-      const response = await fetch(photo.url);
-      const blob = await response.blob();
-      const file = new File([blob], photo.name, { type: blob.type || 'image/jpeg' });
-      const dataUrl = await fileToDataUrl(file);
+      const dataUrl = photo.dataUrl
+        ? photo.dataUrl
+        : await (async () => {
+            const response = await fetch(photo.url);
+            const blob = await response.blob();
+            const file = new File([blob], photo.name, { type: blob.type || 'image/jpeg' });
+            return fileToDataUrl(file);
+          })();
       setSourceImageDataUrl(dataUrl);
       setSourceImageName(photo.name);
       setSelectedCompanyPhotoId(photo.id);
@@ -2779,6 +3045,29 @@ Zpracuj poslední uživatelskou zprávu.`;
     } catch {
       setImageError('Nepodařilo se načíst firemní fotku z galerie.');
     }
+  };
+
+  const handleSaveGeneratedImageToGallery = () => {
+    if (!generatedImage) return;
+
+    const itemId = `custom-${Date.now()}`;
+    const itemName = `ai-vizual-${new Date().toISOString().slice(0, 10)}-${customGalleryItems.length + 1}.png`;
+    const nextItem = {
+      id: itemId,
+      name: itemName,
+      url: generatedImage,
+      dataUrl: generatedImage,
+      source: 'generated',
+      createdAt: new Date().toISOString(),
+    };
+
+    setCustomGalleryItems((current) => [nextItem, ...current].slice(0, 60));
+    setSelectedCompanyPhotoId(itemId);
+    setSourceImageDataUrl(generatedImage);
+    setSourceImageName(itemName);
+    setImageMode('edit');
+    setCompanyGalleryOpen(true);
+    setImageError('');
   };
 
   const handleReset = () => {
@@ -2967,10 +3256,10 @@ Zpracuj poslední uživatelskou zprávu.`;
                       placeholder="Např. 12345678"
                       className="min-w-0 flex-1 rounded-2xl border border-[#d0d9c4] bg-[#fffefb] px-3 py-3 text-sm text-slate-800 outline-none shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] transition placeholder:text-slate-400 focus:border-lime-300 focus:ring-4 focus:ring-lime-100"
                     />
-                    <button
-                      type="button"
-                      onClick={() => lookupCompanyByIco()}
-                      disabled={companyLookupLoading || !normalizedCompanyIco}
+                      <button
+                        type="button"
+                        onClick={() => lookupCompanyByIco()}
+                        disabled={companyLookupLoading || !normalizedCompanyIco}
                       className="rounded-2xl border border-[#d0d9c4] bg-[#fffefb] px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-lime-300 hover:bg-lime-50 hover:text-lime-700 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {companyLookupLoading ? 'Načítám…' : 'Dohledat'}
@@ -3088,13 +3377,13 @@ Zpracuj poslední uživatelskou zprávu.`;
 
                 {imageMode === 'edit' && (
                   <div className="mt-4 rounded-[22px] border-2 border-[#c7d3b8] border-l-[5px] border-l-[#8fbb1a] bg-white p-4 shadow-[0_10px_22px_rgba(15,23,42,0.05)]">
-                    {companyPhotoLibrary.length > 0 && (
+                    {companyGalleryItems.length > 0 && (
                       <div className="mb-4">
                         <div className="flex items-center justify-between gap-3">
                           <div>
                             <p className="text-sm font-semibold text-slate-900">Firemní galerie</p>
                             <p className="mt-1 text-xs text-slate-500">
-                              Vyber fotku ze složky `src/assets/Foto` a použij ji jako základ pro AI úpravu.
+                              Vyber fotku ze složky `src/assets/Foto` nebo uložený AI obrázek a použij ji jako základ pro AI úpravu.
                             </p>
                           </div>
                           <button
@@ -3108,7 +3397,7 @@ Zpracuj poslední uživatelskou zprávu.`;
 
                         {companyGalleryOpen && (
                           <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
-                            {companyPhotoLibrary.map((photo) => (
+                            {companyGalleryItems.map((photo) => (
                               <button
                                 key={photo.id}
                                 type="button"
@@ -3128,6 +3417,11 @@ Zpracuj poslední uživatelskou zprávu.`;
                                 />
                                 <div className="border-t border-[#d0d9c4] bg-white px-3 py-2">
                                   <p className="truncate text-xs font-semibold text-slate-700">{photo.name}</p>
+                                  {'source' in photo && photo.source === 'generated' && (
+                                    <p className="mt-1 text-[10px] font-medium uppercase tracking-wide text-lime-700">
+                                      Uložený AI obrázek
+                                    </p>
+                                  )}
                                 </div>
                               </button>
                             ))}
@@ -3386,7 +3680,9 @@ Zpracuj poslední uživatelskou zprávu.`;
                           disabled={revisionLoading || !revisionPrompt.trim()}
                           className="shrink-0 rounded-xl border border-slate-700/90 bg-slate-950/80 px-3 py-2 text-xs font-semibold text-slate-200 transition hover:border-slate-500 hover:bg-slate-900 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
                         >
-                          {revisionLoading ? 'Rychlá úprava…' : 'Rychlá úprava'}
+                          {revisionLoading
+                            ? 'Vylepšuji návrh hlavního textu…'
+                            : 'Vylepšit návrh hlavního textu'}
                         </button>
                       </div>
 
@@ -3453,8 +3749,16 @@ Zpracuj poslední uživatelskou zprávu.`;
                             label="Kopírovat vizuál"
                           />
                           <button
+                            type="button"
+                            onClick={handleSuggestVisualPrompt}
+                            disabled={visualSuggestionLoading}
+                            className="rounded-lg border border-lime-300/30 bg-lime-500/12 px-2.5 py-1.5 text-xs font-medium text-lime-50 hover:bg-lime-500/24 disabled:opacity-50"
+                          >
+                            {visualSuggestionLoading ? 'Navrhuji…' : 'Přegenerovat vizuál'}
+                          </button>
+                          <button
                             onClick={handleGenerateImage}
-                            disabled={imageLoading}
+                            disabled={imageLoading || visualSuggestionLoading}
                             className="rounded-lg border border-lime-300/30 bg-lime-500/20 px-2.5 py-1.5 text-xs font-medium text-lime-50 hover:bg-lime-500/30 disabled:opacity-50"
                           >
                             {imageLoading
@@ -3466,7 +3770,12 @@ Zpracuj poslední uživatelskou zprávu.`;
                         </div>
                       }
                     >
-                      <p className="text-sm leading-7 text-lime-50">{parsed.visual}</p>
+                      <textarea
+                        value={parsed.visual}
+                        onChange={(e) => handleVisualPromptChange(e.target.value)}
+                        className="min-h-[140px] w-full resize-y rounded-xl border border-lime-300/20 bg-[#0b1220] p-3 text-sm leading-7 text-lime-50 outline-none transition placeholder:text-lime-100/40 focus:border-lime-300/40 focus:ring-4 focus:ring-lime-500/10"
+                        placeholder="Sem můžeš ručně upravit doporučený vizuál."
+                      />
 
                       {imageMode === 'edit' && sourceImageDataUrl && (
                         <div className="mt-4 rounded-xl border border-lime-300/25 bg-[#0f172a]/26 p-3">
@@ -3500,6 +3809,15 @@ Zpracuj poslední uživatelskou zprávu.`;
                             alt="AI návrh obrázku"
                             className="h-auto w-full"
                           />
+                          <div className="flex justify-end border-t border-lime-300/20 bg-[#0f172a]/30 px-3 py-2">
+                            <button
+                              type="button"
+                              onClick={handleSaveGeneratedImageToGallery}
+                              className="rounded-lg border border-lime-300/35 bg-lime-500/18 px-2.5 py-1.5 text-xs font-medium text-lime-50 transition hover:bg-lime-500/30"
+                            >
+                              Uložit obrázek
+                            </button>
+                          </div>
                         </div>
                       )}
                     </ContentCard>
@@ -3541,7 +3859,7 @@ Zpracuj poslední uživatelskou zprávu.`;
                             disabled={flyerTextLoading}
                             className="rounded-lg border border-lime-300/35 bg-lime-500/22 px-2.5 py-1.5 text-xs font-medium text-lime-50 hover:bg-lime-500/34 disabled:opacity-50"
                           >
-                            {flyerTextLoading ? 'Navrhuji…' : 'Navrhnout text letáku'}
+                            {flyerTextLoading ? 'Navrhuji…' : 'Přegenerovat text letáku'}
                           </button>
                           <button
                             type="button"
@@ -3615,7 +3933,7 @@ Zpracuj poslední uživatelskou zprávu.`;
                       />
 
                       <div className="mt-4 rounded-xl border border-lime-300/20 bg-slate-950/20 p-3 text-xs leading-6 text-lime-50/85">
-                        Leták se skládá z vygenerované fotografie, textu výše a firemních kontaktů. Nejlépe funguje s krátkým nadpisem a několika stručnými benefitovými větami.
+                        Letáková verze se teď vytváří automaticky spolu s hlavním textem. Tady ji můžeš jen ručně doladit nebo nechat znovu přegenerovat.
                       </div>
 
                       {flyerImage && (

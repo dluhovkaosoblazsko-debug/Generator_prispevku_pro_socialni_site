@@ -330,6 +330,160 @@ app.post('/api/chat-assistant', async (req, res) => {
   }
 });
 
+app.post('/api/flyer-assistant', async (req, res) => {
+  try {
+    const { systemPrompt, prompt } = req.body || {};
+
+    if (!systemPrompt || !prompt) {
+      return res.status(400).json({ error: 'Chybí prompt pro leták.' });
+    }
+
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(500).json({ error: 'Chybí OPENAI_API_KEY.' });
+    }
+
+    const model = process.env.OPENAI_FLYER_MODEL || process.env.OPENAI_CHAT_MODEL || 'gpt-4.1-mini';
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model,
+        temperature: 0.55,
+        response_format: {
+          type: 'json_object',
+        },
+        messages: [
+          {
+            role: 'system',
+            content: systemPrompt,
+          },
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+      }),
+    });
+
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      return res.status(response.status).json({
+        error: data?.error?.message || 'OpenAI flyer API chyba',
+      });
+    }
+
+    const content = data?.choices?.[0]?.message?.content;
+
+    if (!content) {
+      return res.status(500).json({ error: 'OpenAI flyer API nevrátila obsah.' });
+    }
+
+    let payload = {};
+
+    try {
+      payload = JSON.parse(content);
+    } catch {
+      payload = {};
+    }
+
+    return res.json({
+      provider: 'OpenAI GPT',
+      model,
+      headline: typeof payload.headline === 'string' ? payload.headline.trim() : '',
+      subheadline: typeof payload.subheadline === 'string' ? payload.subheadline.trim() : '',
+      benefits: Array.isArray(payload.benefits) ? payload.benefits.filter(Boolean) : [],
+      proof: typeof payload.proof === 'string' ? payload.proof.trim() : '',
+      cta: typeof payload.cta === 'string' ? payload.cta.trim() : '',
+    });
+  } catch (err) {
+    return res.status(500).json({
+      error: err.message || 'Neočekávaná chyba serveru.',
+    });
+  }
+});
+
+app.post('/api/visual-assistant', async (req, res) => {
+  try {
+    const { systemPrompt, prompt } = req.body || {};
+
+    if (!systemPrompt || !prompt) {
+      return res.status(400).json({ error: 'Chybí prompt pro vizuál.' });
+    }
+
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(500).json({ error: 'Chybí OPENAI_API_KEY.' });
+    }
+
+    const model =
+      process.env.OPENAI_VISUAL_ASSISTANT_MODEL ||
+      process.env.OPENAI_CHAT_MODEL ||
+      'gpt-4.1-mini';
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model,
+        temperature: 0.6,
+        response_format: {
+          type: 'json_object',
+        },
+        messages: [
+          {
+            role: 'system',
+            content: systemPrompt,
+          },
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+      }),
+    });
+
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      return res.status(response.status).json({
+        error: data?.error?.message || 'OpenAI visual assistant API chyba',
+      });
+    }
+
+    const content = data?.choices?.[0]?.message?.content;
+
+    if (!content) {
+      return res.status(500).json({ error: 'OpenAI visual assistant API nevrátila obsah.' });
+    }
+
+    let payload = {};
+
+    try {
+      payload = JSON.parse(content);
+    } catch {
+      payload = {};
+    }
+
+    return res.json({
+      provider: 'OpenAI GPT',
+      model,
+      visualPrompt:
+        typeof payload.visualPrompt === 'string' ? payload.visualPrompt.trim() : '',
+    });
+  } catch (err) {
+    return res.status(500).json({
+      error: err.message || 'Neočekávaná chyba serveru.',
+    });
+  }
+});
+
 app.post('/api/generate-image', async (req, res) => {
   try {
     const { prompt } = req.body;

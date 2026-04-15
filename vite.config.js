@@ -286,6 +286,259 @@ export default defineConfig(({ mode }) => {
           });
         }
       });
+
+      server.middlewares.use('/api/flyer-assistant', async (req, res) => {
+        if (req.method !== 'POST') {
+          sendJson(res, 405, { error: 'Method Not Allowed' });
+          return;
+        }
+
+        if (!openAiApiKey) {
+          sendJson(res, 500, { error: 'Missing OPENAI_API_KEY' });
+          return;
+        }
+
+        try {
+          const body = await readJsonBody(req);
+
+          if (!body.systemPrompt || !body.prompt) {
+            sendJson(res, 400, { error: 'Missing flyer prompt.' });
+            return;
+          }
+
+          const flyerModel = env.OPENAI_FLYER_MODEL || openAiChatModel;
+
+          const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${openAiApiKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              model: flyerModel,
+              temperature: 0.55,
+              response_format: {
+                type: 'json_object',
+              },
+              messages: [
+                {
+                  role: 'system',
+                  content: body.systemPrompt,
+                },
+                {
+                  role: 'user',
+                  content: body.prompt,
+                },
+              ],
+            }),
+          });
+
+          const payload = await response.json().catch(() => ({}));
+
+          if (!response.ok) {
+            sendJson(res, response.status, {
+              error: payload?.error?.message || 'OpenAI flyer API error',
+            });
+            return;
+          }
+
+          const content = payload?.choices?.[0]?.message?.content;
+
+          if (!content) {
+            sendJson(res, 502, { error: 'OpenAI flyer did not return content.' });
+            return;
+          }
+
+          let parsedPayload = {};
+
+          try {
+            parsedPayload = JSON.parse(content);
+          } catch {
+            parsedPayload = {};
+          }
+
+          sendJson(res, 200, {
+            provider: 'OpenAI GPT',
+            model: flyerModel,
+            headline: typeof parsedPayload.headline === 'string' ? parsedPayload.headline.trim() : '',
+            subheadline: typeof parsedPayload.subheadline === 'string' ? parsedPayload.subheadline.trim() : '',
+            benefits: Array.isArray(parsedPayload.benefits) ? parsedPayload.benefits.filter(Boolean) : [],
+            proof: typeof parsedPayload.proof === 'string' ? parsedPayload.proof.trim() : '',
+            cta: typeof parsedPayload.cta === 'string' ? parsedPayload.cta.trim() : '',
+          });
+        } catch (error) {
+          sendJson(res, 500, {
+            error: error?.message || 'Flyer request failed',
+          });
+        }
+      });
+
+      server.middlewares.use('/api/visual-assistant', async (req, res) => {
+        if (req.method !== 'POST') {
+          sendJson(res, 405, { error: 'Method Not Allowed' });
+          return;
+        }
+
+        if (!openAiApiKey) {
+          sendJson(res, 500, { error: 'Missing OPENAI_API_KEY' });
+          return;
+        }
+
+        try {
+          const body = await readJsonBody(req);
+
+          if (!body.systemPrompt || !body.prompt) {
+            sendJson(res, 400, { error: 'Missing visual prompt.' });
+            return;
+          }
+
+          const visualAssistantModel = env.OPENAI_VISUAL_ASSISTANT_MODEL || openAiChatModel;
+
+          const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${openAiApiKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              model: visualAssistantModel,
+              temperature: 0.6,
+              response_format: {
+                type: 'json_object',
+              },
+              messages: [
+                {
+                  role: 'system',
+                  content: body.systemPrompt,
+                },
+                {
+                  role: 'user',
+                  content: body.prompt,
+                },
+              ],
+            }),
+          });
+
+          const payload = await response.json().catch(() => ({}));
+
+          if (!response.ok) {
+            sendJson(res, response.status, {
+              error: payload?.error?.message || 'OpenAI visual assistant API error',
+            });
+            return;
+          }
+
+          const content = payload?.choices?.[0]?.message?.content;
+
+          if (!content) {
+            sendJson(res, 502, { error: 'OpenAI visual assistant did not return content.' });
+            return;
+          }
+
+          let parsedPayload = {};
+
+          try {
+            parsedPayload = JSON.parse(content);
+          } catch {
+            parsedPayload = {};
+          }
+
+          sendJson(res, 200, {
+            provider: 'OpenAI GPT',
+            model: visualAssistantModel,
+            visualPrompt:
+              typeof parsedPayload.visualPrompt === 'string'
+                ? parsedPayload.visualPrompt.trim()
+                : '',
+          });
+        } catch (error) {
+          sendJson(res, 500, {
+            error: error?.message || 'Visual assistant request failed',
+          });
+        }
+      });
+
+      server.middlewares.use('/api/company-by-ico', async (req, res) => {
+        if (req.method !== 'GET') {
+          sendJson(res, 405, { error: 'Method Not Allowed' });
+          return;
+        }
+
+        try {
+          const url = new URL(req.url || '/', 'http://localhost');
+          const parts = url.pathname.split('/').filter(Boolean);
+          const ico = String(parts[parts.length - 1] || '').replace(/\D/g, '');
+
+          if (!ico || ico.length !== 8) {
+            sendJson(res, 400, { error: 'IČO musí mít 8 číslic.' });
+            return;
+          }
+
+          const response = await fetch(
+            `https://ares.gov.cz/ekonomicke-subjekty-v-be/rest/ekonomicke-subjekty/${ico}`,
+            {
+              headers: {
+                Accept: 'application/json',
+              },
+            }
+          );
+
+          const payload = await response.json().catch(() => ({}));
+
+          if (response.status === 404) {
+            sendJson(res, 404, { error: 'Firma s tímto IČO nebyla v ARES nalezena.' });
+            return;
+          }
+
+          if (!response.ok) {
+            sendJson(res, response.status, {
+              error: payload?.message || 'ARES lookup se nepodařilo načíst.',
+            });
+            return;
+          }
+
+          const addressParts = [
+            payload?.sidlo?.nazevUlice,
+            payload?.sidlo?.cisloDomovni,
+            payload?.sidlo?.nazevObce,
+            payload?.sidlo?.psc,
+          ].filter(Boolean);
+
+          const companyProfile = {
+            ico,
+            name:
+              payload?.obchodniJmeno ||
+              payload?.firma ||
+              payload?.nazev ||
+              '',
+            legalForm: payload?.pravniForma?.nazev || '',
+            industry: payload?.czNace?.length
+              ? payload.czNace
+                  .map((item) => item?.text || item?.nazev)
+                  .filter(Boolean)
+                  .join(', ')
+              : '',
+            address: addressParts.join(', '),
+            statutoryPeople: [],
+            recommendedContact: {
+              label: 'vedení společnosti',
+              personName: '',
+              source: 'fallback',
+            },
+          };
+
+          if (!companyProfile.name) {
+            sendJson(res, 404, { error: 'Z ARES se nepodařilo získat název firmy.' });
+            return;
+          }
+
+          sendJson(res, 200, companyProfile);
+        } catch (error) {
+          sendJson(res, 500, {
+            error: error?.message || 'Nepodařilo se dohledat firmu podle IČO.',
+          });
+        }
+      });
     },
   };
 
