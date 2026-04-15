@@ -8,6 +8,10 @@ dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3001;
+const supabaseUrl = process.env.SUPABASE_URL || '';
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+const supabaseGalleryBucket = process.env.SUPABASE_GALLERY_BUCKET || 'gallery-images';
+const supabaseGalleryTable = process.env.SUPABASE_GALLERY_TABLE || 'gallery_images';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -198,6 +202,52 @@ function dataUrlToFile(dataUrl, fileName = 'source-image.png') {
   const bytes = Buffer.from(base64, 'base64');
 
   return new File([bytes], fileName, { type: mimeType });
+}
+
+function decodeDataUrl(dataUrl) {
+  const match = String(dataUrl || '').match(/^data:(.+?);base64,(.+)$/);
+
+  if (!match) {
+    throw new Error('Neplatná data obrázku.');
+  }
+
+  return {
+    mimeType: match[1],
+    buffer: Buffer.from(match[2], 'base64'),
+  };
+}
+
+function ensureSupabaseConfigured() {
+  if (!supabaseUrl || !supabaseServiceRoleKey) {
+    throw new Error('Chybí SUPABASE_URL nebo SUPABASE_SERVICE_ROLE_KEY.');
+  }
+}
+
+function getSupabaseHeaders(extra = {}) {
+  return {
+    apikey: supabaseServiceRoleKey,
+    Authorization: `Bearer ${supabaseServiceRoleKey}`,
+    ...extra,
+  };
+}
+
+function buildSupabasePublicUrl(filePath) {
+  return `${supabaseUrl}/storage/v1/object/public/${supabaseGalleryBucket}/${filePath}`;
+}
+
+function mapGalleryRecord(record) {
+  return {
+    id: record.id,
+    name: record.title || record.file_path?.split('/').pop() || 'obrázek',
+    title: record.title || '',
+    prompt: record.prompt || '',
+    url: record.public_url,
+    source: record.source || 'generated',
+    createdAt: record.created_at,
+    tags: Array.isArray(record.tags) ? record.tags : [],
+    width: record.width || null,
+    height: record.height || null,
+  };
 }
 
 app.post('/api/chat-assistant', async (req, res) => {
@@ -480,6 +530,123 @@ app.post('/api/visual-assistant', async (req, res) => {
   } catch (err) {
     return res.status(500).json({
       error: err.message || 'Neočekávaná chyba serveru.',
+    });
+  }
+});
+
+app.get('/api/gallery', async (_req, res) => {
+  try {
+    ensureSupabaseConfigured();
+
+    const response = await fetch(
+      `${supabaseUrl}/rest/v1/${supabaseGalleryTable}?select=id,title,prompt,source,file_path,public_url,mime_type,width,height,tags,created_at&order=created_at.desc`,
+      {
+        headers: getSupabaseHeaders(),
+      }
+    );
+
+    const payload = await response.json().catch(() => []);
+
+    if (!response.ok) {
+      return res.status(response.status).json({
+        error: payload?.message || 'Nepodařilo se načíst galerii.',
+      });
+    }
+
+    return res.json({
+      items: Array.isArray(payload) ? payload.map(mapGalleryRecord) : [],
+    });
+  } catch (err) {
+    return res.status(500).json({
+      error: err.message || 'Nepodařilo se načíst galerii.',
+    });
+  }
+});
+
+app.post('/api/gallery/upload', async (req, res) => {
+  try {
+    ensureSupabaseConfigured();
+
+    const {
+      dataUrl,
+      title = '',
+      prompt = '',
+      source = 'generated',
+      tags = [],
+    } = req.body || {};
+
+    if (!dataUrl) {
+      return res.status(400).json({ error: 'Chybí obrázek pro uložení.' });
+    }
+
+    const { mimeType, buffer } = decodeDataUrl(dataUrl);
+    const extension =
+      mimeType === 'image/png'
+        ? 'png'
+        : mimeType === 'image/webp'
+          ? 'webp'
+          : 'jpg';
+    const filePath = `generated/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${extension}`;
+
+    const uploadResponse = await fetch(
+      `${supabaseUrl}/storage/v1/object/${supabaseGalleryBucket}/${filePath}`,
+      {
+        method: 'POST',
+        headers: getSupabaseHeaders({
+          'Content-Type': mimeType,
+          'x-upsert': 'false',
+        }),
+        body: buffer,
+      }
+    );
+
+    const uploadPayload = await uploadResponse.json().catch(() => ({}));
+
+    if (!uploadResponse.ok) {
+      return res.status(uploadResponse.status).json({
+        error: uploadPayload?.message || 'Nepodařilo se nahrát obrázek do úložiště.',
+      });
+    }
+
+    const publicUrl = buildSupabasePublicUrl(filePath);
+
+    const insertBody = [
+      {
+        title: String(title || '').trim(),
+        prompt: String(prompt || '').trim(),
+        source: String(source || 'generated').trim(),
+        file_path: filePath,
+        public_url: publicUrl,
+        mime_type: mimeType,
+        tags: Array.isArray(tags) ? tags.filter(Boolean) : [],
+      },
+    ];
+
+    const insertResponse = await fetch(`${supabaseUrl}/rest/v1/${supabaseGalleryTable}`, {
+      method: 'POST',
+      headers: getSupabaseHeaders({
+        'Content-Type': 'application/json',
+        Prefer: 'return=representation',
+      }),
+      body: JSON.stringify(insertBody),
+    });
+
+    const insertPayload = await insertResponse.json().catch(() => []);
+
+    if (!insertResponse.ok) {
+      return res.status(insertResponse.status).json({
+        error: insertPayload?.message || 'Nepodařilo se uložit metadata obrázku.',
+      });
+    }
+
+    const savedRecord = Array.isArray(insertPayload) ? insertPayload[0] : null;
+
+    return res.status(201).json({
+      item: savedRecord ? mapGalleryRecord(savedRecord) : null,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      error: err.message || 'Nepodařilo se uložit obrázek do galerie.',
     });
   }
 });

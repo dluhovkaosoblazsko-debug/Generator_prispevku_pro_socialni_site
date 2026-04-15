@@ -9,6 +9,10 @@ export default defineConfig(({ mode }) => {
   const openAiImageQuality = env.OPENAI_IMAGE_QUALITY || 'medium';
   const openAiImageSize = env.OPENAI_IMAGE_SIZE || '1024x1024';
   const openAiChatModel = env.OPENAI_CHAT_MODEL || 'gpt-4.1-mini';
+  const supabaseUrl = env.SUPABASE_URL || '';
+  const supabaseServiceRoleKey = env.SUPABASE_SERVICE_ROLE_KEY || '';
+  const supabaseGalleryBucket = env.SUPABASE_GALLERY_BUCKET || 'gallery-images';
+  const supabaseGalleryTable = env.SUPABASE_GALLERY_TABLE || 'gallery_images';
 
   const readJsonBody = async (req) => {
     let rawBody = '';
@@ -59,6 +63,47 @@ export default defineConfig(({ mode }) => {
 
     return new File([bytes], fileName, { type: mimeType });
   };
+
+  const decodeDataUrl = (dataUrl) => {
+    const match = String(dataUrl || '').match(/^data:(.+?);base64,(.+)$/);
+
+    if (!match) {
+      throw new Error('Invalid image data.');
+    }
+
+    return {
+      mimeType: match[1],
+      buffer: Buffer.from(match[2], 'base64'),
+    };
+  };
+
+  const ensureSupabaseConfigured = () => {
+    if (!supabaseUrl || !supabaseServiceRoleKey) {
+      throw new Error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY');
+    }
+  };
+
+  const getSupabaseHeaders = (extra = {}) => ({
+    apikey: supabaseServiceRoleKey,
+    Authorization: `Bearer ${supabaseServiceRoleKey}`,
+    ...extra,
+  });
+
+  const buildSupabasePublicUrl = (filePath) =>
+    `${supabaseUrl}/storage/v1/object/public/${supabaseGalleryBucket}/${filePath}`;
+
+  const mapGalleryRecord = (record) => ({
+    id: record.id,
+    name: record.title || record.file_path?.split('/').pop() || 'obrázek',
+    title: record.title || '',
+    prompt: record.prompt || '',
+    url: record.public_url,
+    source: record.source || 'generated',
+    createdAt: record.created_at,
+    tags: Array.isArray(record.tags) ? record.tags : [],
+    width: record.width || null,
+    height: record.height || null,
+  });
 
   const openAiImagePlugin = {
     name: 'openai-image-endpoint',
@@ -536,6 +581,125 @@ export default defineConfig(({ mode }) => {
         } catch (error) {
           sendJson(res, 500, {
             error: error?.message || 'Nepodařilo se dohledat firmu podle IČO.',
+          });
+        }
+      });
+
+      server.middlewares.use('/api/gallery', async (req, res) => {
+        if (req.method !== 'GET') {
+          sendJson(res, 405, { error: 'Method Not Allowed' });
+          return;
+        }
+
+        try {
+          ensureSupabaseConfigured();
+
+          const response = await fetch(
+            `${supabaseUrl}/rest/v1/${supabaseGalleryTable}?select=id,title,prompt,source,file_path,public_url,mime_type,width,height,tags,created_at&order=created_at.desc`,
+            {
+              headers: getSupabaseHeaders(),
+            }
+          );
+
+          const payload = await response.json().catch(() => []);
+
+          if (!response.ok) {
+            sendJson(res, response.status, {
+              error: payload?.message || 'Failed to load gallery.',
+            });
+            return;
+          }
+
+          sendJson(res, 200, {
+            items: Array.isArray(payload) ? payload.map(mapGalleryRecord) : [],
+          });
+        } catch (error) {
+          sendJson(res, 500, {
+            error: error?.message || 'Failed to load gallery.',
+          });
+        }
+      });
+
+      server.middlewares.use('/api/gallery/upload', async (req, res) => {
+        if (req.method !== 'POST') {
+          sendJson(res, 405, { error: 'Method Not Allowed' });
+          return;
+        }
+
+        try {
+          ensureSupabaseConfigured();
+
+          const body = await readJsonBody(req);
+
+          if (!body.dataUrl) {
+            sendJson(res, 400, { error: 'Missing image data.' });
+            return;
+          }
+
+          const { mimeType, buffer } = decodeDataUrl(body.dataUrl);
+          const extension =
+            mimeType === 'image/png'
+              ? 'png'
+              : mimeType === 'image/webp'
+                ? 'webp'
+                : 'jpg';
+          const filePath = `generated/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${extension}`;
+
+          const uploadResponse = await fetch(
+            `${supabaseUrl}/storage/v1/object/${supabaseGalleryBucket}/${filePath}`,
+            {
+              method: 'POST',
+              headers: getSupabaseHeaders({
+                'Content-Type': mimeType,
+                'x-upsert': 'false',
+              }),
+              body: buffer,
+            }
+          );
+
+          const uploadPayload = await uploadResponse.json().catch(() => ({}));
+
+          if (!uploadResponse.ok) {
+            sendJson(res, uploadResponse.status, {
+              error: uploadPayload?.message || 'Failed to upload image.',
+            });
+            return;
+          }
+
+          const insertResponse = await fetch(`${supabaseUrl}/rest/v1/${supabaseGalleryTable}`, {
+            method: 'POST',
+            headers: getSupabaseHeaders({
+              'Content-Type': 'application/json',
+              Prefer: 'return=representation',
+            }),
+            body: JSON.stringify([
+              {
+                title: String(body.title || '').trim(),
+                prompt: String(body.prompt || '').trim(),
+                source: String(body.source || 'generated').trim(),
+                file_path: filePath,
+                public_url: buildSupabasePublicUrl(filePath),
+                mime_type: mimeType,
+                tags: Array.isArray(body.tags) ? body.tags.filter(Boolean) : [],
+              },
+            ]),
+          });
+
+          const insertPayload = await insertResponse.json().catch(() => []);
+
+          if (!insertResponse.ok) {
+            sendJson(res, insertResponse.status, {
+              error: insertPayload?.message || 'Failed to save gallery metadata.',
+            });
+            return;
+          }
+
+          sendJson(res, 201, {
+            item: Array.isArray(insertPayload) && insertPayload[0] ? mapGalleryRecord(insertPayload[0]) : null,
+          });
+        } catch (error) {
+          sendJson(res, 500, {
+            error: error?.message || 'Failed to upload gallery image.',
           });
         }
       });

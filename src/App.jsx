@@ -200,7 +200,6 @@ const companyPhotoLibrary = Object.entries(companyPhotoModules).map(([path, url]
   name: path.split('/').pop() || 'firemni-fotka',
   url,
 }));
-const customGalleryStorageKey = 'klara-custom-gallery';
 
 const defaultOutputMeta = {
   content: {
@@ -866,6 +865,8 @@ export default function App() {
   const [sourceImageName, setSourceImageName] = useState('');
   const [selectedCompanyPhotoId, setSelectedCompanyPhotoId] = useState('');
   const [customGalleryItems, setCustomGalleryItems] = useState([]);
+  const [galleryLoading, setGalleryLoading] = useState(false);
+  const [gallerySaving, setGallerySaving] = useState(false);
   const [historyItems, setHistoryItems] = useState([]);
   const [promptTemplates, setPromptTemplates] = useState(defaultPromptTemplates);
   const [templateEditorOpen, setTemplateEditorOpen] = useState(false);
@@ -883,6 +884,25 @@ export default function App() {
     [customGalleryItems]
   );
 
+  const fetchGalleryItems = async () => {
+    setGalleryLoading(true);
+
+    try {
+      const response = await fetch('/api/gallery');
+      const payload = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(payload?.error || 'Nepodařilo se načíst galerii.');
+      }
+
+      setCustomGalleryItems(Array.isArray(payload?.items) ? payload.items : []);
+    } catch (err) {
+      setImageError(err.message || 'Nepodařilo se načíst galerii.');
+    } finally {
+      setGalleryLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (!mainTextAreaRef.current) return;
 
@@ -891,16 +911,8 @@ export default function App() {
   }, [parsed.main]);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(customGalleryStorageKey);
-      if (!raw) return;
-      const parsedGallery = JSON.parse(raw);
-      if (Array.isArray(parsedGallery)) {
-        setCustomGalleryItems(parsedGallery);
-      }
-    } catch {
-      // Ignore invalid local gallery data.
-    }
+    fetchGalleryItems();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -1033,14 +1045,6 @@ export default function App() {
       // Ignore localStorage write issues.
     }
   }, [logoPosition]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(customGalleryStorageKey, JSON.stringify(customGalleryItems));
-    } catch {
-      // Ignore localStorage write issues.
-    }
-  }, [customGalleryItems]);
 
   useEffect(() => {
     try {
@@ -2905,27 +2909,54 @@ Zpracuj poslední uživatelskou zprávu.`;
     }
   };
 
-  const handleSaveGeneratedImageToGallery = () => {
+  const handleSaveGeneratedImageToGallery = async () => {
     if (!generatedImage) return;
 
-    const itemId = `custom-${Date.now()}`;
-    const itemName = `ai-vizual-${new Date().toISOString().slice(0, 10)}-${customGalleryItems.length + 1}.png`;
-    const nextItem = {
-      id: itemId,
-      name: itemName,
-      url: generatedImage,
-      dataUrl: generatedImage,
-      source: 'generated',
-      createdAt: new Date().toISOString(),
-    };
-
-    setCustomGalleryItems((current) => [nextItem, ...current].slice(0, 60));
-    setSelectedCompanyPhotoId(itemId);
-    setSourceImageDataUrl(generatedImage);
-    setSourceImageName(itemName);
-    setImageMode('edit');
-    setCompanyGalleryOpen(true);
+    setGallerySaving(true);
     setImageError('');
+
+    try {
+      const itemName = `ai-vizual-${new Date().toISOString().slice(0, 10)}-${customGalleryItems.length + 1}`;
+      const response = await fetch('/api/gallery/upload', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          dataUrl: generatedImage,
+          title: itemName,
+          prompt: parsed.visual || contentPrompt || '',
+          source: 'generated',
+          tags: String(parsed.hashtags || '')
+            .split(/\s+/)
+            .filter(Boolean),
+        }),
+      });
+
+      const payload = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(payload?.error || 'Nepodařilo se uložit obrázek do galerie.');
+      }
+
+      const savedItem = payload?.item;
+
+      if (!savedItem) {
+        throw new Error('Server nevrátil uložený obrázek.');
+      }
+
+      setCustomGalleryItems((current) => [savedItem, ...current]);
+      setSelectedCompanyPhotoId(savedItem.id);
+      setSourceImageDataUrl(generatedImage);
+      setSourceImageName(savedItem.name || `${itemName}.png`);
+      setImageMode('edit');
+      setCompanyGalleryOpen(true);
+      await fetchGalleryItems();
+    } catch (err) {
+      setImageError(err.message || 'Nepodařilo se uložit obrázek do galerie.');
+    } finally {
+      setGallerySaving(false);
+    }
   };
 
   const handleReset = () => {
@@ -3252,6 +3283,10 @@ Zpracuj poslední uživatelskou zprávu.`;
                             {companyGalleryOpen ? 'Skrýt galerii' : 'Otevřít galerii'}
                           </button>
                         </div>
+
+                        {galleryLoading && (
+                          <p className="mt-2 text-xs text-slate-500">Načítám galerii…</p>
+                        )}
 
                         {companyGalleryOpen && (
                           <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
@@ -3671,9 +3706,10 @@ Zpracuj poslední uživatelskou zprávu.`;
                             <button
                               type="button"
                               onClick={handleSaveGeneratedImageToGallery}
+                              disabled={gallerySaving}
                               className="rounded-lg border border-lime-300/35 bg-lime-500/18 px-2.5 py-1.5 text-xs font-medium text-lime-50 transition hover:bg-lime-500/30"
                             >
-                              Uložit obrázek
+                              {gallerySaving ? 'Ukládám…' : 'Uložit obrázek'}
                             </button>
                           </div>
                         </div>
