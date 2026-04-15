@@ -200,6 +200,117 @@ function dataUrlToFile(dataUrl, fileName = 'source-image.png') {
   return new File([bytes], fileName, { type: mimeType });
 }
 
+app.post('/api/chat-assistant', async (req, res) => {
+  try {
+    const {
+      systemPrompt,
+      prompt,
+      currentMainText = '',
+      currentVisualPrompt = '',
+      currentHashtags = '',
+      currentFlyerTitle = '',
+      currentFlyerText = '',
+      userExplicitlyRequestsEdit = false,
+    } = req.body || {};
+
+    if (!systemPrompt || !prompt) {
+      return res.status(400).json({ error: 'Chybí prompt pro chat.' });
+    }
+
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(500).json({ error: 'Chybí OPENAI_API_KEY.' });
+    }
+
+    const model = process.env.OPENAI_CHAT_MODEL || 'gpt-4.1-mini';
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model,
+        temperature: 0.35,
+        response_format: {
+          type: 'json_object',
+        },
+        messages: [
+          {
+            role: 'system',
+            content: systemPrompt,
+          },
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+      }),
+    });
+
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      return res.status(response.status).json({
+        error: data?.error?.message || 'OpenAI chat API chyba',
+      });
+    }
+
+    const content = data?.choices?.[0]?.message?.content;
+
+    if (!content) {
+      return res.status(500).json({ error: 'OpenAI chat nevrátil obsah.' });
+    }
+
+    let payload = {};
+
+    try {
+      payload = JSON.parse(content);
+    } catch {
+      payload = {};
+    }
+
+    const reply =
+      typeof payload.reply === 'string' && payload.reply.trim()
+        ? payload.reply.trim()
+        : userExplicitlyRequestsEdit
+          ? 'Úpravu jsem zpracoval.'
+          : 'Tady je moje odpověď.';
+
+    const applyChanges = Boolean(userExplicitlyRequestsEdit && payload.applyChanges);
+
+    return res.json({
+      reply,
+      applyChanges,
+      updatedMainText:
+        applyChanges && typeof payload.updatedMainText === 'string' && payload.updatedMainText.trim()
+          ? payload.updatedMainText.trim()
+          : currentMainText,
+      updatedVisualPrompt:
+        typeof payload.updatedVisualPrompt === 'string'
+          ? payload.updatedVisualPrompt.trim()
+          : currentVisualPrompt,
+      updatedHashtags: Array.isArray(payload.updatedHashtags)
+        ? payload.updatedHashtags.filter(Boolean)
+        : String(currentHashtags || '')
+            .split(/\s+/)
+            .filter(Boolean),
+      updatedFlyerTitle:
+        typeof payload.updatedFlyerTitle === 'string' && payload.updatedFlyerTitle.trim()
+          ? payload.updatedFlyerTitle.trim()
+          : currentFlyerTitle,
+      updatedFlyerText:
+        typeof payload.updatedFlyerText === 'string' && payload.updatedFlyerText.trim()
+          ? payload.updatedFlyerText.trim()
+          : currentFlyerText,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      error: err.message || 'Neočekávaná chyba serveru.',
+    });
+  }
+});
+
 app.post('/api/generate-image', async (req, res) => {
   try {
     const { prompt } = req.body;

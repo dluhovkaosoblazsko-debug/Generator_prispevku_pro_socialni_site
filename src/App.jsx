@@ -28,6 +28,8 @@ import knowledgeBase from './data/knowledge-base.json';
 const apiKey = import.meta.env.VITE_GEMINI_API_KEY || '';
 const primaryModel = import.meta.env.VITE_GEMINI_MODEL || 'gemini-2.5-flash';
 const fallbackModel = import.meta.env.VITE_GEMINI_FALLBACK_MODEL || 'gemini-2.0-flash';
+const contentPrimaryModel = import.meta.env.VITE_GEMINI_CONTENT_MODEL || 'gemini-2.5-pro';
+const contentFallbackModel = import.meta.env.VITE_GEMINI_CONTENT_FALLBACK_MODEL || primaryModel;
 
 if (!apiKey) {
   console.warn('Missing VITE_GEMINI_API_KEY');
@@ -47,11 +49,25 @@ Klíčové výhody a firemní argumenty:
 const compactBrandContext = `Chytrá pěna Bohemia s.r.o. je specialista na stříkanou PUR izolaci. Piš stručně, česky, prakticky a důvěryhodně. Opírej se hlavně o úspory, omezení tepelných mostů, rychlost realizace a zkušenost firmy.`;
 
 const defaultPromptTemplates = [
-  'Proč zateplit střechu ještě před další topnou sezonou',
-  'Jak PUR izolace snižuje náklady na vytápění staršího domu',
+  'Proč zateplit střechu ještě před zimou',
+  'Kolik tepla uniká špatně zateplenou střechou',
+  'Jak PUR izolace snižuje náklady na vytápění',
   'Nejčastější chyby při zateplení podkroví',
+  'Proč bývá v podkroví v zimě chladno a v létě horko',
   'Kdy se vyplatí PUR izolace u novostavby',
-  'Co řeší majitelé domů po první zimě bez kvalitní izolace',
+  'Je PUR izolace opravdu drahá?',
+  'Proč nestačí jen přidat další vrstvu staré izolace',
+  'Co řeší lidé po první zimě bez kvalitní izolace',
+  'Jak poznat, že dům ztrácí teplo přes střechu',
+  'Tepelné mosty a jejich dopad na účty za energie',
+  'Jak rychle může proběhnout zateplení domu',
+  'Co přináší zateplení domu v praxi',
+  'Před a po zateplení: rozdíl v komfortu a nákladech',
+  'Jakou roli hraje izolace při žádosti o dotaci',
+  'Proč se vyplatí řešit zateplení dřív než začnou mrazy',
+  'Kolik může stát odkládání zateplení o další rok',
+  'Jaké výhody má PUR izolace oproti běžným řešením',
+  'Proč je správná aplikace izolace stejně důležitá jako materiál',
 ];
 
 const audienceOptions = [
@@ -1758,6 +1774,7 @@ Piš pro roli: ${resolvedContactLabel}.`
     const result = await generateWithGemini(promptWithCompanyContacting, systemPrompt, {
       expectJson: true,
       temperature: 0.45,
+      modelsToTry: [contentPrimaryModel, contentFallbackModel],
     });
     if (result) {
       const structuredPayload =
@@ -2064,30 +2081,39 @@ ${nextMessages.slice(-6).map((message) => `${message.role === 'user' ? 'Uživate
 
 Zpracuj poslední uživatelskou zprávu.`;
 
-      const result = await generateWithGemini(prompt, systemPrompt, {
-        expectJson: false,
-        temperature: 0.35,
-        useGlobalLoading: false,
-        modelsToTry: [primaryModel, fallbackModel],
-        maxAttempts: 2,
-        initialRetryDelayMs: 250,
-        maxOutputTokens: 1000,
-        topP: 0.8,
+      const response = await fetch('/api/chat-assistant', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          systemPrompt,
+          prompt,
+          currentMainText: parsed.main,
+          currentVisualPrompt: parsed.visual,
+          currentHashtags: parsed.hashtags,
+          currentFlyerTitle: flyerTitle,
+          currentFlyerText: flyerText,
+          userExplicitlyRequestsEdit,
+        }),
       });
 
-      if (!result) {
+      const payload = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
         setChatMessages([
           ...nextMessages,
           {
             id: `${Date.now()}-assistant-error`,
             role: 'assistant',
-            content: 'Teď jsem neodpověděl korektně. Zkus to prosím ještě jednou, případně pokyn zkrať.',
+            content:
+              payload?.error ||
+              'Teď jsem neodpověděl korektně. Zkus to prosím ještě jednou, případně pokyn zkrať.',
           },
         ]);
         return;
       }
 
-      const payload = extractJsonPayload(result) || {};
       const replyText = typeof payload.reply === 'string' && payload.reply.trim()
         ? payload.reply.trim()
         : userExplicitlyRequestsEdit
